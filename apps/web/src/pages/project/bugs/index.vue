@@ -99,7 +99,7 @@ onMounted(load)
     </section>
 
     <section>
-      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-lg:flex-wrap">
+      <div class="pc-filter-bar max-lg:flex-wrap">
         <div class="min-w-[260px] max-w-[340px] flex-[1_1_300px] max-lg:max-w-none max-lg:basis-full">
           <el-input v-model="filters.search" clearable placeholder="搜索编号、标题或描述" @keyup.enter="load" @clear="load">
             <template #prefix><el-icon><Search /></el-icon></template>
@@ -131,7 +131,7 @@ onMounted(load)
         <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-lg:ml-0">{{ bugs.length }} 条缺陷</span>
       </div>
 
-      <div v-loading="loading" class="min-h-60 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 max-md:border-0 max-md:p-0">
+      <div v-loading="loading" class="pc-data-panel max-md:border-0">
         <div v-if="bugs.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="bugs" @row-click="openBug">
             <el-table-column prop="item_code" label="编号" width="110">

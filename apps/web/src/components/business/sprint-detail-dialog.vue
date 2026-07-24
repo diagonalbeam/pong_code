@@ -175,19 +175,19 @@ async function remove() {
       <div class="flex items-center justify-between gap-4 pr-8">
         <div>
           <span class="text-xs text-[var(--pc-text-muted)]">{{ sprint?.code_prefix || '迭代' }}</span>
-          <h2 class="mt-0.5 mb-0 text-[21px] font-semibold">{{ sprint?.name || '迭代详情' }}</h2>
+          <h2 class="mt-0.5 mb-0 text-lg font-semibold">{{ sprint?.name || '迭代详情' }}</h2>
         </div>
         <StatusTag v-if="sprint" :status="sprint.status" />
       </div>
     </template>
-    <div v-loading="loading" class="max-h-[72vh] overflow-y-auto pr-1">
+    <div v-loading="loading">
       <el-tabs v-model="tab">
         <el-tab-pane label="详情" name="detail">
           <el-form label-position="top">
             <el-form-item label="迭代名称">
               <el-input v-model="form.name" />
             </el-form-item>
-            <div class="grid grid-cols-2 gap-x-[17px] max-[600px]:grid-cols-1">
+            <div class="pc-form-grid grid grid-cols-2 max-[600px]:grid-cols-1">
               <el-form-item label="状态">
                 <el-select v-model="form.status" class="w-full">
                   <el-option label="未开始" value="open" />
@@ -219,7 +219,7 @@ async function remove() {
             <el-form-item label="描述">
               <el-input v-model="form.description" type="textarea" :rows="3" />
             </el-form-item>
-            <div class="mt-6 flex justify-between">
+            <div class="pc-form-actions flex justify-between">
               <el-button v-if="canDelete" type="danger" text data-testid="delete-sprint-button" @click="remove">
                 <el-icon><Delete /></el-icon>删除迭代
               </el-button>

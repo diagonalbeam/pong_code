@@ -75,7 +75,7 @@ async function submit() {
       <el-form-item label="迭代名称" required>
         <el-input v-model="form.name" data-testid="create-sprint-name-input" maxlength="64" placeholder="例如：Sprint 10" />
       </el-form-item>
-      <div class="grid grid-cols-2 gap-x-[17px] max-[600px]:grid-cols-1">
+      <div class="pc-form-grid grid grid-cols-2 max-[600px]:grid-cols-1">
         <el-form-item label="开始日期" required>
           <el-date-picker v-model="form.start_date" data-testid="create-sprint-start-date-input" type="date" value-format="YYYY-MM-DD" class="w-full" />
         </el-form-item>

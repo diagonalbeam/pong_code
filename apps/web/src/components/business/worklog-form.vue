@@ -29,8 +29,8 @@ function submit() {
 </script>
 
 <template>
-  <el-form class="rounded-[8px] bg-[var(--pc-surface-soft)] p-[17px]" label-position="top" @submit.prevent="submit">
-    <div class="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
+  <el-form class="pc-compact-form-surface" label-position="top" @submit.prevent="submit">
+    <div class="pc-form-grid grid grid-cols-2 max-[480px]:grid-cols-1">
       <el-form-item label="日期" required>
         <el-date-picker v-model="form.date" type="date" value-format="YYYY-MM-DD" class="w-full" />
       </el-form-item>

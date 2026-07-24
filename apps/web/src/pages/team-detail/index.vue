@@ -116,7 +116,7 @@ onMounted(load)
         </RouterLink>
         <span class="ml-auto text-xs text-[var(--pc-text-muted)]">{{ members.length }} 位成员</span>
       </div>
-      <div v-if="members.length" class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] px-4">
+      <div v-if="members.length" class="pc-list-panel px-4">
         <article v-for="member in members" :key="member.id" class="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] py-2.5 last:border-b-0">
           <el-avatar :size="36">
             {{ member.username.slice(0, 1).toUpperCase() }}

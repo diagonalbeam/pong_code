@@ -76,7 +76,7 @@ async function submit() {
       <el-form-item label="描述">
         <el-input v-model="form.description" type="textarea" :rows="4" />
       </el-form-item>
-      <div class="grid grid-cols-2 gap-x-[17px] max-[600px]:grid-cols-1">
+      <div class="pc-form-grid grid grid-cols-2 max-[600px]:grid-cols-1">
         <el-form-item label="优先级">
           <el-select v-model="form.priority" class="w-full">
             <el-option v-for="level in 5" :key="level" :label="`P${level}`" :value="level" />

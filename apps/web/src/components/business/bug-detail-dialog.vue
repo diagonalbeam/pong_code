@@ -212,14 +212,14 @@ async function removeWorklog(log: WorkLog) {
       <div class="flex items-center justify-between gap-4 pr-8">
         <div>
           <span class="text-xs text-[var(--pc-text-muted)]">{{ bug?.item_code || '缺陷' }}</span>
-          <h2 class="mt-0.5 mb-0 text-[21px] font-semibold" data-testid="bug-detail-title">
+          <h2 class="mt-0.5 mb-0 text-lg font-semibold" data-testid="bug-detail-title">
             {{ bug?.title || '缺陷详情' }}
           </h2>
         </div>
         <StatusTag v-if="bug" :status="bug.status" :label="bugStatusLabels[bug.status]" />
       </div>
     </template>
-    <div v-loading="loading" class="max-h-[72vh] overflow-y-auto pr-1">
+    <div v-loading="loading">
       <el-tabs v-model="tab">
         <el-tab-pane label="详情" name="detail">
           <el-alert
@@ -239,7 +239,7 @@ async function removeWorklog(log: WorkLog) {
             <el-form-item label="复现步骤">
               <el-input v-model="form.steps_to_reproduce" type="textarea" :rows="7" resize="vertical" />
             </el-form-item>
-            <div class="grid grid-cols-2 gap-x-[17px] max-sm:grid-cols-1">
+            <div class="pc-form-grid grid grid-cols-2 max-sm:grid-cols-1">
               <el-form-item label="状态">
                 <el-select v-model="form.status" class="w-full">
                   <el-option label="待处理" value="open" />
@@ -273,7 +273,7 @@ async function removeWorklog(log: WorkLog) {
                 <el-input-number v-model="form.time_estimate" :min="0" :step="0.5" class="w-full" />
               </el-form-item>
             </div>
-            <div class="mt-6 flex justify-between">
+            <div class="pc-form-actions flex justify-between">
               <el-button type="danger" text @click="remove">
                 <el-icon><Delete /></el-icon>删除缺陷
               </el-button>
@@ -286,7 +286,7 @@ async function removeWorklog(log: WorkLog) {
 
         <el-tab-pane :label="`证据 (${evidences.length})`" name="evidence">
           <section data-testid="bug-detail-evidence-section">
-            <el-form data-testid="add-bug-evidence-form" label-position="top" class="rounded-[8px] bg-[var(--pc-surface-soft)] p-[17px]" @submit.prevent="addEvidence">
+            <el-form data-testid="add-bug-evidence-form" label-position="top" class="pc-compact-form-surface" @submit.prevent="addEvidence">
               <el-form-item label="补充说明">
                 <el-input v-model="evidenceForm.comment" data-testid="add-bug-evidence-comment-input" type="textarea" :rows="3" />
               </el-form-item>

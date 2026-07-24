@@ -124,20 +124,20 @@ async function remove() {
       <div class="flex items-center justify-between gap-4 pr-8">
         <div>
           <span class="text-xs text-[var(--pc-text-muted)]">需求详情</span>
-          <h2 class="mt-0.5 mb-0 text-[21px] font-semibold">{{ requirement?.title || '加载中' }}</h2>
+          <h2 class="mt-0.5 mb-0 text-lg font-semibold">{{ requirement?.title || '加载中' }}</h2>
         </div>
         <StatusTag v-if="requirement" :status="requirement.status" />
       </div>
     </template>
 
-    <el-form v-loading="loading" class="max-h-[72vh] overflow-y-auto pr-1" label-position="top" @submit.prevent="save">
+    <el-form v-loading="loading" label-position="top" @submit.prevent="save">
       <el-form-item label="标题" required>
         <el-input v-model="form.title" maxlength="200" />
       </el-form-item>
       <el-form-item label="需求内容" required>
         <el-input v-model="form.content" type="textarea" :rows="9" resize="vertical" />
       </el-form-item>
-      <div class="grid grid-cols-2 gap-x-[17px] max-[600px]:grid-cols-1">
+      <div class="pc-form-grid grid grid-cols-2 max-[600px]:grid-cols-1">
         <el-form-item label="状态">
           <el-select v-model="form.status" class="w-full">
             <el-option label="待规划" value="pending" />
@@ -164,7 +164,7 @@ async function remove() {
         <span>创建人：{{ requirement?.creator_name || '-' }}</span>
         <span>创建时间：{{ requirement?.created_at?.replace('T', ' ').slice(0, 16) || '-' }}</span>
       </div>
-      <div class="mt-6 flex justify-between">
+      <div class="pc-form-actions flex justify-between">
         <el-button type="danger" text @click="remove">
           <el-icon><Delete /></el-icon>删除需求
         </el-button>

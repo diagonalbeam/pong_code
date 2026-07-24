@@ -23,6 +23,13 @@
   --pc-radius-lg: 8px;
   --pc-radius-card: 8px;
   --pc-radius-pill: 9999px;
+  --pc-control-height: 32px;
+  --pc-control-height-small: 24px;
+  --pc-control-height-large: 40px;
+  --pc-space-xs: 8px;
+  --pc-space-sm: 12px;
+  --pc-space-md: 17px;
+  --pc-space-lg: 24px;
   --pc-sidebar-width: 240px;
   --pc-sidebar-collapsed: 60px;
   --pc-header-height: 52px;
@@ -34,6 +41,9 @@
   --el-bg-color: var(--pc-surface);
   --el-text-color-primary: var(--pc-text);
   --el-text-color-regular: var(--pc-text-secondary);
+  --el-component-size: var(--pc-control-height);
+  --el-component-size-small: var(--pc-control-height-small);
+  --el-component-size-large: var(--pc-control-height-large);
 }
 
 :root.dark {
@@ -113,12 +123,22 @@ button:active:not(:disabled),
 }
 
 .el-button {
-  min-height: 40px;
+  min-height: var(--pc-control-height);
   border-radius: var(--pc-radius-md);
-  padding-inline: 16px;
+  padding-inline: 14px;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, transform 120ms ease;
+}
+
+.el-button--small {
+  min-height: var(--pc-control-height-small);
+  padding-inline: 10px;
+}
+
+.el-button--large {
+  min-height: var(--pc-control-height-large);
+  padding-inline: 18px;
 }
 
 .el-button--default:not(.is-text, .is-link) {
@@ -128,9 +148,9 @@ button:active:not(:disabled),
 }
 
 .el-button.is-circle {
-  width: 40px;
-  min-width: 40px;
-  height: 40px;
+  width: var(--pc-control-height);
+  min-width: var(--pc-control-height);
+  height: var(--pc-control-height);
   padding: 0;
 }
 
@@ -138,14 +158,54 @@ button:active:not(:disabled),
 .el-select__wrapper,
 .el-textarea__inner,
 .el-date-editor.el-input__wrapper {
-  min-height: 40px;
+  min-height: var(--pc-control-height);
   border-radius: var(--pc-radius-md);
   box-shadow: 0 0 0 1px var(--pc-border) inset;
   background: var(--pc-surface);
 }
 
 .el-textarea__inner {
-  padding: 12px 14px;
+  padding: 8px 11px;
+  line-height: 1.5;
+}
+
+.el-input-number {
+  min-height: var(--pc-control-height);
+}
+
+.el-input-number .el-input__wrapper {
+  min-height: var(--pc-control-height);
+}
+
+.el-form-item {
+  margin-bottom: 14px;
+}
+
+.el-form-item__label {
+  min-height: 20px;
+  height: auto;
+  padding-bottom: 4px;
+  color: var(--pc-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.el-form--label-top .el-form-item .el-form-item__label {
+  margin-bottom: 0;
+}
+
+.el-form .pc-form-grid {
+  gap: var(--pc-space-xs) var(--pc-space-md);
+}
+
+.el-form .pc-form-grid .el-form-item {
+  margin-bottom: 0;
+}
+
+.el-form-item__content > .el-date-editor {
+  --el-date-editor-width: 100%;
+  width: 100%;
 }
 
 .el-dialog,
@@ -154,10 +214,70 @@ button:active:not(:disabled),
   --el-drawer-bg-color: var(--pc-surface);
 }
 
+.el-overlay-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
 .el-dialog {
+  --el-dialog-padding-primary: 0;
+  display: flex;
+  max-height: calc(100vh - 48px);
+  flex-direction: column;
+  overflow: hidden;
+  margin: auto !important;
   border-radius: var(--pc-radius-card);
   border: 1px solid var(--pc-border);
   box-shadow: none;
+}
+
+.el-dialog__header {
+  min-height: 49px;
+  margin: 0;
+  padding: 13px 48px 12px 16px;
+  border-bottom: 1px solid var(--pc-border-soft);
+}
+
+.el-dialog__title {
+  color: var(--pc-text);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.el-dialog__headerbtn {
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+}
+
+.el-dialog__body {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: 16px;
+}
+
+.el-dialog__footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--pc-border-soft);
+  background: var(--pc-surface-soft);
+}
+
+.el-dialog__footer .el-button + .el-button {
+  margin-left: var(--pc-space-xs);
+}
+
+.el-tabs__header {
+  margin-bottom: 14px;
+}
+
+.el-tabs__item {
+  height: 36px;
+  font-size: 13px;
 }
 
 .el-card {
@@ -174,6 +294,94 @@ button:active:not(:disabled),
   --el-table-border-color: var(--pc-border-soft);
   --el-table-row-hover-bg-color: color-mix(in srgb, var(--pc-action) 5%, var(--pc-surface));
   border-radius: var(--pc-radius-lg);
+}
+
+.el-table .el-table__cell {
+  padding: 10px 0;
+}
+
+.el-table th.el-table__cell {
+  color: var(--pc-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.el-table td.el-table__cell {
+  color: var(--pc-text-secondary);
+  font-size: 14px;
+}
+
+.el-table__inner-wrapper::before {
+  display: none;
+}
+
+.el-tag {
+  border-radius: var(--pc-radius-sm);
+}
+
+.pc-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-xs);
+  margin-bottom: 16px;
+  padding: var(--pc-space-sm);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-surface);
+}
+
+.pc-data-panel {
+  min-height: 240px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-surface);
+}
+
+.pc-data-panel .el-table {
+  border-radius: 0;
+}
+
+.pc-data-panel > .el-empty {
+  padding: 36px 16px;
+}
+
+.pc-panel-header {
+  display: flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pc-space-sm);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--pc-border-soft);
+}
+
+.pc-panel-header > h2 {
+  margin: 0;
+  color: var(--pc-text);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pc-list-panel,
+.pc-section-panel {
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-surface);
+}
+
+.pc-compact-form-surface {
+  padding: var(--pc-space-sm);
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-surface-soft);
+}
+
+.pc-form-actions {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--pc-border-soft);
 }
 
 /*
@@ -209,9 +417,28 @@ button:active:not(:disabled),
 }
 
 @media (max-width: 767px) {
+  .pc-filter-bar {
+    flex-wrap: wrap;
+  }
+
+  .pc-data-panel {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
   .el-dialog {
     width: calc(100vw - 24px) !important;
-    margin-top: 6vh !important;
+    max-height: calc(100vh - 24px);
+    margin: auto !important;
+  }
+
+  .el-dialog__body {
+    padding: 14px 12px;
+  }
+
+  .el-dialog__footer {
+    padding: 12px;
   }
 
   .el-drawer {

@@ -81,7 +81,7 @@ onMounted(load)
     </PageHeader>
 
     <section>
-      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-md:flex-wrap">
+      <div class="pc-filter-bar max-md:flex-wrap">
         <div class="w-full max-w-[360px] max-md:max-w-none max-md:basis-full">
           <el-input v-model="search" clearable placeholder="搜索迭代名称">
             <template #prefix><el-icon><Search /></el-icon></template>
@@ -102,7 +102,7 @@ onMounted(load)
         <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-md:ml-0">{{ filtered.length }} 个迭代</span>
       </div>
 
-      <div v-loading="loading" class="min-h-60 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 max-md:border-0 max-md:p-0">
+      <div v-loading="loading" class="pc-data-panel max-md:border-0">
         <div v-if="filtered.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="filtered" @row-click="openBoard">
             <el-table-column prop="name" label="名称" min-width="220" show-overflow-tooltip />

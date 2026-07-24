@@ -84,7 +84,7 @@ onMounted(load)
     </section>
 
     <section>
-      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-md:flex-wrap">
+      <div class="pc-filter-bar max-md:flex-wrap">
         <div class="min-w-[260px] max-w-[420px] flex-[1_1_320px] max-md:max-w-none max-md:basis-full">
           <el-input v-model="filters.search" clearable placeholder="搜索标题或内容" @keyup.enter="load" @clear="load">
             <template #prefix><el-icon><Search /></el-icon></template>
@@ -109,7 +109,7 @@ onMounted(load)
         <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-md:ml-0">{{ requirements.length }} 条需求</span>
       </div>
 
-      <div v-loading="loading" class="min-h-60 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 max-md:border-0 max-md:p-0">
+      <div v-loading="loading" class="pc-data-panel max-md:border-0">
         <div v-if="requirements.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="requirements" @row-click="openRequirement">
             <el-table-column label="需求" min-width="300">

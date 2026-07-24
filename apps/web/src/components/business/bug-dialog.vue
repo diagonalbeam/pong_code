@@ -118,7 +118,7 @@ async function submit() {
       <el-form-item label="复现步骤">
         <el-input v-model="form.steps_to_reproduce" type="textarea" :rows="7" resize="vertical" />
       </el-form-item>
-      <div class="grid grid-cols-2 gap-x-[17px] max-sm:grid-cols-1">
+      <div class="pc-form-grid grid grid-cols-2 max-sm:grid-cols-1">
         <el-form-item label="严重程度">
           <el-select v-model="form.severity" class="w-full">
             <el-option v-for="level in 5" :key="level" :label="`S${level}`" :value="level" />

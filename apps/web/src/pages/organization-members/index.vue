@@ -44,7 +44,7 @@ onMounted(load)
   <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader :title="`${organization?.name || ''} · 组织成员`" :description="`共 ${members.length} 位成员`" />
     <section v-loading="loading" class="min-h-60">
-      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-sm:flex-wrap">
+      <div class="pc-filter-bar max-sm:flex-wrap">
         <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
           <el-input v-model="search" clearable placeholder="搜索成员">
             <template #prefix>
@@ -56,7 +56,7 @@ onMounted(load)
           {{ filtered.length }} 位成员
         </span>
       </div>
-      <div v-if="filtered.length" class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] px-4">
+      <div v-if="filtered.length" class="pc-list-panel px-4">
         <article v-for="member in filtered" :key="member.id" class="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] py-2.5 last:border-b-0">
           <el-avatar :size="36">
             {{ member.username.slice(0, 1).toUpperCase() }}

@@ -103,7 +103,7 @@ onMounted(load)
     </PageHeader>
 
     <section v-loading="loading" class="min-h-60">
-      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-sm:flex-wrap">
+      <div class="pc-filter-bar max-sm:flex-wrap">
         <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
           <el-input v-model="search" clearable placeholder="搜索项目">
             <template #prefix>

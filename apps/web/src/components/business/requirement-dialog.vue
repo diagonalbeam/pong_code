@@ -75,7 +75,7 @@ async function submit() {
       <el-form-item label="需求内容" required>
         <el-input v-model="form.content" data-testid="create-requirement-content-input" type="textarea" :rows="7" resize="vertical" placeholder="补充范围、验收标准和背景信息" />
       </el-form-item>
-      <div class="grid grid-cols-2 gap-x-[17px] max-[600px]:grid-cols-1">
+      <div class="pc-form-grid grid grid-cols-2 max-[600px]:grid-cols-1">
         <el-form-item label="状态">
           <el-select v-model="form.status" class="w-full">
             <el-option label="待规划" value="pending" />

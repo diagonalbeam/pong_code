@@ -29,7 +29,7 @@ defineProps<{
 
 <style scoped>
 [data-auth-content] :deep(.el-form-item) {
-  margin-bottom: 17px;
+  margin-bottom: 14px;
 }
 
 [data-auth-content] :deep(.el-button) {

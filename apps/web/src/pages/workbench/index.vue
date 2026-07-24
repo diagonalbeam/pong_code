@@ -127,7 +127,7 @@ onMounted(load)
     </section>
 
     <div v-loading="loading" class="grid grid-cols-[minmax(320px,0.85fr)_minmax(0,1.35fr)] gap-4 max-lg:grid-cols-1">
-      <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4">
+      <section class="pc-section-panel p-4">
         <h2 class="mt-0 mb-3 text-lg font-semibold">我的待办</h2>
         <div>
           <h3 class="mt-4 mb-1.5 text-xs font-semibold text-[var(--pc-text-secondary)]">任务</h3>
@@ -190,8 +190,10 @@ onMounted(load)
         </div>
       </section>
 
-      <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4">
-        <h2 class="mt-0 mb-3 text-lg font-semibold">工时明细</h2>
+      <section class="pc-data-panel">
+        <header class="pc-panel-header">
+          <h2>工时明细</h2>
+        </header>
         <div data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="data?.work_logs || []">
             <el-table-column prop="date" label="日期" width="112" />
@@ -209,7 +211,7 @@ onMounted(load)
             </el-table-column>
           </el-table>
         </div>
-        <div class="hidden gap-3 max-md:grid">
+        <div class="hidden gap-3 max-md:grid max-md:p-3">
           <article v-for="log in data?.work_logs || []" :key="`${log.type}-${log.id}`" class="relative rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] p-3">
             <strong class="block pr-[52px] text-sm">{{ log.item_title }}</strong>
             <span class="mt-1 block pr-[52px] text-xs text-[var(--pc-text-secondary)]">{{ log.date }} · {{ log.project_name }}</span>

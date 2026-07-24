@@ -164,12 +164,12 @@ async function removeWorklog(log: WorkLog) {
       <div class="flex items-center justify-between gap-4 pr-8">
         <div>
           <span class="text-xs text-[var(--pc-text-muted)]">{{ issue?.item_code || '任务' }}</span>
-          <h2 class="mt-0.5 mb-0 text-[21px] font-semibold">{{ issue?.title || '任务详情' }}</h2>
+          <h2 class="mt-0.5 mb-0 text-lg font-semibold">{{ issue?.title || '任务详情' }}</h2>
         </div>
         <StatusTag v-if="issue" :status="issue.status" />
       </div>
     </template>
-    <div v-loading="loading" class="max-h-[72vh] overflow-y-auto pr-1">
+    <div v-loading="loading">
       <el-tabs v-model="tab">
         <el-tab-pane label="详情" name="detail">
           <el-form label-position="top" @submit.prevent="save">
@@ -179,7 +179,7 @@ async function removeWorklog(log: WorkLog) {
             <el-form-item label="描述">
               <el-input v-model="form.description" type="textarea" :rows="5" />
             </el-form-item>
-            <div class="grid grid-cols-2 gap-x-[17px] max-[600px]:grid-cols-1">
+            <div class="pc-form-grid grid grid-cols-2 max-[600px]:grid-cols-1">
               <el-form-item label="状态">
                 <el-select v-model="form.status" data-testid="edit-issue-status-select" class="w-full">
                   <el-option label="待处理" value="todo" />
@@ -209,7 +209,7 @@ async function removeWorklog(log: WorkLog) {
                 <el-input :model-value="`${issue?.time_spent || 0} 小时`" disabled />
               </el-form-item>
             </div>
-            <div class="mt-6 flex justify-between">
+            <div class="pc-form-actions flex justify-between">
               <el-button type="danger" text @click="remove">
                 <el-icon><Delete /></el-icon>删除任务
               </el-button>

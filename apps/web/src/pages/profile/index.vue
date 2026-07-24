@@ -39,7 +39,7 @@ async function submit() {
 <template>
   <div class="mx-auto w-full max-w-[860px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader title="个人资料" description="管理用于登录和协作展示的账号信息。" />
-    <section class="grid grid-cols-[96px_minmax(0,1fr)] gap-6 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 max-sm:grid-cols-1">
+    <section class="pc-section-panel grid grid-cols-[96px_minmax(0,1fr)] gap-6 p-4 max-sm:grid-cols-1">
       <div class="grid h-[72px] w-[72px] place-items-center rounded-[var(--pc-radius-md)] bg-[color-mix(in_srgb,var(--pc-action)_12%,var(--pc-surface))] text-[30px] font-semibold text-[var(--pc-action)]">
         {{ auth.user?.username?.slice(0, 1).toUpperCase() }}
       </div>
