@@ -1,0 +1,231 @@
+@import 'tailwindcss';
+
+:root {
+  --pc-action: #0066cc;
+  --pc-action-focus: #0071e3;
+  --pc-action-hover: #0056ad;
+  --pc-page: #ffffff;
+  --pc-surface: #ffffff;
+  --pc-surface-soft: #faf9f7;
+  --pc-text: #1d1d1f;
+  --pc-text-secondary: #5f6065;
+  --pc-text-muted: #7a7a7a;
+  --pc-border: #dededb;
+  --pc-border-soft: #ececea;
+  --pc-header: #ffffff;
+  --pc-sidebar: #ffffff;
+  --pc-danger: #d70015;
+  --pc-success: #16883e;
+  --pc-warning: #a15c00;
+  --pc-info: #0066cc;
+  --pc-radius-sm: 6px;
+  --pc-radius-md: 8px;
+  --pc-radius-lg: 8px;
+  --pc-radius-card: 8px;
+  --pc-radius-pill: 9999px;
+  --pc-sidebar-width: 240px;
+  --pc-sidebar-collapsed: 60px;
+  --pc-header-height: 52px;
+  --el-color-primary: var(--pc-action);
+  --el-border-radius-base: var(--pc-radius-md);
+  --el-border-color: var(--pc-border);
+  --el-border-color-light: var(--pc-border-soft);
+  --el-fill-color-blank: var(--pc-surface);
+  --el-bg-color: var(--pc-surface);
+  --el-text-color-primary: var(--pc-text);
+  --el-text-color-regular: var(--pc-text-secondary);
+}
+
+:root.dark {
+  --pc-action: #2997ff;
+  --pc-action-focus: #64b5ff;
+  --pc-action-hover: #53a9fa;
+  --pc-page: #171719;
+  --pc-surface: #252527;
+  --pc-surface-soft: #2a2a2c;
+  --pc-text: #f5f5f7;
+  --pc-text-secondary: #cccccc;
+  --pc-text-muted: #9b9ba0;
+  --pc-border: #414145;
+  --pc-border-soft: #343438;
+  --pc-header: #252527;
+  --pc-sidebar: #202022;
+  --pc-danger: #ff6961;
+  --pc-success: #4ac26b;
+  --pc-warning: #ffb340;
+  --pc-info: #2997ff;
+  --el-color-primary: var(--pc-action);
+  --el-bg-color: var(--pc-surface);
+  --el-bg-color-page: var(--pc-page);
+  --el-bg-color-overlay: var(--pc-surface-soft);
+  --el-fill-color-blank: var(--pc-surface);
+  --el-fill-color-light: var(--pc-surface-soft);
+  --el-border-color: var(--pc-border);
+  --el-border-color-light: var(--pc-border-soft);
+  --el-text-color-primary: var(--pc-text);
+  --el-text-color-regular: var(--pc-text-secondary);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+html {
+  background: var(--pc-page);
+  color: var(--pc-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  font-size: 16px;
+  line-height: 1.44;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--pc-page);
+  color: var(--pc-text);
+}
+
+button,
+a,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active:not(:disabled),
+.el-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+:focus-visible {
+  outline: 2px solid var(--pc-action-focus);
+  outline-offset: 2px;
+}
+
+.el-button {
+  min-height: 40px;
+  border-radius: var(--pc-radius-md);
+  padding-inline: 16px;
+  font-size: 14px;
+  font-weight: 400;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, transform 120ms ease;
+}
+
+.el-button--default:not(.is-text, .is-link) {
+  border-color: var(--pc-border);
+  background: var(--pc-surface);
+  color: var(--pc-text-secondary);
+}
+
+.el-button.is-circle {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner,
+.el-date-editor.el-input__wrapper {
+  min-height: 40px;
+  border-radius: var(--pc-radius-md);
+  box-shadow: 0 0 0 1px var(--pc-border) inset;
+  background: var(--pc-surface);
+}
+
+.el-textarea__inner {
+  padding: 12px 14px;
+}
+
+.el-dialog,
+.el-drawer {
+  --el-dialog-border-radius: var(--pc-radius-card);
+  --el-drawer-bg-color: var(--pc-surface);
+}
+
+.el-dialog {
+  border-radius: var(--pc-radius-card);
+  border: 1px solid var(--pc-border);
+  box-shadow: none;
+}
+
+.el-card {
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-surface);
+  box-shadow: none;
+}
+
+.el-table {
+  --el-table-bg-color: var(--pc-surface);
+  --el-table-tr-bg-color: var(--pc-surface);
+  --el-table-header-bg-color: var(--pc-surface-soft);
+  --el-table-border-color: var(--pc-border-soft);
+  --el-table-row-hover-bg-color: color-mix(in srgb, var(--pc-action) 5%, var(--pc-surface));
+  border-radius: var(--pc-radius-lg);
+}
+
+/*
+ * SortableJS 在运行时把这些状态类注入卡片。fallback 副本的坐标由内联
+ * transform 驱动，因此这里只使用独立的 scale/rotate 属性，避免覆盖或
+ * 延迟鼠标跟随位移。
+ */
+.board-drag-ghost {
+  border-color: color-mix(in srgb, var(--pc-action) 55%, var(--pc-border)) !important;
+  background: color-mix(in srgb, var(--pc-action) 7%, var(--pc-surface)) !important;
+  opacity: 0.28 !important;
+}
+
+.board-drag-chosen,
+.board-drag-active,
+.board-drag-fallback {
+  cursor: grabbing !important;
+}
+
+.board-drag-chosen {
+  border-color: color-mix(in srgb, var(--pc-action) 72%, var(--pc-border)) !important;
+}
+
+.board-drag-fallback {
+  z-index: 4000 !important;
+  pointer-events: none !important;
+  opacity: 0.96 !important;
+  box-shadow: 0 18px 40px rgb(0 0 0 / 18%) !important;
+  scale: 1.025;
+  rotate: 0.75deg;
+  will-change: transform;
+  transition: box-shadow 120ms ease, opacity 120ms ease !important;
+}
+
+@media (max-width: 767px) {
+  .el-dialog {
+    width: calc(100vw - 24px) !important;
+    margin-top: 6vh !important;
+  }
+
+  .el-drawer {
+    width: min(100vw, 520px) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
