@@ -5,16 +5,29 @@ PongCode 应用入口。
 
 import os
 
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, abort, jsonify, send_from_directory
 from sqlalchemy import inspect
 from sqlalchemy import text
 
 from extensions import db, login_manager, mail
 
-# 应用根目录（与 app.py 同目录），用于稳定解析 static 路径，避免重启后 403
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(ROOT_DIR, 'static')
+# 后端目录、仓库根目录与前端构建目录均使用绝对路径，避免运行目录变化导致 403。
+API_DIR = os.path.dirname(os.path.abspath(__file__))
+REPOSITORY_ROOT = os.path.abspath(os.path.join(API_DIR, '..', '..'))
+STATIC_DIR = os.path.join(REPOSITORY_ROOT, 'static')
+PACKAGED_WEB_DIST_DIR = os.path.join(API_DIR, 'static', 'app')
+LOCAL_WEB_DIST_DIR = os.path.join(REPOSITORY_ROOT, 'apps', 'web', 'dist')
 BUG_EVIDENCE_UPLOAD_DIR = os.path.join(STATIC_DIR, 'uploads', 'bug-evidence')
+
+
+def get_web_dist_dir():
+    """生产优先读取镜像内静态资源，本地允许直接读取 Vite 构建产物。"""
+    configured = os.getenv('FRONTEND_DIST_DIR')
+    if configured:
+        return os.path.abspath(configured)
+    if os.path.isfile(os.path.join(PACKAGED_WEB_DIST_DIR, 'index.html')):
+        return PACKAGED_WEB_DIST_DIR
+    return LOCAL_WEB_DIST_DIR
 
 
 def ensure_bug_evidence_schema():
@@ -96,7 +109,7 @@ def ensure_bug_dict_schema():
 
 
 def create_app():
-    app = Flask(__name__, static_folder='static', static_url_path='/static')
+    app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static')
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-this')
     # 生产默认使用 MySQL，可通过 DATABASE_URL 覆盖（例如本地临时切回 SQLite）。
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
@@ -133,12 +146,19 @@ def create_app():
 
     @app.route('/')
     def index():
-        # 使用绝对路径提供首页，避免工作目录变化导致 403
-        return send_from_directory(STATIC_DIR, 'index.html')
+        return send_web_index()
+
+    @app.route('/assets/<path:path>')
+    def web_assets(path):
+        """提供 Vite 构建的指纹静态资源。"""
+        return send_from_directory(os.path.join(get_web_dist_dir(), 'assets'), path)
 
     @app.route('/favicon.ico')
     def favicon():
         """避免浏览器自动请求 favicon 时产生 404 日志。"""
+        favicon_path = os.path.join(get_web_dist_dir(), 'favicon.ico')
+        if os.path.isfile(favicon_path):
+            return send_from_directory(get_web_dist_dir(), 'favicon.ico')
         return '', 204
 
     @app.route('/hybridaction/<path:path>')
@@ -154,6 +174,26 @@ def create_app():
             return jsonify({'status': 'ok'}), 200
         except Exception:
             return jsonify({'status': 'degraded'}), 503
+
+    def send_web_index():
+        """返回 Vue 入口；构建产物缺失时给出明确的部署错误。"""
+        web_dist_dir = get_web_dist_dir()
+        if not os.path.isfile(os.path.join(web_dist_dir, 'index.html')):
+            return jsonify({
+                'error': '前端构建产物不存在，请先运行 pnpm --filter @pongcode/web build'
+            }), 503
+        return send_from_directory(web_dist_dir, 'index.html')
+
+    @app.route('/<path:path>')
+    def web_history_fallback(path):
+        """Vue Router History 回退，同时避免把未知 API 请求伪装成 HTML。"""
+        if path == 'api' or path.startswith(('api/', 'static/', 'assets/')):
+            abort(404)
+        web_dist_dir = get_web_dist_dir()
+        requested_file = os.path.join(web_dist_dir, path)
+        if os.path.isfile(requested_file):
+            return send_from_directory(web_dist_dir, path)
+        return send_web_index()
 
     with app.app_context():
         os.makedirs(app.config['BUG_EVIDENCE_UPLOAD_DIR'], exist_ok=True)
@@ -171,4 +211,5 @@ app = create_app()
 if __name__ == '__main__':
     debug = os.getenv('FLASK_DEBUG', '1') == '1'
     use_reloader = os.getenv('FLASK_USE_RELOADER', '1') == '1'
-    app.run(debug=debug, use_reloader=use_reloader, port=5001)
+    port = int(os.getenv('PORT', '5001'))
+    app.run(debug=debug, use_reloader=use_reloader, port=port)

@@ -1,11 +1,22 @@
 {
-  "name": "pongcode-frontend",
-  "version": "1.0.0",
+  "name": "pongcode",
+  "version": "2.0.0",
   "private": true,
+  "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "build:css": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.css --minify"
+    "dev": "concurrently -k -n API,WEB -c blue,magenta \"pnpm dev:api\" \"pnpm dev:web\"",
+    "dev:api": ".venv/bin/python apps/api/app.py",
+    "dev:web": "pnpm --filter @pongcode/web dev",
+    "build": "pnpm --filter @pongcode/api-contract build && pnpm --filter @pongcode/web build",
+    "build:web": "pnpm --filter @pongcode/web build",
+    "typecheck": "pnpm --filter @pongcode/web typecheck",
+    "lint": "pnpm --filter @pongcode/web lint",
+    "test": "pnpm --filter @pongcode/web test",
+    "test:api": ".venv/bin/python -m pytest -q --ignore=tests/e2e",
+    "test:e2e": "pnpm build && .venv/bin/python -m pytest -q tests/e2e",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:api && pnpm build"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.17"
+    "concurrently": "10.0.3"
   }
 }

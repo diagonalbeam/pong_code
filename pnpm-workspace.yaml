@@ -1,0 +1,10 @@
+packages:
+  - apps/web
+  - packages/*
+
+minimumReleaseAgeExclude:
+  - '@vue/language-core@3.3.8'
+  - vue-tsc@3.3.8
+
+onlyBuiltDependencies:
+  - esbuild

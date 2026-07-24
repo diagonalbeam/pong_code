@@ -1,0 +1,742 @@
+openapi: 3.1.0
+info:
+  title: PongCode API
+  version: 2.0.0
+  description: >
+    PongCode 前后端分离后的现有 Flask 接口契约。该文件只描述当前接口，
+    不改变服务端业务、权限、数据库或文件上传行为。
+servers:
+  - url: /
+
+x-json-response: &json-response
+  "200":
+    description: 请求成功
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: true
+x-created-response: &created-response
+  "201":
+    description: 创建成功
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: true
+x-json-body: &json-body
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        additionalProperties: true
+
+paths:
+  /api/auth/status:
+    get:
+      operationId: getAuthStatus
+      responses:
+        "200":
+          description: 当前会话状态
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStatus"
+  /api/auth/login:
+    post:
+      operationId: login
+      requestBody: *json-body
+      responses: *json-response
+  /api/auth/register:
+    post:
+      operationId: register
+      requestBody: *json-body
+      responses: *json-response
+  /api/auth/logout:
+    get:
+      operationId: logout
+      responses: *json-response
+  /api/auth/profile:
+    get:
+      operationId: getProfile
+      responses: *json-response
+    put:
+      operationId: updateProfile
+      requestBody: *json-body
+      responses: *json-response
+  /api/auth/forgot-password:
+    post:
+      operationId: forgotPassword
+      requestBody: *json-body
+      responses: *json-response
+  /api/auth/verify-reset-token:
+    post:
+      operationId: verifyResetToken
+      requestBody: *json-body
+      responses: *json-response
+  /api/auth/reset-password:
+    post:
+      operationId: resetPassword
+      requestBody: *json-body
+      responses: *json-response
+
+  /api/organizations:
+    get:
+      operationId: listOrganizations
+      responses:
+        "200":
+          description: 组织列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organization"
+    post:
+      operationId: createOrganization
+      requestBody: *json-body
+      responses: *created-response
+  /api/organizations/join:
+    post:
+      operationId: joinOrganization
+      requestBody: *json-body
+      responses: *json-response
+  /api/organizations/{orgId}:
+    parameters:
+      - $ref: "#/components/parameters/OrgId"
+    get:
+      operationId: getOrganization
+      responses: *json-response
+    delete:
+      operationId: deleteOrganization
+      responses: *json-response
+  /api/organizations/{orgId}/members:
+    parameters:
+      - $ref: "#/components/parameters/OrgId"
+    get:
+      operationId: listOrganizationMembers
+      responses: *json-response
+  /api/organizations/{orgId}/teams:
+    parameters:
+      - $ref: "#/components/parameters/OrgId"
+    get:
+      operationId: listOrganizationTeams
+      responses: *json-response
+    post:
+      operationId: createTeam
+      requestBody: *json-body
+      responses: *created-response
+  /api/organizations/{orgId}/projects:
+    parameters:
+      - $ref: "#/components/parameters/OrgId"
+    post:
+      operationId: createProject
+      requestBody: *json-body
+      responses: *created-response
+
+  /api/teams/{teamId}:
+    parameters:
+      - $ref: "#/components/parameters/TeamId"
+    get:
+      operationId: getTeam
+      responses: *json-response
+  /api/teams/{teamId}/join:
+    parameters:
+      - $ref: "#/components/parameters/TeamId"
+    post:
+      operationId: joinTeam
+      responses: *json-response
+  /api/teams/{teamId}/leave:
+    parameters:
+      - $ref: "#/components/parameters/TeamId"
+    post:
+      operationId: leaveTeam
+      responses: *json-response
+  /api/teams/{teamId}/members:
+    parameters:
+      - $ref: "#/components/parameters/TeamId"
+    post:
+      operationId: addTeamMember
+      requestBody: *json-body
+      responses: *json-response
+
+  /api/projects/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: getProject
+      responses: *json-response
+    put:
+      operationId: updateProject
+      requestBody: *json-body
+      responses: *json-response
+    delete:
+      operationId: deleteProject
+      responses: *json-response
+  /api/projects/{projectId}/sprints:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    post:
+      operationId: createSprint
+      requestBody: *json-body
+      responses: *created-response
+  /api/projects/{projectId}/board:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+      - name: sprint_id
+        in: query
+        schema:
+          type: integer
+    get:
+      operationId: getBoard
+      responses: *json-response
+  /api/projects/{projectId}/requirements:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: listRequirements
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Status"
+        - name: priority
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: 需求列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Requirement"
+    post:
+      operationId: createRequirement
+      requestBody: *json-body
+      responses: *created-response
+  /api/projects/{projectId}/requirements/stats:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: getRequirementStats
+      responses: *json-response
+  /api/projects/{projectId}/issues:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    post:
+      operationId: createIssue
+      requestBody: *json-body
+      responses: *created-response
+  /api/projects/{projectId}/bugs:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: listBugs
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Status"
+        - name: severity
+          in: query
+          schema:
+            type: integer
+        - name: assignee_id
+          in: query
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+                const: unassigned
+      responses:
+        "200":
+          description: 缺陷列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bug"
+    post:
+      operationId: createBug
+      requestBody: *json-body
+      responses: *created-response
+  /api/projects/{projectId}/bugs/stats:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: getBugStats
+      responses: *json-response
+
+  /api/sprints/{sprintId}:
+    parameters:
+      - $ref: "#/components/parameters/SprintId"
+    get:
+      operationId: getSprint
+      responses: *json-response
+    put:
+      operationId: updateSprint
+      requestBody: *json-body
+      responses: *json-response
+    delete:
+      operationId: deleteSprint
+      responses: *json-response
+  /api/sprints/{sprintId}/worklogs:
+    parameters:
+      - $ref: "#/components/parameters/SprintId"
+    post:
+      operationId: createSprintWorklog
+      requestBody: *json-body
+      responses: *created-response
+  /api/sprints/{sprintId}/requirements:
+    parameters:
+      - $ref: "#/components/parameters/SprintId"
+    get:
+      operationId: listSprintRequirements
+      responses: *json-response
+    put:
+      operationId: updateSprintRequirements
+      requestBody: *json-body
+      responses: *json-response
+
+  /api/requirements/{requirementId}:
+    parameters:
+      - $ref: "#/components/parameters/RequirementId"
+    get:
+      operationId: getRequirement
+      responses: *json-response
+    put:
+      operationId: updateRequirement
+      requestBody: *json-body
+      responses: *json-response
+    delete:
+      operationId: deleteRequirement
+      responses: *json-response
+
+  /api/issues/{issueId}:
+    parameters:
+      - $ref: "#/components/parameters/IssueId"
+    get:
+      operationId: getIssue
+      responses: *json-response
+    put:
+      operationId: updateIssue
+      requestBody: *json-body
+      responses: *json-response
+    delete:
+      operationId: deleteIssue
+      responses: *json-response
+  /api/issues/{issueId}/worklogs:
+    parameters:
+      - $ref: "#/components/parameters/IssueId"
+    post:
+      operationId: createIssueWorklog
+      requestBody: *json-body
+      responses: *created-response
+  /api/issues/{issueId}/worklogs/{worklogId}:
+    parameters:
+      - $ref: "#/components/parameters/IssueId"
+      - $ref: "#/components/parameters/WorklogId"
+    delete:
+      operationId: deleteIssueWorklog
+      responses: *json-response
+  /api/issues/{issueId}/move:
+    parameters:
+      - $ref: "#/components/parameters/IssueId"
+    post:
+      operationId: moveIssue
+      requestBody: *json-body
+      responses: *json-response
+  /api/issues/{issueId}/assign_sprint:
+    parameters:
+      - $ref: "#/components/parameters/IssueId"
+    post:
+      operationId: assignIssueSprint
+      requestBody: *json-body
+      responses: *json-response
+
+  /api/bugs/{bugId}:
+    parameters:
+      - $ref: "#/components/parameters/BugId"
+    get:
+      operationId: getBug
+      responses: *json-response
+    put:
+      operationId: updateBug
+      requestBody: *json-body
+      responses: *json-response
+    delete:
+      operationId: deleteBug
+      responses: *json-response
+  /api/bugs/{bugId}/evidences:
+    parameters:
+      - $ref: "#/components/parameters/BugId"
+    post:
+      operationId: createBugEvidence
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                stack_trace:
+                  type: string
+                screenshots:
+                  type: array
+                  maxItems: 5
+                  items:
+                    type: string
+                    format: binary
+      responses: *created-response
+  /api/bugs/{bugId}/worklogs:
+    parameters:
+      - $ref: "#/components/parameters/BugId"
+    post:
+      operationId: createBugWorklog
+      requestBody: *json-body
+      responses: *created-response
+  /api/bugs/{bugId}/worklogs/{worklogId}:
+    parameters:
+      - $ref: "#/components/parameters/BugId"
+      - $ref: "#/components/parameters/WorklogId"
+    delete:
+      operationId: deleteBugWorklog
+      responses: *json-response
+
+  /api/users/search:
+    get:
+      operationId: listUsers
+      responses:
+        "200":
+          description: 用户列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /api/workbench:
+    get:
+      operationId: getWorkbench
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses: *json-response
+
+components:
+  parameters:
+    OrgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: integer
+    TeamId:
+      name: teamId
+      in: path
+      required: true
+      schema:
+        type: integer
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: integer
+    SprintId:
+      name: sprintId
+      in: path
+      required: true
+      schema:
+        type: integer
+    RequirementId:
+      name: requirementId
+      in: path
+      required: true
+      schema:
+        type: integer
+    IssueId:
+      name: issueId
+      in: path
+      required: true
+      schema:
+        type: integer
+    BugId:
+      name: bugId
+      in: path
+      required: true
+      schema:
+        type: integer
+    WorklogId:
+      name: worklogId
+      in: path
+      required: true
+      schema:
+        type: integer
+    Search:
+      name: search
+      in: query
+      schema:
+        type: string
+    Status:
+      name: status
+      in: query
+      schema:
+        type: string
+
+  schemas:
+    AuthStatus:
+      type: object
+      required:
+        - authenticated
+      properties:
+        authenticated:
+          type: boolean
+        user:
+          $ref: "#/components/schemas/User"
+    User:
+      type: object
+      required:
+        - id
+        - username
+        - email
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type:
+            - string
+            - "null"
+    Organization:
+      type: object
+      required:
+        - id
+        - name
+        - owner_id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        owner_id:
+          type: integer
+        owner_name:
+          type:
+            - string
+            - "null"
+        projects_count:
+          type: integer
+        done_issues_count:
+          type: integer
+    Team:
+      type: object
+      required:
+        - id
+        - name
+        - organization_id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        organization_id:
+          type: integer
+        members_count:
+          type: integer
+    Project:
+      type: object
+      required:
+        - id
+        - name
+        - organization_id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type:
+            - string
+            - "null"
+        organization_id:
+          type: integer
+        team_id:
+          type:
+            - integer
+            - "null"
+        team_name:
+          type:
+            - string
+            - "null"
+    Sprint:
+      type: object
+      required:
+        - id
+        - name
+        - status
+        - project_id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [open, active, closed]
+        project_id:
+          type: integer
+        start_date:
+          type:
+            - string
+            - "null"
+          format: date
+        end_date:
+          type:
+            - string
+            - "null"
+          format: date
+        progress:
+          type: number
+        time_spent:
+          type: number
+    Requirement:
+      type: object
+      required:
+        - id
+        - title
+        - content
+        - priority
+        - status
+        - project_id
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 5
+        status:
+          type: string
+          enum: [pending, in_progress, testing, completed]
+        project_id:
+          type: integer
+        sprint_id:
+          type:
+            - integer
+            - "null"
+        expected_delivery_date:
+          type:
+            - string
+            - "null"
+          format: date
+    Issue:
+      type: object
+      required:
+        - id
+        - title
+        - status
+        - priority
+        - project_id
+      properties:
+        id:
+          type: integer
+        item_code:
+          type:
+            - string
+            - "null"
+        title:
+          type: string
+        description:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum: [todo, doing, done]
+        priority:
+          type: integer
+        project_id:
+          type: integer
+        sprint_id:
+          type:
+            - integer
+            - "null"
+        requirement_id:
+          type:
+            - integer
+            - "null"
+        assignee_id:
+          type:
+            - integer
+            - "null"
+        time_estimate:
+          type: number
+        time_spent:
+          type: number
+    Bug:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - severity
+        - status
+        - project_id
+      properties:
+        id:
+          type: integer
+        item_code:
+          type:
+            - string
+            - "null"
+        title:
+          type: string
+        description:
+          type: string
+        severity:
+          type: integer
+        status:
+          type: string
+          enum: [open, in_progress, fixed, resolved, closed, rejected]
+        project_id:
+          type: integer
+        sprint_id:
+          type:
+            - integer
+            - "null"
+        requirement_id:
+          type:
+            - integer
+            - "null"
+        assignee_id:
+          type:
+            - integer
+            - "null"
+        evidence_count:
+          type: integer
+        time_estimate:
+          type: number
+        time_spent:
+          type: number
