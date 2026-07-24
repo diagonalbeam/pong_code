@@ -108,24 +108,24 @@ onMounted(load)
         添加成员
       </el-button>
     </PageHeader>
-    <section v-loading="loading" class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-      <div class="mb-6 flex flex-wrap gap-x-[17px] gap-y-2 text-sm text-[var(--pc-text-secondary)]">
-        <span>所属组织</span>
+    <section v-loading="loading" class="min-h-60">
+      <div class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 text-sm text-[var(--pc-text-secondary)]">
+        <span class="text-xs text-[var(--pc-text-muted)]">所属组织</span>
         <RouterLink v-if="organization" class="text-[var(--pc-action)] no-underline" :to="`/organizations/${organization.id}`">
           {{ organization.name }}
         </RouterLink>
-        <span>{{ members.length }} 位成员</span>
+        <span class="ml-auto text-xs text-[var(--pc-text-muted)]">{{ members.length }} 位成员</span>
       </div>
-      <div v-if="members.length">
-        <article v-for="member in members" :key="member.id" class="grid min-h-[72px] grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] py-3 last:border-b-0">
-          <el-avatar :size="44">
+      <div v-if="members.length" class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] px-4">
+        <article v-for="member in members" :key="member.id" class="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] py-2.5 last:border-b-0">
+          <el-avatar :size="36">
             {{ member.username.slice(0, 1).toUpperCase() }}
           </el-avatar>
-          <div>
-            <h2 class="m-0 text-[15px] font-semibold">{{ member.username }}</h2>
-            <p class="mt-0.5 mb-0 text-[13px] text-[var(--pc-text-secondary)]">{{ member.email }}</p>
+          <div class="min-w-0">
+            <h2 class="m-0 truncate text-sm font-semibold">{{ member.username }}</h2>
+            <p class="mt-0.5 mb-0 truncate text-xs text-[var(--pc-text-secondary)]">{{ member.email }}</p>
           </div>
-          <el-tag round :type="member.role === 'leader' ? 'warning' : 'info'">
+          <el-tag class="!rounded-[var(--pc-radius-sm)]" :type="member.role === 'leader' ? 'warning' : 'info'">
             {{ member.role === 'leader' ? '负责人' : '成员' }}
           </el-tag>
         </article>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Delete, Edit, Plus, Search, UserFilled } from '@element-plus/icons-vue'
+import { ArrowRight, Collection, Delete, Edit, FolderOpened, Plus, Search, Tickets, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -102,53 +102,78 @@ onMounted(load)
       </el-button>
     </PageHeader>
 
-    <section v-loading="loading" class="min-h-80 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-      <div class="mb-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] items-end gap-[17px]">
-        <el-input v-model="search" clearable placeholder="搜索项目">
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-        <el-select v-model="teamFilter" clearable data-testid="project-team-filter" placeholder="全部团队">
-          <el-option v-for="team in data?.teams || []" :key="team.id" :label="team.name" :value="team.id" />
-        </el-select>
+    <section v-loading="loading" class="min-h-60">
+      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-sm:flex-wrap">
+        <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
+          <el-input v-model="search" clearable placeholder="搜索项目">
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
+        <div class="w-[220px] shrink-0 max-sm:min-w-[160px] max-sm:flex-1">
+          <el-select v-model="teamFilter" class="w-full" clearable data-testid="project-team-filter" placeholder="全部团队">
+            <el-option v-for="team in data?.teams || []" :key="team.id" :label="team.name" :value="team.id" />
+          </el-select>
+        </div>
+        <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-sm:ml-0">
+          {{ filteredProjects.length }} 个项目
+        </span>
       </div>
 
-      <div v-if="filteredProjects.length" class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] gap-5">
+      <div v-if="filteredProjects.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
         <article
           v-for="project in filteredProjects"
           :key="project.id"
-          class="flex min-h-[210px] cursor-pointer flex-col rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 transition-[border-color,background-color] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_34%,var(--pc-border))]"
+          class="flex min-h-[164px] cursor-pointer flex-col rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 transition-[border-color,background-color] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_38%,var(--pc-border))] hover:bg-[color-mix(in_srgb,var(--pc-action)_2%,var(--pc-surface))]"
           data-testid="org-project-card"
           :data-project-id="project.id"
           :data-team-id="project.team_id || ''"
           role="button"
           tabindex="0"
           @click="router.push(`/organizations/${organizationId}/projects/${project.id}/sprints`)"
-          @keydown.enter="router.push(`/organizations/${organizationId}/projects/${project.id}/sprints`)"
+          @keydown.enter.self="router.push(`/organizations/${organizationId}/projects/${project.id}/sprints`)"
+          @keydown.space.self.prevent="router.push(`/organizations/${organizationId}/projects/${project.id}/sprints`)"
         >
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <h2 class="mt-0 mb-2 overflow-hidden text-[21px] font-semibold text-ellipsis whitespace-nowrap">{{ project.name }}</h2>
-              <el-tag v-if="project.team_name" data-testid="project-team-badge" round effect="plain">
+          <div class="flex items-start gap-3">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[var(--pc-radius-md)] bg-[color-mix(in_srgb,var(--pc-action)_10%,var(--pc-surface))] text-[var(--pc-action)]">
+              <el-icon><FolderOpened /></el-icon>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="m-0 truncate text-[17px] leading-5 font-semibold tracking-[-0.01em] text-[var(--pc-text)]">{{ project.name }}</h2>
+              <el-tag v-if="project.team_name" class="mt-1 !h-5 !rounded-[var(--pc-radius-sm)] !px-1.5 !text-[11px]" data-testid="project-team-badge" effect="plain">
                 {{ project.team_name }}
               </el-tag>
+              <p v-else class="mt-1 mb-0 text-xs leading-4 text-[var(--pc-text-muted)]">未分配团队</p>
             </div>
-            <div v-if="data?.can_manage_projects" class="flex">
-              <el-button circle text data-testid="edit-project-button" aria-label="编辑项目" @click.stop="editProject(project)">
+            <div v-if="data?.can_manage_projects" class="flex shrink-0 gap-1">
+              <button
+                type="button"
+                class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] transition-colors duration-[160ms] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
+                data-testid="edit-project-button"
+                :aria-label="`编辑项目 ${project.name}`"
+                @click.stop="editProject(project)"
+              >
                 <el-icon><Edit /></el-icon>
-              </el-button>
-              <el-button circle text type="danger" data-testid="delete-project-button" aria-label="删除项目" @click.stop="removeProject(project)">
+              </button>
+              <button
+                type="button"
+                class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] transition-colors duration-[160ms] hover:bg-[color-mix(in_srgb,var(--pc-danger)_8%,var(--pc-surface))] hover:text-[var(--pc-danger)]"
+                data-testid="delete-project-button"
+                :aria-label="`删除项目 ${project.name}`"
+                @click.stop="removeProject(project)"
+              >
                 <el-icon><Delete /></el-icon>
-              </el-button>
+              </button>
             </div>
           </div>
-          <p class="my-5 line-clamp-2 text-sm text-[var(--pc-text-secondary)]">
+          <p class="mt-3 mb-3 line-clamp-2 min-h-9 text-[13px] leading-[18px] text-[var(--pc-text-secondary)]">
             {{ project.description || '暂无项目描述' }}
           </p>
-          <footer class="mt-auto flex gap-[17px] text-[13px] text-[var(--pc-text-muted)]">
-            <span>{{ project.sprints_count }} 个迭代</span>
-            <span>{{ project.issues_count }} 个任务</span>
+          <footer class="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--pc-border-soft)] pt-3 text-xs text-[var(--pc-text-secondary)]">
+            <span class="inline-flex items-center gap-1.5"><el-icon><Collection /></el-icon>{{ project.sprints_count }} 个迭代</span>
+            <span class="inline-flex items-center gap-1.5"><el-icon><Tickets /></el-icon>{{ project.issues_count }} 个任务</span>
+            <span class="ml-auto inline-flex items-center gap-1 text-[var(--pc-action)]">进入项目 <el-icon><ArrowRight /></el-icon></span>
           </footer>
         </article>
       </div>

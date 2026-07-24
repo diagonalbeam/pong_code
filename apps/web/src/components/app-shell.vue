@@ -241,18 +241,18 @@ async function logout() {
     </el-drawer>
 
     <div class="min-w-0">
-      <header class="sticky top-0 z-30 flex h-[var(--pc-header-height)] items-center justify-between border-b border-[var(--pc-border)] bg-[var(--pc-header)] px-[17px] max-md:pr-3 max-md:pl-2">
-        <div class="flex min-w-0 items-center gap-2">
+      <header class="sticky top-0 z-30 flex h-[var(--pc-header-height)] items-center justify-between gap-2 overflow-hidden border-b border-[var(--pc-border)] bg-[var(--pc-header)] px-[17px] max-md:pr-3 max-md:pl-2">
+        <div class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
           <el-button class="hidden max-md:inline-flex" circle text aria-label="打开导航" @click="mobileOpen = true">
             <el-icon><MenuIcon /></el-icon>
           </el-button>
-          <el-breadcrumb separator="/">
+          <el-breadcrumb class="min-w-0 flex-1 overflow-hidden whitespace-nowrap" separator="/">
             <el-breadcrumb-item v-for="item in breadcrumbs" :key="`${item.label}-${item.path || ''}`" :to="item.path ? { path: item.path } : undefined">
               {{ item.label }}
             </el-breadcrumb-item>
           </el-breadcrumb>
         </div>
-        <div class="flex min-w-0 items-center gap-2 pr-1">
+        <div class="flex shrink-0 items-center gap-2 pr-1">
           <el-button data-testid="theme-toggle" circle text :aria-label="theme.isDark ? '切换到亮色' : '切换到暗色'" @click="theme.toggle">
             <el-icon><Sunny v-if="theme.isDark" /><Moon v-else /></el-icon>
           </el-button>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plus, Search, UserFilled } from '@element-plus/icons-vue'
+import { ArrowRight, Plus, Search, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -50,38 +50,53 @@ onMounted(load)
         <el-icon><Plus /></el-icon>创建团队
       </el-button>
     </PageHeader>
-    <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-      <el-input v-model="search" clearable placeholder="搜索团队" class="mb-6 max-w-[360px]">
-        <template #prefix>
-          <el-icon><Search /></el-icon>
-        </template>
-      </el-input>
-      <div v-loading="loading" class="grid min-h-60 grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] gap-5">
+    <section v-loading="loading" class="min-h-60">
+      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-sm:flex-wrap">
+        <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
+          <el-input v-model="search" clearable placeholder="搜索团队">
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
+        <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)]">
+          {{ filtered.length }} 个团队
+        </span>
+      </div>
+      <div v-if="filtered.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
         <article
           v-for="team in filtered"
           :key="team.id"
           data-testid="team-card"
-          class="min-h-[210px] cursor-pointer rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 hover:border-[color-mix(in_srgb,var(--pc-action)_35%,var(--pc-border))]"
+          class="flex min-h-[148px] cursor-pointer flex-col rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 transition-[border-color,background-color] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_38%,var(--pc-border))] hover:bg-[color-mix(in_srgb,var(--pc-action)_2%,var(--pc-surface))]"
           role="button"
           tabindex="0"
           @click="router.push(`/teams/${team.id}`)"
-          @keydown.enter="router.push(`/teams/${team.id}`)"
+          @keydown.enter.self="router.push(`/teams/${team.id}`)"
+          @keydown.space.self.prevent="router.push(`/teams/${team.id}`)"
         >
-          <div class="grid h-12 w-12 place-items-center rounded-[8px] bg-[color-mix(in_srgb,var(--pc-action)_12%,var(--pc-surface))] text-[21px] text-[var(--pc-action)]">
-            <el-icon><UserFilled /></el-icon>
+          <div class="flex items-start gap-3">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[var(--pc-radius-md)] bg-[color-mix(in_srgb,var(--pc-action)_10%,var(--pc-surface))] text-base text-[var(--pc-action)]">
+              <el-icon><UserFilled /></el-icon>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="m-0 truncate text-[17px] leading-5 font-semibold tracking-[-0.01em] text-[var(--pc-text)]">{{ team.name }}</h2>
+              <p class="mt-1.5 mb-0 line-clamp-2 text-[13px] leading-[18px] text-[var(--pc-text-secondary)]">
+                {{ team.description || '暂无团队描述' }}
+              </p>
+            </div>
           </div>
-          <h2 class="mt-5 mb-1.5 text-[21px] font-semibold">{{ team.name }}</h2>
-          <p class="mb-5 min-h-10 line-clamp-2 text-sm text-[var(--pc-text-secondary)]">
-            {{ team.description || '暂无团队描述' }}
-          </p>
-          <span class="text-[13px] text-[var(--pc-text-muted)]">{{ team.members_count }} 位成员</span>
+          <footer class="mt-auto flex items-center border-t border-[var(--pc-border-soft)] pt-3 text-xs text-[var(--pc-text-secondary)]">
+            <span class="inline-flex items-center gap-1.5"><el-icon><UserFilled /></el-icon>{{ team.members_count }} 位成员</span>
+            <span class="ml-auto inline-flex items-center gap-1 text-[var(--pc-action)]">查看团队 <el-icon><ArrowRight /></el-icon></span>
+          </footer>
         </article>
-        <EmptyState v-if="!loading && !filtered.length" :title="search ? '没有匹配的团队' : '还没有团队'">
-          <el-button v-if="!search" type="primary" data-testid="create-team-empty-button" @click="createOpen = true">
-            创建团队
-          </el-button>
-        </EmptyState>
       </div>
+      <EmptyState v-else-if="!loading" :title="search ? '没有匹配的团队' : '还没有团队'">
+        <el-button v-if="!search" type="primary" data-testid="create-team-empty-button" @click="createOpen = true">
+          创建团队
+        </el-button>
+      </EmptyState>
     </section>
     <TeamDialog v-model="createOpen" :organization-id="organizationId" @saved="load" />
   </div>

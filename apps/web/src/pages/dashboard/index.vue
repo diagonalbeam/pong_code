@@ -63,7 +63,7 @@ onMounted(load)
       <OrganizationActions ref="actions" @changed="load" />
     </PageHeader>
 
-    <section aria-label="项目概览" class="mb-8 grid grid-cols-3 gap-3 max-lg:grid-cols-2 max-sm:grid-cols-1">
+    <section aria-label="项目概览" class="mb-8 grid grid-cols-3 gap-3 max-lg:grid-cols-2 max-sm:[&>*:last-child]:col-span-2">
       <StatCard label="组织" :value="organizations.length" hint="你拥有或加入的组织">
         <template #icon><el-icon><OfficeBuilding /></el-icon></template>
       </StatCard>

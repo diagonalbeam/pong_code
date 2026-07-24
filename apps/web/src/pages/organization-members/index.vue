@@ -43,32 +43,39 @@ onMounted(load)
 <template>
   <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader :title="`${organization?.name || ''} · 组织成员`" :description="`共 ${members.length} 位成员`" />
-    <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-      <el-input v-model="search" clearable placeholder="搜索成员" class="mb-[17px] max-w-[360px]">
-        <template #prefix>
-          <el-icon><Search /></el-icon>
-        </template>
-      </el-input>
-      <div v-loading="loading" class="min-h-[220px]">
-        <article v-for="member in filtered" :key="member.id" class="grid min-h-[72px] grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] px-1 py-3 last:border-b-0">
-          <el-avatar :size="44">
+    <section v-loading="loading" class="min-h-60">
+      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-sm:flex-wrap">
+        <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
+          <el-input v-model="search" clearable placeholder="搜索成员">
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
+        <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)]">
+          {{ filtered.length }} 位成员
+        </span>
+      </div>
+      <div v-if="filtered.length" class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] px-4">
+        <article v-for="member in filtered" :key="member.id" class="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] py-2.5 last:border-b-0">
+          <el-avatar :size="36">
             {{ member.username.slice(0, 1).toUpperCase() }}
           </el-avatar>
-          <div>
-            <h2 class="m-0 text-[15px] font-semibold">{{ member.username }}</h2>
-            <p class="mt-0.5 mb-0 text-[13px] text-[var(--pc-text-secondary)]">{{ member.email }}</p>
+          <div class="min-w-0">
+            <h2 class="m-0 truncate text-sm font-semibold">{{ member.username }}</h2>
+            <p class="mt-0.5 mb-0 truncate text-xs text-[var(--pc-text-secondary)]">{{ member.email }}</p>
           </div>
           <div>
-            <el-tag v-if="member.is_owner" type="warning" round>
+            <el-tag v-if="member.is_owner" class="!rounded-[var(--pc-radius-sm)]" type="warning">
               所有者
             </el-tag>
-            <el-tag v-else round effect="plain">
+            <el-tag v-else class="!rounded-[var(--pc-radius-sm)]" effect="plain">
               {{ member.role === 'admin' ? '管理员' : '成员' }}
             </el-tag>
           </div>
         </article>
-        <EmptyState v-if="!loading && !filtered.length" title="没有匹配的成员" />
       </div>
+      <EmptyState v-else-if="!loading" title="没有匹配的成员" />
     </section>
   </div>
 </template>

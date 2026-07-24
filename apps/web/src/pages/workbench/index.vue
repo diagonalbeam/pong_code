@@ -120,76 +120,78 @@ onMounted(load)
       />
     </PageHeader>
 
-    <section class="mb-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] gap-5">
+    <section class="mb-4 grid grid-cols-3 gap-3 max-lg:grid-cols-2 max-sm:[&>*:last-child]:col-span-2">
       <StatCard label="区间总工时" :value="`${data?.total_hours || 0}h`" hint="包含任务、缺陷和迭代工时" />
       <StatCard label="待办任务" :value="data?.tasks.length || 0" hint="由我负责的待办和进行中任务" />
       <StatCard label="待办缺陷" :value="data?.bugs.length || 0" hint="由我负责或报告的未终结缺陷" />
     </section>
 
-    <div v-loading="loading" class="grid grid-cols-[minmax(320px,0.85fr)_minmax(0,1.35fr)] gap-5 max-lg:grid-cols-1">
-      <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-        <h2 class="mt-0 mb-[17px] text-[21px] font-semibold">我的待办</h2>
+    <div v-loading="loading" class="grid grid-cols-[minmax(320px,0.85fr)_minmax(0,1.35fr)] gap-4 max-lg:grid-cols-1">
+      <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4">
+        <h2 class="mt-0 mb-3 text-lg font-semibold">我的待办</h2>
         <div>
-          <h3 class="mt-5 mb-2 text-[13px] font-semibold text-[var(--pc-text-secondary)]">任务</h3>
+          <h3 class="mt-4 mb-1.5 text-xs font-semibold text-[var(--pc-text-secondary)]">任务</h3>
           <article
             v-for="task in data?.tasks || []"
             :key="task.id"
             data-testid="workbench-task-item"
-            class="flex min-h-16 cursor-pointer items-center justify-between gap-3 border-b border-[var(--pc-border-soft)] py-2.5"
+            class="flex min-h-[60px] cursor-pointer items-center justify-between gap-3 border-b border-[var(--pc-border-soft)] py-2"
             role="button"
             tabindex="0"
             @click="openTask(task)"
-            @keydown.enter="openTask(task)"
+            @keydown.enter.self="openTask(task)"
+            @keydown.space.self.prevent="openTask(task)"
           >
             <div class="flex min-w-0 flex-col">
               <strong class="overflow-hidden text-sm font-semibold text-ellipsis whitespace-nowrap">{{ task.item_code ? `${task.item_code} · ` : '' }}{{ task.title }}</strong>
               <span class="mt-[3px] text-xs text-[var(--pc-text-secondary)]">{{ task.project_name }} · {{ task.sprint_name || '未分配迭代' }}</span>
             </div>
-            <div class="flex shrink-0">
-              <el-button circle text data-testid="workbench-task-edit" aria-label="编辑任务" @click.stop="openTask(task)">
+            <div class="flex shrink-0 gap-1">
+              <button type="button" class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]" data-testid="workbench-task-edit" aria-label="编辑任务" @click.stop="openTask(task)">
                 <el-icon><Edit /></el-icon>
-              </el-button>
-              <el-button circle text data-testid="workbench-task-worklog" aria-label="登记任务工时" @click.stop="openTask(task, 'time')">
+              </button>
+              <button type="button" class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]" data-testid="workbench-task-worklog" aria-label="登记任务工时" @click.stop="openTask(task, 'time')">
                 <el-icon><Clock /></el-icon>
-              </el-button>
-              <el-button circle text aria-label="打开看板" @click.stop="goBoard(task.project_id, task.sprint_id)">
+              </button>
+              <button type="button" class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]" aria-label="打开看板" @click.stop="goBoard(task.project_id, task.sprint_id)">
                 <el-icon><Link /></el-icon>
-              </el-button>
+              </button>
             </div>
           </article>
           <el-empty v-if="!data?.tasks.length" :image-size="64" description="没有待办任务" />
         </div>
         <div>
-          <h3 class="mt-5 mb-2 text-[13px] font-semibold text-[var(--pc-text-secondary)]">缺陷</h3>
+          <h3 class="mt-4 mb-1.5 text-xs font-semibold text-[var(--pc-text-secondary)]">缺陷</h3>
           <article
             v-for="bug in data?.bugs || []"
             :key="bug.id"
             data-testid="workbench-bug-item"
-            class="flex min-h-16 cursor-pointer items-center justify-between gap-3 border-b border-[var(--pc-border-soft)] py-2.5"
+            class="flex min-h-[60px] cursor-pointer items-center justify-between gap-3 border-b border-[var(--pc-border-soft)] py-2"
             role="button"
             tabindex="0"
             @click="openBug(bug)"
-            @keydown.enter="openBug(bug)"
+            @keydown.enter.self="openBug(bug)"
+            @keydown.space.self.prevent="openBug(bug)"
           >
             <div class="flex min-w-0 flex-col">
               <strong class="overflow-hidden text-sm font-semibold text-ellipsis whitespace-nowrap">{{ bug.item_code ? `${bug.item_code} · ` : '' }}{{ bug.title }}</strong>
               <span class="mt-[3px] text-xs text-[var(--pc-text-secondary)]">{{ bug.project_name }} · 严重度 S{{ bug.severity }}</span>
             </div>
-            <div class="flex shrink-0">
-              <el-button circle text data-testid="workbench-bug-edit" aria-label="编辑缺陷" @click.stop="openBug(bug)">
+            <div class="flex shrink-0 gap-1">
+              <button type="button" class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]" data-testid="workbench-bug-edit" aria-label="编辑缺陷" @click.stop="openBug(bug)">
                 <el-icon><Edit /></el-icon>
-              </el-button>
-              <el-button circle text data-testid="workbench-bug-worklog" aria-label="登记缺陷工时" @click.stop="openBug(bug, 'time')">
+              </button>
+              <button type="button" class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]" data-testid="workbench-bug-worklog" aria-label="登记缺陷工时" @click.stop="openBug(bug, 'time')">
                 <el-icon><Clock /></el-icon>
-              </el-button>
+              </button>
             </div>
           </article>
           <el-empty v-if="!data?.bugs.length" :image-size="64" description="没有待办缺陷" />
         </div>
       </section>
 
-      <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-        <h2 class="mt-0 mb-[17px] text-[21px] font-semibold">工时明细</h2>
+      <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4">
+        <h2 class="mt-0 mb-3 text-lg font-semibold">工时明细</h2>
         <div data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="data?.work_logs || []">
             <el-table-column prop="date" label="日期" width="112" />
@@ -208,10 +210,10 @@ onMounted(load)
           </el-table>
         </div>
         <div class="hidden gap-3 max-md:grid">
-          <article v-for="log in data?.work_logs || []" :key="`${log.type}-${log.id}`" class="relative rounded-[8px] border border-[var(--pc-border-soft)] p-3.5">
+          <article v-for="log in data?.work_logs || []" :key="`${log.type}-${log.id}`" class="relative rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] p-3">
             <strong class="block pr-[52px] text-sm">{{ log.item_title }}</strong>
             <span class="mt-1 block pr-[52px] text-xs text-[var(--pc-text-secondary)]">{{ log.date }} · {{ log.project_name }}</span>
-            <b class="absolute top-3.5 right-3.5 text-[var(--pc-action)]">{{ log.hours }}h</b>
+            <b class="absolute top-3 right-3 text-[var(--pc-action)]">{{ log.hours }}h</b>
           </article>
         </div>
         <el-empty v-if="!loading && !data?.work_logs.length" :image-size="64" description="所选日期没有工时记录" />

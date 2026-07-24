@@ -39,8 +39,8 @@ async function submit() {
 <template>
   <div class="mx-auto w-full max-w-[860px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader title="个人资料" description="管理用于登录和协作展示的账号信息。" />
-    <section class="grid grid-cols-[120px_minmax(0,1fr)] gap-8 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px] max-sm:grid-cols-1">
-      <div class="grid h-24 w-24 place-items-center rounded-[8px] bg-[color-mix(in_srgb,var(--pc-action)_14%,var(--pc-surface))] text-[40px] font-semibold text-[var(--pc-action)]">
+    <section class="grid grid-cols-[96px_minmax(0,1fr)] gap-6 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 max-sm:grid-cols-1">
+      <div class="grid h-[72px] w-[72px] place-items-center rounded-[var(--pc-radius-md)] bg-[color-mix(in_srgb,var(--pc-action)_12%,var(--pc-surface))] text-[30px] font-semibold text-[var(--pc-action)]">
         {{ auth.user?.username?.slice(0, 1).toUpperCase() }}
       </div>
       <el-form data-testid="profile-form" label-position="top" @submit.prevent="submit">

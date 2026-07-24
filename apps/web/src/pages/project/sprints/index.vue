@@ -80,22 +80,29 @@ onMounted(load)
       </el-button>
     </PageHeader>
 
-    <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-      <div class="mb-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] items-end gap-[17px]">
-        <el-input v-model="search" clearable placeholder="搜索迭代名称">
-          <template #prefix><el-icon><Search /></el-icon></template>
-        </el-input>
-        <el-select v-model="status" clearable placeholder="全部状态">
-          <el-option label="未开始" value="open" />
-          <el-option label="进行中" value="active" />
-          <el-option label="已完成" value="closed" />
-        </el-select>
-        <el-select v-model="owner" clearable filterable placeholder="全部负责人">
-          <el-option v-for="user in users" :key="user.id" :label="user.username" :value="user.id" />
-        </el-select>
+    <section>
+      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-md:flex-wrap">
+        <div class="w-full max-w-[360px] max-md:max-w-none max-md:basis-full">
+          <el-input v-model="search" clearable placeholder="搜索迭代名称">
+            <template #prefix><el-icon><Search /></el-icon></template>
+          </el-input>
+        </div>
+        <div class="w-[200px] shrink-0 max-md:min-w-[160px] max-md:flex-1">
+          <el-select v-model="status" class="w-full" clearable placeholder="全部状态">
+            <el-option label="未开始" value="open" />
+            <el-option label="进行中" value="active" />
+            <el-option label="已完成" value="closed" />
+          </el-select>
+        </div>
+        <div class="w-[220px] shrink-0 max-md:min-w-[180px] max-md:flex-1">
+          <el-select v-model="owner" class="w-full" clearable filterable placeholder="全部负责人">
+            <el-option v-for="user in users" :key="user.id" :label="user.username" :value="user.id" />
+          </el-select>
+        </div>
+        <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-md:ml-0">{{ filtered.length }} 个迭代</span>
       </div>
 
-      <div v-loading="loading" class="min-h-[300px]">
+      <div v-loading="loading" class="min-h-60 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 max-md:border-0 max-md:p-0">
         <div v-if="filtered.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="filtered" @row-click="openBoard">
             <el-table-column prop="name" label="名称" min-width="220" show-overflow-tooltip />
@@ -121,23 +128,33 @@ onMounted(load)
             </el-table-column>
             <el-table-column label="操作" width="72" fixed="right" align="center">
               <template #default="{ row }">
-                <el-button circle text :aria-label="`编辑迭代 ${row.name}`" @click.stop="openSprint(row)">
+                <button
+                  type="button"
+                  class="mx-auto grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
+                  :aria-label="`编辑迭代 ${row.name}`"
+                  @click.stop="openSprint(row)"
+                >
                   <el-icon><MoreFilled /></el-icon>
-                </el-button>
+                </button>
               </template>
             </el-table-column>
           </el-table>
         </div>
 
         <div class="hidden gap-3 max-md:grid">
-          <article v-for="sprint in filtered" :key="sprint.id" class="grid gap-3.5 rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-[17px]" role="button" tabindex="0" @click="openBoard(sprint)" @keydown.enter="openBoard(sprint)">
+          <article v-for="sprint in filtered" :key="sprint.id" class="grid gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-3.5" role="button" tabindex="0" @click="openBoard(sprint)" @keydown.enter.self="openBoard(sprint)" @keydown.space.self.prevent="openBoard(sprint)">
             <header class="flex justify-between gap-3">
               <strong class="text-[15px] font-semibold">{{ sprint.name }}</strong>
               <div class="flex items-center gap-1">
                 <StatusTag :status="sprint.status" :label="sprint.status_label" />
-                <el-button circle text :aria-label="`编辑迭代 ${sprint.name}`" @click.stop="openSprint(sprint)">
+                <button
+                  type="button"
+                  class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
+                  :aria-label="`编辑迭代 ${sprint.name}`"
+                  @click.stop="openSprint(sprint)"
+                >
                   <el-icon><MoreFilled /></el-icon>
-                </el-button>
+                </button>
               </div>
             </header>
             <el-progress :percentage="sprint.progress" :stroke-width="7" />

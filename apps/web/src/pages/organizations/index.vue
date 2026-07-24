@@ -63,30 +63,35 @@ onMounted(load)
     <PageHeader title="组织" description="查看、创建或加入协作组织。">
       <OrganizationActions ref="actions" @changed="load" />
     </PageHeader>
-    <div class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-      <el-input v-model="search" clearable placeholder="搜索组织" class="mb-6 max-w-[360px]" />
-      <div v-loading="loading" class="min-h-[260px]">
-        <div v-if="filtered.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
-          <OrganizationCard
-            v-for="organization in filtered"
-            :key="organization.id"
-            :organization="organization"
-            :can-delete="organization.owner_id === auth.user?.id"
-            @open="router.push(`/organizations/${organization.id}`)"
-            @remove="removeOrganization(organization)"
-          />
+    <section v-loading="loading" class="min-h-60">
+      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-sm:flex-wrap">
+        <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
+          <el-input v-model="search" clearable placeholder="搜索组织" />
         </div>
-        <EmptyState v-else-if="!loading" :title="search ? '没有匹配的组织' : '还没有组织'" :description="search ? '尝试使用其他关键词。' : '创建一个组织，或按准确名称加入已有组织。'">
-          <div v-if="!search" class="flex gap-2">
-            <el-button data-testid="join-org-empty-button" @click="actions?.openJoin()">
-              加入组织
-            </el-button>
-            <el-button type="primary" data-testid="create-org-empty-button" @click="actions?.openCreate()">
-              创建组织
-            </el-button>
-          </div>
-        </EmptyState>
+        <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)]">
+          {{ filtered.length }} 个组织
+        </span>
       </div>
-    </div>
+      <div v-if="filtered.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+        <OrganizationCard
+          v-for="organization in filtered"
+          :key="organization.id"
+          :organization="organization"
+          :can-delete="organization.owner_id === auth.user?.id"
+          @open="router.push(`/organizations/${organization.id}`)"
+          @remove="removeOrganization(organization)"
+        />
+      </div>
+      <EmptyState v-else-if="!loading" :title="search ? '没有匹配的组织' : '还没有组织'" :description="search ? '尝试使用其他关键词。' : '创建一个组织，或按准确名称加入已有组织。'">
+        <div v-if="!search" class="flex gap-2">
+          <el-button data-testid="join-org-empty-button" @click="actions?.openJoin()">
+            加入组织
+          </el-button>
+          <el-button type="primary" data-testid="create-org-empty-button" @click="actions?.openCreate()">
+            创建组织
+          </el-button>
+        </div>
+      </EmptyState>
+    </section>
   </div>
 </template>

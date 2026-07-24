@@ -76,33 +76,40 @@ onMounted(load)
       </el-button>
     </PageHeader>
 
-    <section class="mb-5 grid grid-cols-4 gap-[17px] max-[1000px]:grid-cols-2 max-[600px]:grid-cols-1">
+    <section class="mb-4 grid grid-cols-4 gap-3 max-[1000px]:grid-cols-2">
       <StatCard label="全部需求" :value="stats.total" />
       <StatCard label="待规划" :value="stats.pending" />
       <StatCard label="进行与测试" :value="stats.in_progress + stats.testing" />
       <StatCard label="已完成" :value="stats.completed" />
     </section>
 
-    <section class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-6 max-md:rounded-[var(--pc-radius-lg)] max-md:p-[17px]">
-      <div class="mb-6 grid grid-cols-[minmax(260px,2fr)_repeat(2,minmax(170px,1fr))_auto] items-end gap-[17px] max-[1000px]:grid-cols-2 max-[600px]:grid-cols-1">
-        <el-input v-model="filters.search" clearable placeholder="搜索标题或内容" @keyup.enter="load" @clear="load">
-          <template #prefix><el-icon><Search /></el-icon></template>
-        </el-input>
-        <el-select v-model="filters.status" clearable placeholder="全部状态" @change="load">
-          <el-option label="待规划" value="pending" />
-          <el-option label="进行中" value="in_progress" />
-          <el-option label="测试中" value="testing" />
-          <el-option label="已完成" value="completed" />
-        </el-select>
-        <el-select v-model="filters.priority" clearable placeholder="全部优先级" @change="load">
-          <el-option v-for="level in 5" :key="level" :label="`P${level}`" :value="level" />
-        </el-select>
+    <section>
+      <div class="mb-4 flex items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 max-md:flex-wrap">
+        <div class="min-w-[260px] max-w-[420px] flex-[1_1_320px] max-md:max-w-none max-md:basis-full">
+          <el-input v-model="filters.search" clearable placeholder="搜索标题或内容" @keyup.enter="load" @clear="load">
+            <template #prefix><el-icon><Search /></el-icon></template>
+          </el-input>
+        </div>
+        <div class="w-[200px] shrink-0 max-md:min-w-[160px] max-md:flex-1">
+          <el-select v-model="filters.status" class="w-full" clearable placeholder="全部状态" @change="load">
+            <el-option label="待规划" value="pending" />
+            <el-option label="进行中" value="in_progress" />
+            <el-option label="测试中" value="testing" />
+            <el-option label="已完成" value="completed" />
+          </el-select>
+        </div>
+        <div class="w-[180px] shrink-0 max-md:min-w-[160px] max-md:flex-1">
+          <el-select v-model="filters.priority" class="w-full" clearable placeholder="全部优先级" @change="load">
+            <el-option v-for="level in 5" :key="level" :label="`P${level}`" :value="level" />
+          </el-select>
+        </div>
         <el-button @click="load">
           查询
         </el-button>
+        <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-md:ml-0">{{ requirements.length }} 条需求</span>
       </div>
 
-      <div v-loading="loading" class="min-h-[300px]">
+      <div v-loading="loading" class="min-h-60 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-4 max-md:border-0 max-md:p-0">
         <div v-if="requirements.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="requirements" @row-click="openRequirement">
             <el-table-column label="需求" min-width="300">
@@ -130,7 +137,7 @@ onMounted(load)
         </div>
 
         <div class="hidden gap-3 max-md:grid">
-          <article v-for="item in requirements" :key="item.id" class="grid gap-2.5 rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-[17px]" role="button" tabindex="0" @click="openRequirement(item)" @keydown.enter="openRequirement(item)">
+          <article v-for="item in requirements" :key="item.id" class="grid gap-2.5 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-3.5" role="button" tabindex="0" @click="openRequirement(item)" @keydown.enter.self="openRequirement(item)" @keydown.space.self.prevent="openRequirement(item)">
             <header class="flex justify-between gap-3">
               <span class="text-xs font-semibold text-[var(--pc-action)]">P{{ item.priority }}</span>
               <StatusTag :status="item.status" />

@@ -31,17 +31,16 @@ const emit = defineEmits<{
         <h3 class="m-0 truncate text-[17px] leading-5 font-semibold tracking-[-0.01em] text-[var(--pc-text)]">{{ organization.name }}</h3>
         <p class="mt-1 mb-0 truncate text-xs leading-4 text-[var(--pc-text-secondary)]">所有者：{{ organization.owner_name || '未知' }}</p>
       </div>
-      <el-button
+      <button
         v-if="canDelete"
-        circle
-        text
-        type="danger"
+        type="button"
+        class="grid h-8 w-8 shrink-0 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] transition-colors duration-[160ms] hover:bg-[color-mix(in_srgb,var(--pc-danger)_8%,var(--pc-surface))] hover:text-[var(--pc-danger)]"
         data-testid="delete-organization-button"
         :aria-label="`删除组织 ${organization.name}`"
         @click.stop="emit('remove')"
       >
         <el-icon><Delete /></el-icon>
-      </el-button>
+      </button>
     </div>
     <div class="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--pc-border-soft)] pt-3 text-xs text-[var(--pc-text-secondary)]">
       <span class="inline-flex items-center gap-1.5"><el-icon><FolderOpened /></el-icon>{{ organization.projects_count }} 个项目</span>
