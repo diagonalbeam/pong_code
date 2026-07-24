@@ -144,6 +144,107 @@ class VueAppE2ETestCase(unittest.TestCase):
         expect(self.page).to_have_title("页面不存在 · PongCode")
         expect(self.page.get_by_text("页面不存在", exact=True)).to_be_visible()
 
+    def test_desktop_shell_sidebar_and_account_controls(self):
+        header = self.page.get_by_test_id("app-header")
+        sidebar = self.page.get_by_test_id("desktop-sidebar")
+        sidebar_header = self.page.get_by_test_id("sidebar-header")
+        toggle = self.page.get_by_test_id("desktop-sidebar-toggle")
+
+        expect(header).to_be_visible()
+        expect(sidebar).to_be_visible()
+        expect(sidebar).to_have_css("width", "220px")
+        expect(sidebar_header).to_have_css("border-bottom-width", "1px")
+        header_box = header.bounding_box()
+        sidebar_header_box = sidebar_header.bounding_box()
+        self.assertIsNotNone(header_box)
+        self.assertIsNotNone(sidebar_header_box)
+        self.assertAlmostEqual(
+            sidebar_header_box["y"] + sidebar_header_box["height"],
+            header_box["y"] + header_box["height"],
+            delta=0.5,
+        )
+        expect(toggle).to_have_attribute("aria-label", "收起侧栏")
+        self.assertEqual(
+            sidebar.get_by_role("button", name="收起侧栏").count(),
+            0,
+        )
+
+        toggle.click()
+        expect(toggle).to_have_attribute("aria-label", "展开侧栏")
+        expect(sidebar).to_have_css("width", "60px")
+
+        workbench = sidebar.get_by_role("button", name="工作台", exact=True)
+        sidebar_box = sidebar.bounding_box()
+        workbench_box = workbench.bounding_box()
+        self.assertIsNotNone(sidebar_box)
+        self.assertIsNotNone(workbench_box)
+        self.assertAlmostEqual(
+            workbench_box["x"] + workbench_box["width"] / 2,
+            sidebar_box["x"] + sidebar_box["width"] / 2,
+            delta=1,
+        )
+
+        workbench.hover()
+        tooltip = self.page.locator('.el-popper[role="tooltip"]').filter(
+            has_text="工作台"
+        )
+        expect(tooltip).to_be_visible()
+
+        notification = self.page.get_by_test_id("header-notification")
+        theme_toggle = self.page.get_by_test_id("theme-toggle")
+        notification_button = notification.get_by_role("button", name="通知")
+        user_trigger = self.page.get_by_test_id("user-trigger")
+        action_boxes = [
+            theme_toggle.bounding_box(),
+            notification_button.bounding_box(),
+            user_trigger.bounding_box(),
+        ]
+        self.assertTrue(all(box is not None for box in action_boxes))
+        for box in action_boxes:
+            self.assertAlmostEqual(box["width"], 40, delta=0.5)
+            self.assertAlmostEqual(box["height"], 40, delta=0.5)
+
+        action_centers = [
+            box["x"] + box["width"] / 2
+            for box in action_boxes
+        ]
+        self.assertAlmostEqual(
+            action_centers[1] - action_centers[0],
+            action_centers[2] - action_centers[1],
+            delta=0.5,
+        )
+
+        badge = notification.locator(".el-badge__content")
+        header_box = header.bounding_box()
+        badge_box = badge.bounding_box()
+        self.assertIsNotNone(header_box)
+        self.assertIsNotNone(badge_box)
+        self.assertGreaterEqual(badge_box["y"], header_box["y"])
+        self.assertLessEqual(
+            badge_box["y"] + badge_box["height"],
+            header_box["y"] + header_box["height"],
+        )
+        self.assertLessEqual(badge_box["height"], 16)
+        self.assertEqual(
+            notification_button.locator(".el-icon").evaluate(
+                "element => getComputedStyle(element).fontSize"
+            ),
+            "18px",
+        )
+
+        self.assertEqual(header.get_by_text(self.username, exact=True).count(), 0)
+        avatar = user_trigger.locator(".el-avatar")
+        avatar_background = avatar.evaluate(
+            "element => getComputedStyle(element).backgroundColor"
+        )
+        self.assertNotEqual(avatar_background, "rgba(0, 0, 0, 0)")
+
+        user_trigger.click()
+        account_summary = self.page.get_by_test_id("account-summary")
+        expect(account_summary).to_be_visible()
+        expect(account_summary.get_by_text(self.username, exact=True)).to_be_visible()
+        expect(account_summary.get_by_text(self.email, exact=True)).to_be_visible()
+
     def test_board_menu_moves_task_across_status_and_requirement(self):
         organization, _, project, sprint = self._create_project_fixture()
         requirement = self._api(
