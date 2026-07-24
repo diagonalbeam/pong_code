@@ -157,9 +157,7 @@ async function logout() {
       class="sticky top-0 flex h-screen min-w-0 flex-col border-r border-[var(--pc-border-soft)] bg-[var(--pc-sidebar)] max-md:hidden"
     >
       <div class="flex h-[var(--pc-header-height)] cursor-pointer items-center gap-2.5 px-3 py-2" @click="navigate('/dashboard')">
-        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[6px] bg-[var(--pc-action)] text-lg font-semibold text-white">
-          P
-        </div>
+        <img src="/branding/pongcode-mark.png" alt="" class="h-9 w-9 shrink-0 object-contain" aria-hidden="true">
         <strong v-if="!collapsed" class="overflow-hidden text-[18px] font-semibold whitespace-nowrap text-[var(--pc-text)]">PongCode</strong>
       </div>
       <nav class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-2" aria-label="主导航">
@@ -207,9 +205,7 @@ async function logout() {
 
     <el-drawer v-model="mobileOpen" direction="ltr" size="288px" :with-header="false">
       <div class="flex h-[var(--pc-header-height)] cursor-pointer items-center gap-2.5 py-2">
-        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[6px] bg-[var(--pc-action)] text-lg font-semibold text-white">
-          P
-        </div>
+        <img src="/branding/pongcode-mark.png" alt="" class="h-9 w-9 shrink-0 object-contain" aria-hidden="true">
         <strong class="overflow-hidden text-[18px] font-semibold whitespace-nowrap text-[var(--pc-text)]">PongCode</strong>
       </div>
       <nav class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-2" aria-label="移动端主导航">
