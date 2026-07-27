@@ -3,6 +3,11 @@ export interface AvatarColor {
   foreground: string
 }
 
+export interface AvatarStyle {
+  backgroundColor: string
+  color: string
+}
+
 const USER_AVATAR_COLORS: readonly AvatarColor[] = [
   { background: '#0066cc', foreground: '#ffffff' },
   { background: '#5856d6', foreground: '#ffffff' },
@@ -37,4 +42,13 @@ export function getUserAvatarColor(username: string): AvatarColor {
     return DEFAULT_AVATAR_COLOR
 
   return USER_AVATAR_COLORS[hashString(seed) % USER_AVATAR_COLORS.length] ?? DEFAULT_AVATAR_COLOR
+}
+
+export function getUserAvatarStyle(username: string): AvatarStyle {
+  const color = getUserAvatarColor(username)
+
+  return {
+    backgroundColor: color.background,
+    color: color.foreground,
+  }
 }

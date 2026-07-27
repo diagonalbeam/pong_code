@@ -8,6 +8,7 @@ import { apiErrorMessage } from '@/api/client'
 import type { Organization, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
 import PageHeader from '@/components/page-header.vue'
+import { getUserAvatarStyle } from '@/shared/avatar-color'
 
 const route = useRoute()
 const organizationId = computed(() => Number(route.params.orgId))
@@ -58,7 +59,7 @@ onMounted(load)
       </div>
       <div v-if="filtered.length" class="pc-list-panel px-4">
         <article v-for="member in filtered" :key="member.id" class="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] py-2.5 last:border-b-0">
-          <el-avatar :size="36">
+          <el-avatar :size="36" :style="getUserAvatarStyle(member.username)">
             {{ member.username.slice(0, 1).toUpperCase() }}
           </el-avatar>
           <div class="min-w-0">
