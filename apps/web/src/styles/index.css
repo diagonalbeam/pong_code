@@ -122,6 +122,18 @@ button:active:not(:disabled),
   outline-offset: 2px;
 }
 
+/*
+ * Element Plus 的组合表单控件由外层 wrapper 绘制焦点边框。内部原生输入框
+ * 如果继续继承全局 outline，会在后缀图标、步进按钮或日期区之前多出一条
+ * 分隔线，看起来像焦点环断裂。
+ */
+.el-input__inner:focus-visible,
+.el-select__input:focus-visible,
+.el-textarea__inner:focus-visible,
+.el-range-input:focus-visible {
+  outline: none;
+}
+
 .el-button {
   min-height: var(--pc-control-height);
   border-radius: var(--pc-radius-md);
@@ -156,8 +168,7 @@ button:active:not(:disabled),
 
 .el-input__wrapper,
 .el-select__wrapper,
-.el-textarea__inner,
-.el-date-editor.el-input__wrapper {
+.el-textarea__inner {
   min-height: var(--pc-control-height);
   border-radius: var(--pc-radius-md);
   box-shadow: 0 0 0 1px var(--pc-border) inset;
