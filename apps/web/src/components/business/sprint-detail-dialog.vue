@@ -12,6 +12,7 @@ import {
 } from '@/api/sprints'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint, User, WorkLog } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 import StatusTag from '@/components/status-tag.vue'
 import WorklogForm from './worklog-form.vue'
 
@@ -162,23 +163,16 @@ async function remove() {
 </script>
 
 <template>
-  <el-dialog
+  <AppDialog
     :model-value="modelValue"
+    title="迭代详情"
     width="min(92vw, 760px)"
-    destroy-on-close
-    append-to-body
-    align-center
-    :close-on-click-modal="false"
+    :loading="loading || saving"
+    :show-footer="tab === 'detail'"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <template #header>
-      <div class="flex items-center justify-between gap-4 pr-8">
-        <div>
-          <span class="text-xs text-[var(--pc-text-muted)]">{{ sprint?.code_prefix || '迭代' }}</span>
-          <h2 class="mt-0.5 mb-0 text-lg font-semibold">{{ sprint?.name || '迭代详情' }}</h2>
-        </div>
-        <StatusTag v-if="sprint" :status="sprint.status" />
-      </div>
+    <template #header-extra>
+      <StatusTag v-if="sprint" :status="sprint.status" />
     </template>
     <div v-loading="loading">
       <el-tabs v-model="tab">
@@ -219,15 +213,6 @@ async function remove() {
             <el-form-item label="描述">
               <el-input v-model="form.description" type="textarea" :rows="3" />
             </el-form-item>
-            <div class="pc-form-actions flex justify-between">
-              <el-button v-if="canDelete" type="danger" text data-testid="delete-sprint-button" @click="remove">
-                <el-icon><Delete /></el-icon>删除迭代
-              </el-button>
-              <span v-else />
-              <el-button type="primary" :loading="saving" @click="save">
-                保存修改
-              </el-button>
-            </div>
           </el-form>
         </el-tab-pane>
         <el-tab-pane :label="`需求 (${selectedRequirements.length})`" name="requirements">
@@ -259,7 +244,15 @@ async function remove() {
         </el-tab-pane>
       </el-tabs>
     </div>
-  </el-dialog>
+    <template #footer>
+      <el-button v-if="canDelete" type="danger" text data-testid="delete-sprint-button" @click="remove">
+        <el-icon><Delete /></el-icon>删除迭代
+      </el-button>
+      <el-button type="primary" :loading="saving" @click="save">
+        保存修改
+      </el-button>
+    </template>
+  </AppDialog>
 </template>
 
 <style scoped>

@@ -11,6 +11,7 @@ import {
 } from '@/api/issues'
 import { apiErrorMessage } from '@/api/client'
 import type { Issue, Requirement, User, WorkLog } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 import StatusTag from '@/components/status-tag.vue'
 import WorklogForm from './worklog-form.vue'
 
@@ -151,23 +152,16 @@ async function removeWorklog(log: WorkLog) {
 </script>
 
 <template>
-  <el-dialog
+  <AppDialog
     :model-value="modelValue"
+    title="任务详情"
     width="min(92vw, 720px)"
-    destroy-on-close
-    append-to-body
-    align-center
-    :close-on-click-modal="false"
+    :loading="loading || saving"
+    :show-footer="tab === 'detail'"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <template #header>
-      <div class="flex items-center justify-between gap-4 pr-8">
-        <div>
-          <span class="text-xs text-[var(--pc-text-muted)]">{{ issue?.item_code || '任务' }}</span>
-          <h2 class="mt-0.5 mb-0 text-lg font-semibold">{{ issue?.title || '任务详情' }}</h2>
-        </div>
-        <StatusTag v-if="issue" :status="issue.status" />
-      </div>
+    <template #header-extra>
+      <StatusTag v-if="issue" :status="issue.status" />
     </template>
     <div v-loading="loading">
       <el-tabs v-model="tab">
@@ -209,14 +203,6 @@ async function removeWorklog(log: WorkLog) {
                 <el-input :model-value="`${issue?.time_spent || 0} 小时`" disabled />
               </el-form-item>
             </div>
-            <div class="pc-form-actions flex justify-between">
-              <el-button type="danger" text @click="remove">
-                <el-icon><Delete /></el-icon>删除任务
-              </el-button>
-              <el-button type="primary" data-testid="edit-issue-save-button" :loading="saving" @click="save">
-                保存修改
-              </el-button>
-            </div>
           </el-form>
         </el-tab-pane>
         <el-tab-pane :label="`工时 (${workLogs.length})`" name="time">
@@ -239,5 +225,13 @@ async function removeWorklog(log: WorkLog) {
         </el-tab-pane>
       </el-tabs>
     </div>
-  </el-dialog>
+    <template #footer>
+      <el-button type="danger" text @click="remove">
+        <el-icon><Delete /></el-icon>删除任务
+      </el-button>
+      <el-button type="primary" data-testid="edit-issue-save-button" :loading="saving" @click="save">
+        保存修改
+      </el-button>
+    </template>
+  </AppDialog>
 </template>

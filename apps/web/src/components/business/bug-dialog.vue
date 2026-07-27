@@ -4,6 +4,7 @@ import { reactive, ref, watch } from 'vue'
 import { addBugEvidence, createBug } from '@/api/bugs'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint, User } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -107,7 +108,13 @@ async function submit() {
 </script>
 
 <template>
-  <el-dialog :model-value="modelValue" title="新建缺陷" width="760px" destroy-on-close @update:model-value="emit('update:modelValue', $event)">
+  <AppDialog
+    :model-value="modelValue"
+    title="新建缺陷"
+    width="760px"
+    :loading="submitting"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <el-form label-position="top" @submit.prevent="submit">
       <el-form-item label="缺陷标题" required>
         <el-input v-model="form.title" data-testid="create-bug-title-input" maxlength="200" placeholder="简要说明发现的问题" />
@@ -161,7 +168,7 @@ async function submit() {
         创建缺陷
       </el-button>
     </template>
-  </el-dialog>
+  </AppDialog>
 </template>
 
 <style scoped>

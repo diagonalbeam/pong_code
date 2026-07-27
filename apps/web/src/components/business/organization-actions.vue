@@ -6,6 +6,7 @@ import {
   joinOrganization as joinOrganizationRequest,
 } from '@/api/organizations'
 import { apiErrorMessage } from '@/api/client'
+import AppDialog from '@/components/app-dialog.vue'
 
 const emit = defineEmits<{
   changed: []
@@ -80,7 +81,7 @@ defineExpose({ openCreate, openJoin })
     </el-button>
   </span>
 
-  <el-dialog v-model="createOpen" title="创建组织" width="460px" destroy-on-close>
+  <AppDialog v-model="createOpen" title="创建组织" width="460px" :loading="submitting">
     <el-form label-position="top" @submit.prevent="createOrganization">
       <el-form-item label="组织名称" required>
         <el-input v-model="createForm.name" data-testid="create-org-name-input" maxlength="64" placeholder="例如：研发部门" @keyup.enter="createOrganization" />
@@ -94,9 +95,9 @@ defineExpose({ openCreate, openJoin })
         创建
       </el-button>
     </template>
-  </el-dialog>
+  </AppDialog>
 
-  <el-dialog v-model="joinOpen" title="加入组织" width="460px" destroy-on-close>
+  <AppDialog v-model="joinOpen" title="加入组织" width="460px" :loading="submitting">
     <el-form label-position="top" @submit.prevent="joinOrganization">
       <el-form-item label="组织名称" required>
         <el-input v-model="joinForm.name" data-testid="join-org-name-input" placeholder="请输入要加入的组织名称" @keyup.enter="joinOrganization" />
@@ -110,5 +111,5 @@ defineExpose({ openCreate, openJoin })
         加入
       </el-button>
     </template>
-  </el-dialog>
+  </AppDialog>
 </template>

@@ -4,6 +4,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { createProject, updateProject } from '@/api/projects'
 import { apiErrorMessage } from '@/api/client'
 import type { Project, Team } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -75,11 +76,11 @@ async function submit() {
 </script>
 
 <template>
-  <el-dialog
+  <AppDialog
     :model-value="modelValue"
     :title="editing ? '编辑项目' : '创建项目'"
     width="520px"
-    destroy-on-close
+    :loading="submitting"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <el-form label-position="top" @submit.prevent="submit">
@@ -110,5 +111,5 @@ async function submit() {
         {{ editing ? '保存修改' : '创建项目' }}
       </el-button>
     </template>
-  </el-dialog>
+  </AppDialog>
 </template>

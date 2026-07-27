@@ -4,6 +4,7 @@ import { reactive, ref, watch } from 'vue'
 import { createRequirement } from '@/api/requirements'
 import { apiErrorMessage } from '@/api/client'
 import type { Sprint } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -67,7 +68,13 @@ async function submit() {
 </script>
 
 <template>
-  <el-dialog :model-value="modelValue" title="新建需求" width="680px" destroy-on-close @update:model-value="emit('update:modelValue', $event)">
+  <AppDialog
+    :model-value="modelValue"
+    title="新建需求"
+    width="680px"
+    :loading="submitting"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <el-form label-position="top" @submit.prevent="submit">
       <el-form-item label="需求标题" required>
         <el-input v-model="form.title" data-testid="create-requirement-title-input" maxlength="200" placeholder="用一句话描述用户目标" />
@@ -107,5 +114,5 @@ async function submit() {
         创建需求
       </el-button>
     </template>
-  </el-dialog>
+  </AppDialog>
 </template>

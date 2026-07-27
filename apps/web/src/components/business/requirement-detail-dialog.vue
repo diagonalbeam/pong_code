@@ -5,6 +5,7 @@ import { reactive, ref, watch } from 'vue'
 import { deleteRequirement, getRequirement, updateRequirement } from '@/api/requirements'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 import StatusTag from '@/components/status-tag.vue'
 
 const props = defineProps<{
@@ -111,23 +112,15 @@ async function remove() {
 </script>
 
 <template>
-  <el-dialog
+  <AppDialog
     :model-value="modelValue"
+    title="需求详情"
     width="min(92vw, 720px)"
-    destroy-on-close
-    append-to-body
-    align-center
-    :close-on-click-modal="false"
+    :loading="loading || saving"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <template #header>
-      <div class="flex items-center justify-between gap-4 pr-8">
-        <div>
-          <span class="text-xs text-[var(--pc-text-muted)]">需求详情</span>
-          <h2 class="mt-0.5 mb-0 text-lg font-semibold">{{ requirement?.title || '加载中' }}</h2>
-        </div>
-        <StatusTag v-if="requirement" :status="requirement.status" />
-      </div>
+    <template #header-extra>
+      <StatusTag v-if="requirement" :status="requirement.status" />
     </template>
 
     <el-form v-loading="loading" label-position="top" @submit.prevent="save">
@@ -164,14 +157,14 @@ async function remove() {
         <span>创建人：{{ requirement?.creator_name || '-' }}</span>
         <span>创建时间：{{ requirement?.created_at?.replace('T', ' ').slice(0, 16) || '-' }}</span>
       </div>
-      <div class="pc-form-actions flex justify-between">
-        <el-button type="danger" text @click="remove">
-          <el-icon><Delete /></el-icon>删除需求
-        </el-button>
-        <el-button type="primary" :loading="saving" @click="save">
-          保存修改
-        </el-button>
-      </div>
     </el-form>
-  </el-dialog>
+    <template #footer>
+      <el-button type="danger" text @click="remove">
+        <el-icon><Delete /></el-icon>删除需求
+      </el-button>
+      <el-button type="primary" :loading="saving" @click="save">
+        保存修改
+      </el-button>
+    </template>
+  </AppDialog>
 </template>

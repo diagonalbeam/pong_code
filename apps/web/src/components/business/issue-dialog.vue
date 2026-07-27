@@ -4,6 +4,7 @@ import { reactive, ref, watch } from 'vue'
 import { createIssue } from '@/api/issues'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, User } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -68,7 +69,13 @@ async function submit() {
 </script>
 
 <template>
-  <el-dialog :model-value="modelValue" title="新建任务" width="620px" destroy-on-close @update:model-value="emit('update:modelValue', $event)">
+  <AppDialog
+    :model-value="modelValue"
+    title="新建任务"
+    width="620px"
+    :loading="submitting"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <el-form label-position="top" @submit.prevent="submit">
       <el-form-item label="任务标题" required>
         <el-input v-model="form.title" data-testid="create-issue-title-input" maxlength="120" placeholder="需要完成什么？" />
@@ -105,5 +112,5 @@ async function submit() {
         创建任务
       </el-button>
     </template>
-  </el-dialog>
+  </AppDialog>
 </template>

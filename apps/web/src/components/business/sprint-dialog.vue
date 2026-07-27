@@ -4,6 +4,7 @@ import { reactive, ref, watch } from 'vue'
 import { createSprint } from '@/api/sprints'
 import { apiErrorMessage } from '@/api/client'
 import type { User } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -70,7 +71,13 @@ async function submit() {
 </script>
 
 <template>
-  <el-dialog :model-value="modelValue" title="新建迭代" width="680px" destroy-on-close @update:model-value="emit('update:modelValue', $event)">
+  <AppDialog
+    :model-value="modelValue"
+    title="新建迭代"
+    width="680px"
+    :loading="submitting"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <el-form label-position="top" @submit.prevent="submit">
       <el-form-item label="迭代名称" required>
         <el-input v-model="form.name" data-testid="create-sprint-name-input" maxlength="64" placeholder="例如：Sprint 10" />
@@ -106,5 +113,5 @@ async function submit() {
         创建迭代
       </el-button>
     </template>
-  </el-dialog>
+  </AppDialog>
 </template>

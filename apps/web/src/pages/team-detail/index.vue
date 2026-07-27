@@ -6,6 +6,7 @@ import { getOrganizationMembers } from '@/api/organizations'
 import { addTeamMember, getTeam, joinTeam, leaveTeam } from '@/api/teams'
 import { apiErrorMessage } from '@/api/client'
 import type { Organization, Team, User } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 import EmptyState from '@/components/empty-state.vue'
 import PageHeader from '@/components/page-header.vue'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
@@ -134,7 +135,7 @@ onMounted(load)
       <EmptyState v-else-if="!loading" title="团队还没有成员" />
     </section>
 
-    <el-dialog v-model="memberDialogOpen" title="添加团队成员" width="500px">
+    <AppDialog v-model="memberDialogOpen" title="添加团队成员" width="500px" :loading="submitting">
       <el-form label-position="top">
         <el-form-item label="组织成员" required>
           <el-select v-model="memberForm.user_id" filterable class="w-full" placeholder="选择成员">
@@ -160,6 +161,6 @@ onMounted(load)
           添加
         </el-button>
       </template>
-    </el-dialog>
+    </AppDialog>
   </div>
 </template>

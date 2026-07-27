@@ -23,6 +23,7 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getOrganizations } from '@/api/organizations'
 import type { Organization } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 import { getUserAvatarColor } from '@/shared/avatar-color'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
@@ -346,13 +347,11 @@ async function logout() {
       </main>
     </div>
 
-    <el-dialog
+    <AppDialog
       v-model="teamNavigationOpen"
       title="选择组织"
       width="min(92vw, 520px)"
-      append-to-body
-      align-center
-      :close-on-click-modal="false"
+      :loading="teamNavigationLoading"
     >
       <div v-loading="teamNavigationLoading" class="grid gap-2">
         <button
@@ -368,7 +367,7 @@ async function logout() {
           <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ organization.name }}</span>
         </button>
       </div>
-    </el-dialog>
+    </AppDialog>
   </div>
 </template>
 

@@ -12,6 +12,7 @@ import {
 } from '@/api/bugs'
 import { apiErrorMessage } from '@/api/client'
 import type { Bug, BugEvidence, Requirement, Sprint, User, WorkLog } from '@/api/types'
+import AppDialog from '@/components/app-dialog.vue'
 import StatusTag from '@/components/status-tag.vue'
 import { bugStatusLabels } from '@/shared/bug'
 import WorklogForm from './worklog-form.vue'
@@ -199,25 +200,17 @@ async function removeWorklog(log: WorkLog) {
 </script>
 
 <template>
-  <el-dialog
+  <AppDialog
     :model-value="modelValue"
+    title="缺陷详情"
+    title-testid="bug-detail-title"
     width="min(92vw, 820px)"
-    destroy-on-close
-    append-to-body
-    align-center
-    :close-on-click-modal="false"
+    :loading="loading || saving"
+    :show-footer="tab === 'detail'"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <template #header>
-      <div class="flex items-center justify-between gap-4 pr-8">
-        <div>
-          <span class="text-xs text-[var(--pc-text-muted)]">{{ bug?.item_code || '缺陷' }}</span>
-          <h2 class="mt-0.5 mb-0 text-lg font-semibold" data-testid="bug-detail-title">
-            {{ bug?.title || '缺陷详情' }}
-          </h2>
-        </div>
-        <StatusTag v-if="bug" :status="bug.status" :label="bugStatusLabels[bug.status]" />
-      </div>
+    <template #header-extra>
+      <StatusTag v-if="bug" :status="bug.status" :label="bugStatusLabels[bug.status]" />
     </template>
     <div v-loading="loading">
       <el-tabs v-model="tab">
@@ -272,14 +265,6 @@ async function removeWorklog(log: WorkLog) {
               <el-form-item label="预估工时">
                 <el-input-number v-model="form.time_estimate" :min="0" :step="0.5" class="w-full" />
               </el-form-item>
-            </div>
-            <div class="pc-form-actions flex justify-between">
-              <el-button type="danger" text @click="remove">
-                <el-icon><Delete /></el-icon>删除缺陷
-              </el-button>
-              <el-button type="primary" :loading="saving" @click="save">
-                保存修改
-              </el-button>
             </div>
           </el-form>
         </el-tab-pane>
@@ -354,7 +339,15 @@ async function removeWorklog(log: WorkLog) {
         </el-tab-pane>
       </el-tabs>
     </div>
-  </el-dialog>
+    <template #footer>
+      <el-button type="danger" text @click="remove">
+        <el-icon><Delete /></el-icon>删除缺陷
+      </el-button>
+      <el-button type="primary" :loading="saving" @click="save">
+        保存修改
+      </el-button>
+    </template>
+  </AppDialog>
 </template>
 
 <style scoped>
