@@ -94,7 +94,7 @@ async function save() {
       owner_id: form.owner_id || null,
     })
     ElMessage.success('迭代已更新')
-    await load()
+    emit('update:modelValue', false)
     emit('changed')
   }
   catch (error) {

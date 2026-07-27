@@ -92,7 +92,7 @@ async function save() {
       requirement_id: form.requirement_id || null,
     })
     ElMessage.success('任务已更新')
-    await load()
+    emit('update:modelValue', false)
     emit('changed')
   }
   catch (error) {

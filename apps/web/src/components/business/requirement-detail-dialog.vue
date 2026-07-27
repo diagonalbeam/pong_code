@@ -79,7 +79,7 @@ async function save() {
       expected_delivery_date: form.expected_delivery_date || null,
     })
     ElMessage.success('需求已更新')
-    await load()
+    emit('update:modelValue', false)
     emit('changed')
   }
   catch (error) {
