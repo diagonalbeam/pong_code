@@ -8,6 +8,7 @@ import { getUsers } from '@/api/users'
 import { apiErrorMessage } from '@/api/client'
 import type { Bug, Requirement, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import OverflowTooltip from '@/components/overflow-tooltip.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
 import StatusTag from '@/components/status-tag.vue'
@@ -139,9 +140,13 @@ onMounted(load)
             </el-table-column>
             <el-table-column label="缺陷" min-width="280">
               <template #default="{ row }">
-                <div class="grid gap-1">
-                  <strong class="text-[15px] font-semibold">{{ row.title }}</strong>
-                  <span class="text-[13px] text-[var(--pc-text-secondary)]">{{ row.description }}</span>
+                <div class="grid min-w-0 gap-1">
+                  <strong class="truncate text-[15px] font-semibold">{{ row.title }}</strong>
+                  <OverflowTooltip
+                    :content="row.description"
+                    testid="bug-description-overflow"
+                    class="text-[13px] text-[var(--pc-text-secondary)]"
+                  />
                 </div>
               </template>
             </el-table-column>
@@ -162,6 +167,18 @@ onMounted(load)
             </el-table-column>
             <el-table-column label="工时" width="90">
               <template #default="{ row }">{{ row.time_spent || 0 }}h</template>
+            </el-table-column>
+            <el-table-column label="操作" width="80" fixed="right" align="center">
+              <template #default="{ row }">
+                <el-button
+                  link
+                  type="primary"
+                  data-testid="bug-detail-action"
+                  @click.stop="openBug(row)"
+                >
+                  详情
+                </el-button>
+              </template>
             </el-table-column>
           </el-table>
         </div>

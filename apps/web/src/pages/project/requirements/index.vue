@@ -6,6 +6,7 @@ import { getRequirements, getRequirementStats } from '@/api/requirements'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import OverflowTooltip from '@/components/overflow-tooltip.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
 import StatusTag from '@/components/status-tag.vue'
@@ -114,9 +115,13 @@ onMounted(load)
           <el-table :data="requirements" @row-click="openRequirement">
             <el-table-column label="需求" min-width="300">
               <template #default="{ row }">
-                <div class="grid gap-1">
-                  <strong class="text-[15px] font-semibold">{{ row.title }}</strong>
-                  <span class="text-[13px] text-[var(--pc-text-secondary)]">{{ row.content }}</span>
+                <div class="grid min-w-0 gap-1">
+                  <strong class="truncate text-[15px] font-semibold">{{ row.title }}</strong>
+                  <OverflowTooltip
+                    :content="row.content"
+                    testid="requirement-content-overflow"
+                    class="text-[13px] text-[var(--pc-text-secondary)]"
+                  />
                 </div>
               </template>
             </el-table-column>
@@ -132,6 +137,18 @@ onMounted(load)
             <el-table-column prop="creator_name" label="创建人" width="120" />
             <el-table-column prop="expected_delivery_date" label="期望交付" width="130">
               <template #default="{ row }">{{ row.expected_delivery_date || '-' }}</template>
+            </el-table-column>
+            <el-table-column label="操作" width="80" fixed="right" align="center">
+              <template #default="{ row }">
+                <el-button
+                  link
+                  type="primary"
+                  data-testid="requirement-detail-action"
+                  @click.stop="openRequirement(row)"
+                >
+                  详情
+                </el-button>
+              </template>
             </el-table-column>
           </el-table>
         </div>
