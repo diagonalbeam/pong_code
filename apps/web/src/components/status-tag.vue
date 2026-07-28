@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { getStatusType } from '@/shared/status'
 
 const props = defineProps<{
   status: string
@@ -22,15 +23,7 @@ const labels: Record<string, string> = {
   rejected: '已拒绝',
 }
 
-const type = computed(() => {
-  if (['done', 'completed', 'closed'].includes(props.status))
-    return 'success'
-  if (['doing', 'active', 'in_progress', 'fixed', 'resolved', 'testing'].includes(props.status))
-    return 'warning'
-  if (props.status === 'rejected')
-    return 'danger'
-  return 'info'
-})
+const type = computed(() => getStatusType(props.status))
 </script>
 
 <template>

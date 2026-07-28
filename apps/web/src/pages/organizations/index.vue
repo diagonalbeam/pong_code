@@ -10,13 +10,15 @@ import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import OrganizationActions from '@/components/business/organization-actions.vue'
 import OrganizationCard from '@/components/business/organization-card.vue'
+import { useNavigationContextCache } from '@/shared/navigation-context-cache'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
-const organizations = ref<Organization[]>([])
+const navigationContextCache = useNavigationContextCache()
+const organizations = ref<Organization[]>(navigationContextCache?.organizations.value || [])
 const search = ref('')
-const loading = ref(true)
+const loading = ref(navigationContextCache?.organizations.value === null)
 const actions = ref<InstanceType<typeof OrganizationActions>>()
 const filtered = computed(() => {
   const keyword = search.value.trim().toLowerCase()
@@ -25,10 +27,14 @@ const filtered = computed(() => {
     : organizations.value
 })
 
-async function load() {
-  loading.value = true
+async function load(force = false) {
+  loading.value = navigationContextCache
+    ? navigationContextCache.organizations.value === null
+    : !organizations.value.length
   try {
-    organizations.value = await getOrganizations()
+    organizations.value = navigationContextCache
+      ? await navigationContextCache.loadOrganizations(force)
+      : await getOrganizations()
   }
   catch (error) {
     ElMessage.error(apiErrorMessage(error, '加载组织失败'))
@@ -46,7 +52,7 @@ async function removeOrganization(organization: Organization) {
       { type: 'warning', confirmButtonText: '删除组织' },
     )
     await deleteOrganization(organization.id)
-    await load()
+    await load(true)
     ElMessage.success('组织已删除')
   }
   catch (error) {
@@ -62,7 +68,7 @@ onMounted(load)
 <template>
   <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader title="组织" description="查看、创建或加入协作组织。">
-      <OrganizationActions ref="actions" @changed="load" />
+      <OrganizationActions ref="actions" @changed="load(true)" />
     </PageHeader>
     <section class="min-h-60">
       <div class="pc-filter-bar max-sm:flex-wrap">

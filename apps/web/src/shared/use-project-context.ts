@@ -2,18 +2,30 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { getProject } from '@/api/projects'
 import type { ProjectDetails } from '@/api/types'
+import { useNavigationContextCache } from '@/shared/navigation-context-cache'
 
 export function useProjectContext() {
   const route = useRoute()
+  const navigationContextCache = useNavigationContextCache()
   const projectId = computed(() => Number(route.params.projectId))
   const routeOrganizationId = computed(() => Number(route.params.orgId || 0))
-  const details = ref<ProjectDetails | null>(null)
+  const details = ref<ProjectDetails | null>(
+    navigationContextCache?.projectDetails.get(projectId.value) || null,
+  )
   const loadingProject = ref(false)
 
-  async function loadProject() {
-    loadingProject.value = true
+  async function loadProject(force = false) {
+    const cached = navigationContextCache?.projectDetails.get(projectId.value)
+    if (cached && !force) {
+      details.value = cached
+      return cached
+    }
+
+    loadingProject.value = !cached
     try {
-      details.value = await getProject(projectId.value)
+      details.value = navigationContextCache
+        ? await navigationContextCache.loadProject(projectId.value, force)
+        : await getProject(projectId.value)
       return details.value
     }
     finally {

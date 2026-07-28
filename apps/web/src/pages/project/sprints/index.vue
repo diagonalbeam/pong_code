@@ -18,7 +18,7 @@ import { useProjectContext } from '@/shared/use-project-context'
 
 const router = useRouter()
 const { projectId, organizationId, details, loadProject } = useProjectContext()
-const loading = ref(true)
+const loading = ref(!details.value)
 const users = ref<User[]>([])
 const requirements = ref<Requirement[]>([])
 const search = ref('')
@@ -37,10 +37,10 @@ const filtered = computed(() => {
   ))
 })
 
-async function load() {
-  loading.value = true
+async function load(force = false) {
+  loading.value = !details.value
   try {
-    await loadProject()
+    await loadProject(force)
     const [userList, requirementList] = await Promise.all([
       getUsers(),
       getRequirements(projectId.value),
@@ -190,7 +190,7 @@ onMounted(load)
       </div>
     </section>
 
-    <SprintDialog v-model="createOpen" :project-id="projectId" :users="users" @saved="load" />
-    <SprintDetailDialog v-model="detailOpen" :sprint-id="selectedSprintId" :users="users" :all-requirements="requirements" @changed="load" />
+    <SprintDialog v-model="createOpen" :project-id="projectId" :users="users" @saved="load(true)" />
+    <SprintDetailDialog v-model="detailOpen" :sprint-id="selectedSprintId" :users="users" :all-requirements="requirements" @changed="load(true)" />
   </div>
 </template>

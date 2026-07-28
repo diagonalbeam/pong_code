@@ -12,22 +12,28 @@ import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
 import OrganizationActions from '@/components/business/organization-actions.vue'
 import OrganizationCard from '@/components/business/organization-card.vue'
+import { useNavigationContextCache } from '@/shared/navigation-context-cache'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
-const organizations = ref<Organization[]>([])
-const loading = ref(true)
+const navigationContextCache = useNavigationContextCache()
+const organizations = ref<Organization[]>(navigationContextCache?.organizations.value || [])
+const loading = ref(navigationContextCache?.organizations.value === null)
 const actions = ref<InstanceType<typeof OrganizationActions>>()
 
 const projectCount = computed(() => organizations.value.reduce((sum, item) => sum + item.projects_count, 0))
 const doneCount = computed(() => organizations.value.reduce((sum, item) => sum + item.done_issues_count, 0))
 const organizationPreview = computed(() => organizations.value.slice(0, 3))
 
-async function load() {
-  loading.value = true
+async function load(force = false) {
+  loading.value = navigationContextCache
+    ? navigationContextCache.organizations.value === null
+    : !organizations.value.length
   try {
-    organizations.value = await getOrganizations()
+    organizations.value = navigationContextCache
+      ? await navigationContextCache.loadOrganizations(force)
+      : await getOrganizations()
   }
   catch (error) {
     ElMessage.error(apiErrorMessage(error, '加载组织失败'))
@@ -46,7 +52,7 @@ async function removeOrganization(organization: Organization) {
     )
     await deleteOrganization(organization.id)
     ElMessage.success('组织已删除')
-    await load()
+    await load(true)
   }
   catch (error) {
     if (error === 'cancel' || error === 'close')
@@ -61,7 +67,7 @@ onMounted(load)
 <template>
   <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader title="控制台" :description="`你好，${auth.user?.username || ''}。这是你当前的项目概览。`">
-      <OrganizationActions ref="actions" @changed="load" />
+      <OrganizationActions ref="actions" @changed="load(true)" />
     </PageHeader>
 
     <section aria-label="项目概览" class="mb-8 grid grid-cols-3 gap-3 max-lg:grid-cols-2 max-sm:[&>*:last-child]:col-span-2">

@@ -118,6 +118,17 @@ function readCollapsed() {
 async function loadBoard(sprintId = selectedSprintId.value) {
   const result = await getProjectBoard(projectId.value, sprintId || undefined)
   board.value = result
+  if (!result.has_sprint) {
+    ElMessage.info(result.error || '暂无可用迭代，请先创建或激活迭代')
+    await router.replace({
+      name: 'project-sprints',
+      params: {
+        orgId: organizationId.value,
+        projectId: projectId.value,
+      },
+    })
+    return
+  }
   if (result.sprint?.id) {
     selectedSprintId.value = result.sprint.id
     readCollapsed()

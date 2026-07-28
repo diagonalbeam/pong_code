@@ -1,7 +1,8 @@
-import { mount } from '@vue/test-utils'
-import { defineComponent, h } from 'vue'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { enableAutoUnmount, mount } from '@vue/test-utils'
+import { defineComponent, h, reactive } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AppShell from './app-shell.vue'
+import ContextBreadcrumbDropdown from './context-breadcrumb-dropdown.vue'
 
 const testState = vi.hoisted(() => ({
   route: {
@@ -27,8 +28,11 @@ const apiMocks = vi.hoisted(() => ({
   getProject: vi.fn(),
 }))
 
+const routeState = reactive(testState.route)
+enableAutoUnmount(afterEach)
+
 vi.mock('vue-router', () => ({
-  useRoute: () => testState.route,
+  useRoute: () => routeState,
   useRouter: () => ({
     push: testState.push,
     replace: testState.replace,
@@ -126,6 +130,7 @@ function mountShell() {
         ElDropdownItem: PassThroughStub,
         ElDropdownMenu: PassThroughStub,
         ElIcon: PassThroughStub,
+        ElInput: PassThroughStub,
         ElTooltip: TooltipStub,
       },
       directives: {
@@ -143,6 +148,8 @@ describe('应用外壳', () => {
     testState.route.meta = { title: '工作台' }
     testState.route.name = 'workbench'
     testState.push.mockReset()
+    testState.replace.mockReset()
+    apiMocks.getOrganizations.mockReset().mockResolvedValue([])
     apiMocks.getOrganization.mockReset()
     apiMocks.getProject.mockReset()
   })
@@ -186,31 +193,172 @@ describe('应用外壳', () => {
     expect(avatarStyle).toContain('color: rgb(255, 255, 255)')
   })
 
-  it('先展示当前项目，再在下一行提供迭代切换', async () => {
+  it('在头部面包屑提供组织、项目与迭代切换，并从侧栏移除上下文选择器', async () => {
     testState.route.path = '/organizations/1/projects/10/board'
     testState.route.params = { orgId: '1', projectId: '10' }
     testState.route.query = { sprint: '101' }
     testState.route.meta = { title: '看板' }
     testState.route.name = 'project-board'
+    apiMocks.getOrganizations.mockResolvedValue([
+      { id: 1, name: '龙腾团队' },
+      { id: 2, name: '北极星团队' },
+    ])
     apiMocks.getOrganization.mockResolvedValue({
+      organization: { id: 1, name: '龙腾团队' },
       projects: [
         { id: 10, name: '支付平台' },
         { id: 11, name: '消息中心' },
       ],
     })
     apiMocks.getProject.mockResolvedValue({
-      active_sprint: { id: 101 },
+      project: { id: 10, name: '支付平台', organization_id: 1 },
+      active_sprint: { id: 101, name: '迭代 1' },
       sprints: [
-        { id: 101, name: '迭代 1' },
-        { id: 102, name: '迭代 2' },
+        { id: 102, name: '迭代 2', status_label: '未开始', status: 'open' },
+        { id: 103, name: '迭代 3', status_label: '已完成', status: 'closed' },
+        { id: 101, name: '迭代 1', status_label: '进行中', status: 'active' },
       ],
     })
     const wrapper = mountShell()
     await vi.waitFor(() => {
-      expect(wrapper.get('[data-testid="sidebar-project-switcher"]').text()).toContain('支付平台')
+      expect(wrapper.get('[data-testid="desktop-project-switcher"]').text()).toContain('支付平台')
     })
 
-    expect(wrapper.get('[data-testid="sidebar-sprint-switcher"]').text()).toContain('迭代 1')
-    expect(wrapper.get('[data-testid="sidebar-project-switcher-menu"]').text()).toContain('消息中心')
+    expect(wrapper.get('[data-testid="desktop-organization-switcher"]').text()).toContain('龙腾团队')
+    expect(wrapper.get('[data-testid="desktop-sprint-switcher"]').text()).toContain('迭代 1')
+    expect(wrapper.get('[data-testid="desktop-project-switcher-menu"]').text()).toContain('消息中心')
+    expect(wrapper.get('[data-testid="desktop-sprint-switcher-menu"]').text()).toContain('未开始')
+    expect(
+      wrapper
+        .get('[data-testid="desktop-sprint-switcher-menu"]')
+        .findAll('[data-testid^="desktop-sprint-switcher-option-"]')
+        .map(option => option.text()),
+    ).toEqual(['迭代 1进行中', '迭代 2未开始', '迭代 3已完成'])
+    expect(wrapper.text()).toContain('项目空间')
+    expect(wrapper.find('[data-testid="sidebar-project-switcher"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="sidebar-sprint-switcher"]').exists()).toBe(false)
+  })
+
+  it('保持组织、项目与迭代各自的切换语义', async () => {
+    testState.route.path = '/organizations/1/projects/10/board'
+    testState.route.params = { orgId: '1', projectId: '10' }
+    testState.route.query = { sprint: '101', view: 'compact' }
+    testState.route.meta = { title: '看板' }
+    testState.route.name = 'project-board'
+    apiMocks.getOrganizations.mockResolvedValue([
+      { id: 1, name: '龙腾团队' },
+      { id: 2, name: '北极星团队' },
+    ])
+    apiMocks.getOrganization.mockResolvedValue({
+      organization: { id: 1, name: '龙腾团队' },
+      projects: [
+        { id: 10, name: '支付平台' },
+        { id: 11, name: '消息中心' },
+      ],
+    })
+    apiMocks.getProject.mockResolvedValue({
+      project: { id: 10, name: '支付平台', organization_id: 1 },
+      active_sprint: { id: 101, name: '迭代 1' },
+      sprints: [
+        { id: 101, name: '迭代 1', status_label: '进行中' },
+        { id: 102, name: '迭代 2', status_label: '未开始' },
+      ],
+    })
+    const wrapper = mountShell()
+    await vi.waitFor(() => {
+      expect(wrapper.get('[data-testid="desktop-project-switcher"]').text()).toContain('支付平台')
+    })
+
+    const contextSwitchers = wrapper.findAllComponents(ContextBreadcrumbDropdown)
+    const organizationSwitcher = contextSwitchers.find(component => component.props('testId') === 'desktop-organization-switcher')
+    const projectSwitcher = contextSwitchers.find(component => component.props('testId') === 'desktop-project-switcher')
+    const sprintSwitcher = contextSwitchers.find(component => component.props('testId') === 'desktop-sprint-switcher')
+
+    organizationSwitcher?.vm.$emit('select', 2)
+    expect(testState.push).toHaveBeenLastCalledWith({
+      name: 'organization-detail',
+      params: { orgId: 2 },
+    })
+
+    projectSwitcher?.vm.$emit('select', 11)
+    expect(testState.push).toHaveBeenLastCalledWith({
+      name: 'project-board',
+      params: { orgId: 1, projectId: 11 },
+      query: {},
+    })
+
+    sprintSwitcher?.vm.$emit('select', 102)
+    expect(testState.push).toHaveBeenLastCalledWith({
+      query: { sprint: '102', view: 'compact' },
+    })
+  })
+
+  it('项目没有迭代时替换到迭代管理页', async () => {
+    testState.route.path = '/organizations/1/projects/10/board'
+    testState.route.params = { orgId: '1', projectId: '10' }
+    testState.route.query = {}
+    testState.route.meta = { title: '看板' }
+    testState.route.name = 'project-board'
+    apiMocks.getOrganizations.mockResolvedValue([{ id: 1, name: '龙腾团队' }])
+    apiMocks.getOrganization.mockResolvedValue({
+      organization: { id: 1, name: '龙腾团队' },
+      projects: [{ id: 10, name: '支付平台' }],
+    })
+    apiMocks.getProject.mockResolvedValue({
+      project: { id: 10, name: '支付平台', organization_id: 1 },
+      active_sprint: null,
+      sprints: [],
+    })
+
+    mountShell()
+
+    await vi.waitFor(() => {
+      expect(testState.replace).toHaveBeenCalledWith({
+        name: 'project-sprints',
+        params: { orgId: 1, projectId: 10 },
+      })
+    })
+  })
+
+  it('从组织进入项目时复用父层上下文，不让组织重新进入 loading', async () => {
+    testState.route.path = '/organizations/1'
+    testState.route.params = { orgId: '1' }
+    testState.route.query = {}
+    testState.route.meta = { title: '组织详情' }
+    testState.route.name = 'organization-detail'
+    apiMocks.getOrganizations.mockResolvedValue([{ id: 1, name: '龙腾团队' }])
+    apiMocks.getOrganization.mockResolvedValue({
+      organization: { id: 1, name: '龙腾团队' },
+      projects: [{ id: 10, name: '支付平台' }],
+    })
+    const wrapper = mountShell()
+    await vi.waitFor(() => {
+      expect(wrapper.get('[data-testid="desktop-organization-switcher"]').text()).toContain('龙腾团队')
+    })
+
+    let resolveProject!: (value: unknown) => void
+    apiMocks.getProject.mockReturnValue(new Promise((resolve) => {
+      resolveProject = resolve
+    }))
+    routeState.path = '/organizations/1/projects/10/sprints'
+    routeState.params = { orgId: '1', projectId: '10' }
+    routeState.query = {}
+    routeState.meta = { title: '全部迭代' }
+    routeState.name = 'project-sprints'
+
+    await vi.waitFor(() => {
+      expect(apiMocks.getProject).toHaveBeenCalledWith(10)
+    })
+
+    expect(apiMocks.getOrganizations).toHaveBeenCalledTimes(1)
+    expect(apiMocks.getOrganization).toHaveBeenCalledTimes(1)
+    expect(wrapper.get('[data-testid="desktop-organization-switcher"]').text()).toContain('龙腾团队')
+    expect(wrapper.get('[data-testid="desktop-organization-switcher"]').text()).not.toContain('加载中')
+
+    resolveProject({
+      project: { id: 10, name: '支付平台', organization_id: 1 },
+      active_sprint: null,
+      sprints: [],
+    })
   })
 })

@@ -12,14 +12,18 @@ import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import ProjectDialog from '@/components/business/project-dialog.vue'
 import TeamDialog from '@/components/business/team-dialog.vue'
+import { useNavigationContextCache } from '@/shared/navigation-context-cache'
 import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const navigationContextCache = useNavigationContextCache()
 const organizationId = computed(() => Number(route.params.orgId))
-const data = ref<OrganizationDetails | null>(null)
-const loading = ref(true)
+const data = ref<OrganizationDetails | null>(
+  navigationContextCache?.organizationDetails.get(organizationId.value) || null,
+)
+const loading = ref(!data.value)
 const search = ref('')
 const teamFilter = ref<number | ''>('')
 const projectDialogOpen = ref(false)
@@ -42,10 +46,12 @@ watch(teamFilter, (value) => {
     localStorage.removeItem(storageKey.value)
 })
 
-async function load() {
-  loading.value = true
+async function load(force = false) {
+  loading.value = !data.value
   try {
-    const result = await getOrganization(organizationId.value)
+    const result = navigationContextCache
+      ? await navigationContextCache.loadOrganization(organizationId.value, force)
+      : await getOrganization(organizationId.value)
     data.value = result
     const saved = Number(localStorage.getItem(storageKey.value))
     teamFilter.value = result.teams.some(team => team.id === saved) ? saved : ''
@@ -77,7 +83,7 @@ async function removeProject(project: Project) {
     )
     await deleteProject(project.id)
     ElMessage.success('项目已删除')
-    await load()
+    await load(true)
   }
   catch (error) {
     if (error === 'cancel' || error === 'close')
@@ -192,8 +198,8 @@ onMounted(load)
       :organization-id="organizationId"
       :teams="data.teams"
       :project="editingProject"
-      @saved="load"
+      @saved="load(true)"
     />
-    <TeamDialog v-model="teamDialogOpen" :organization-id="organizationId" @saved="load" />
+    <TeamDialog v-model="teamDialogOpen" :organization-id="organizationId" @saved="load(true)" />
   </div>
 </template>
