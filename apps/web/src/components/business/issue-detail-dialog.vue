@@ -14,6 +14,7 @@ import type { Issue, Requirement, User, WorkLog } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
 import StatusTag from '@/components/status-tag.vue'
 import WorklogForm from './worklog-form.vue'
+import WorklogList from './worklog-list.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -207,21 +208,7 @@ async function removeWorklog(log: WorkLog) {
         </el-tab-pane>
         <el-tab-pane :label="`工时 (${workLogs.length})`" name="time">
           <WorklogForm @submit="addWorklog" />
-          <div class="mt-[17px]">
-            <article v-for="log in workLogs" :key="log.id" class="flex min-h-16 items-center justify-between gap-3 border-b border-[var(--pc-border-soft)] py-2.5">
-              <div class="flex flex-col items-start gap-0.5">
-                <strong class="text-sm font-semibold">{{ log.user_name }}</strong>
-                <span class="text-[13px] text-[var(--pc-text-secondary)]">{{ log.date }} · {{ log.description || '无说明' }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <b class="text-sm font-semibold">{{ log.hours }}h</b>
-                <el-button v-if="log.can_delete" circle text type="danger" data-testid="delete-worklog-button" aria-label="删除这条工时记录" @click="removeWorklog(log)">
-                  <el-icon><Delete /></el-icon>
-                </el-button>
-              </div>
-            </article>
-            <el-empty v-if="!workLogs.length" description="还没有工时记录" :image-size="64" />
-          </div>
+          <WorklogList class="mt-[17px]" :logs="workLogs" @delete="removeWorklog" />
         </el-tab-pane>
       </el-tabs>
     </div>

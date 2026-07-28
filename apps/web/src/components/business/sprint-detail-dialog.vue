@@ -15,6 +15,7 @@ import type { Requirement, Sprint, User, WorkLog } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
 import StatusTag from '@/components/status-tag.vue'
 import WorklogForm from './worklog-form.vue'
+import WorklogList from './worklog-list.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -231,16 +232,11 @@ async function remove() {
         </el-tab-pane>
         <el-tab-pane :label="`工时 (${workLogs.length})`" name="time">
           <WorklogForm @submit="addWorklog" />
-          <div class="mt-[17px]">
-            <article v-for="log in workLogs" :key="log.id" class="flex min-h-[58px] items-center justify-between border-b border-[var(--pc-border-soft)] py-2">
-              <div class="flex flex-col">
-                <strong class="text-sm">{{ log.user_name }}</strong>
-                <span class="text-xs text-[var(--pc-text-secondary)]">{{ log.date }} · {{ log.description || '无说明' }}</span>
-              </div>
-              <b class="text-sm">{{ log.hours }}h</b>
-            </article>
-            <el-empty v-if="!workLogs.length" :image-size="64" description="还没有迭代工时" />
-          </div>
+          <WorklogList
+            class="mt-[17px]"
+            :logs="workLogs"
+            empty-description="还没有迭代工时"
+          />
         </el-tab-pane>
       </el-tabs>
     </div>

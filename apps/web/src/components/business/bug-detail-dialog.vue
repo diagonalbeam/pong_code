@@ -16,6 +16,7 @@ import AppDialog from '@/components/app-dialog.vue'
 import StatusTag from '@/components/status-tag.vue'
 import { bugStatusLabels } from '@/shared/bug'
 import WorklogForm from './worklog-form.vue'
+import WorklogList from './worklog-list.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -286,10 +287,10 @@ async function removeWorklog(log: WorkLog) {
               </el-button>
             </el-form>
 
-            <div class="mt-[17px] grid gap-3">
-              <article v-for="evidence in evidences" :key="evidence.id" class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] p-[17px]">
+            <div class="mt-[17px]">
+              <article v-for="evidence in evidences" :key="evidence.id" class="border-b border-[var(--pc-border-soft)] py-4">
                 <header class="flex items-center justify-between gap-3">
-                  <strong class="text-sm">{{ evidence.creator_name || '未知用户' }}</strong>
+                  <strong class="text-sm text-[var(--pc-text)]">{{ evidence.creator_name || '未知用户' }}</strong>
                   <time class="text-xs text-[var(--pc-text-muted)]">{{ evidence.created_at?.replace('T', ' ').slice(0, 16) }}</time>
                 </header>
                 <p v-if="evidence.comment" class="mt-3 mb-0 whitespace-pre-wrap">
@@ -321,21 +322,12 @@ async function removeWorklog(log: WorkLog) {
 
         <el-tab-pane :label="`工时 (${workLogs.length})`" name="time">
           <WorklogForm @submit="addWorklog" />
-          <div class="mt-[17px]">
-            <article v-for="log in workLogs" :key="log.id" class="flex min-h-16 items-center justify-between gap-3 border-b border-[var(--pc-border-soft)] py-2.5">
-              <div class="flex flex-col items-start gap-0.5">
-                <strong class="text-sm font-semibold">{{ log.user_name }}</strong>
-                <span class="text-[13px] text-[var(--pc-text-secondary)]">{{ log.date }} · {{ log.description || '无说明' }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <b class="text-sm font-semibold">{{ log.hours }}h</b>
-                <el-button v-if="log.can_delete" circle text type="danger" data-testid="delete-bug-worklog-button" @click="removeWorklog(log)">
-                  <el-icon><Delete /></el-icon>
-                </el-button>
-              </div>
-            </article>
-            <el-empty v-if="!workLogs.length" :image-size="64" description="还没有工时记录" />
-          </div>
+          <WorklogList
+            class="mt-[17px]"
+            :logs="workLogs"
+            delete-test-id="delete-bug-worklog-button"
+            @delete="removeWorklog"
+          />
         </el-tab-pane>
       </el-tabs>
     </div>

@@ -39,7 +39,14 @@ function submit() {
       </el-form-item>
     </div>
     <el-form-item label="说明">
-      <el-input v-model="form.description" type="textarea" :rows="2" maxlength="255" />
+      <el-input
+        v-model="form.description"
+        type="textarea"
+        :rows="3"
+        maxlength="200"
+        show-word-limit
+        placeholder="输入说明（可选）"
+      />
     </el-form-item>
     <el-button type="primary" native-type="button" :loading="submitting" @click="submit">
       {{ props.submitLabel }}
