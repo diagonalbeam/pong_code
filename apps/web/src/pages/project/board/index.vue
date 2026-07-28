@@ -59,7 +59,9 @@ const router = useRouter()
 const auth = useAuthStore()
 const { projectId, organizationId, details, loadProject } = useProjectContext()
 const loading = ref(true)
+const refreshing = ref(false)
 const board = ref<BoardResponse | null>(null)
+const boardViewKey = ref(0)
 const users = ref<User[]>([])
 const requirements = ref<Requirement[]>([])
 const selectedSprintId = ref<number | null>(null)
@@ -134,6 +136,29 @@ async function loadBoard(sprintId = selectedSprintId.value) {
     readCollapsed()
     if (String(route.query.sprint || '') !== String(result.sprint.id))
       await router.replace({ query: { ...route.query, sprint: String(result.sprint.id) } })
+  }
+}
+
+async function refreshBoard() {
+  if (loading.value || refreshing.value)
+    return
+
+  refreshing.value = true
+  try {
+    const [people, requirementList] = await Promise.all([
+      getUsers(),
+      getRequirements(projectId.value),
+    ])
+    users.value = people
+    requirements.value = requirementList
+    await loadBoard(selectedSprintId.value || undefined)
+    boardViewKey.value += 1
+  }
+  catch (error) {
+    ElMessage.error(apiErrorMessage(error, '刷新看板失败'))
+  }
+  finally {
+    refreshing.value = false
   }
 }
 
@@ -419,8 +444,8 @@ watch(
                   @change="toggleHideCompleted(Boolean($event))"
                 />
               </label>
-              <el-button :loading="loading" @click="loadBoard()">
-                <el-icon><Refresh /></el-icon>刷新
+              <el-button :disabled="refreshing" data-testid="board-refresh-button" @click="refreshBoard">
+                <el-icon :class="{ 'animate-spin': refreshing }"><Refresh /></el-icon>刷新
               </el-button>
               <el-dropdown split-button type="primary" data-testid="create-issue-button" @click="createIssue()" @command="createBugOpen = true">
                 <el-icon><Plus /></el-icon>新建任务
@@ -440,7 +465,7 @@ watch(
           </div>
         </section>
 
-        <div class="grid gap-4">
+        <div :key="boardViewKey" class="grid gap-4">
           <article
             v-for="lane in swimlanes"
             :key="laneId(lane)"
@@ -481,13 +506,13 @@ watch(
               </el-button>
             </header>
 
-            <div v-if="!collapsed.has(laneId(lane))" class="grid grid-cols-[repeat(3,minmax(260px,1fr))] gap-3 overflow-x-auto pt-1 pb-1">
+            <div v-if="!collapsed.has(laneId(lane))" class="grid grid-cols-[repeat(3,minmax(260px,1fr))] items-stretch gap-3 overflow-x-auto pt-1 pb-1">
               <section
                 v-for="column in statusColumns"
                 :key="column.value"
-                class="rounded-[var(--pc-radius-card)] bg-[var(--pc-surface-soft)] p-2.5"
+                class="flex min-h-0 flex-col rounded-[var(--pc-radius-card)] bg-[var(--pc-surface-soft)] p-2.5"
               >
-                <header class="flex min-h-[30px] items-center gap-[7px] px-1">
+                <header class="flex min-h-[30px] shrink-0 items-center gap-[7px] px-1">
                   <span
                     class="h-2 w-2 rounded-full bg-[var(--pc-text-muted)] data-[status=doing]:bg-[var(--pc-action)] data-[status=done]:bg-[var(--pc-success)]"
                     :data-status="column.value"
@@ -496,6 +521,7 @@ watch(
                   <small class="text-[11px] text-[var(--pc-text-muted)]">{{ lane[column.value].length }}</small>
                 </header>
                 <SortableBoardColumn
+                  class="min-h-0 flex-1"
                   :status="column.value"
                   :lane-id="laneId(lane)"
                   :lane-options="laneOptions"

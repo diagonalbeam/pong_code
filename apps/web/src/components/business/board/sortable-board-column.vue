@@ -93,7 +93,7 @@ onMounted(() => {
     group: 'pongcode-board',
     draggable: '[data-board-item]',
     handle: '[data-board-item]',
-    filter: '[data-card-action]',
+    filter: '[data-card-action], [data-board-column-placeholder]',
     preventOnFilter: false,
     animation: 220,
     easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
@@ -104,7 +104,7 @@ onMounted(() => {
     forceFallback: true,
     fallbackOnBody: true,
     fallbackTolerance: 3,
-    emptyInsertThreshold: 24,
+    emptyInsertThreshold: 80,
     delayOnTouchOnly: true,
     delay: 180,
     touchStartThreshold: 4,
@@ -128,7 +128,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
   <div
     ref="root"
     data-testid="board-column"
-    class="flex min-h-[92px] flex-col gap-2 p-1"
+    class="flex h-full min-h-[120px] flex-col gap-2 p-1"
     :data-status="status"
     :data-lane-id="laneId"
     :aria-label="`${status} 工作项列表`"
@@ -220,10 +220,18 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
       </article>
     </template>
 
-    <div v-if="hideItems && items.length" class="grid min-h-[76px] place-items-center text-xs text-[var(--pc-text-muted)]">
+    <div
+      v-if="hideItems && items.length"
+      data-board-column-placeholder
+      class="grid min-h-[76px] flex-1 place-items-center text-xs text-[var(--pc-text-muted)]"
+    >
       已隐藏 {{ items.length }} 项
     </div>
-    <div v-else-if="!items.length" class="grid min-h-[76px] place-items-center text-xs text-[var(--pc-text-muted)]">
+    <div
+      v-else-if="!items.length"
+      data-board-column-placeholder
+      class="grid min-h-[76px] flex-1 place-items-center text-xs text-[var(--pc-text-muted)]"
+    >
       暂无
     </div>
   </div>
