@@ -370,6 +370,10 @@
             transform: scale(1.05);
             cursor: grabbing;
         }
+        body.is-dragging * {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
 
         .requirement-batch-toolbar-fixed {
             position: fixed;

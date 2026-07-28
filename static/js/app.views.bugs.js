@@ -58,6 +58,26 @@
             5: 'bg-gray-100 text-gray-700 border-gray-300'
         };
 
+        const bugTypeLabels = {
+            functional: '功能问题', performance: '性能问题', api: '接口问题',
+            security: '安全问题', ui: 'UI 问题', compatibility: '兼容性问题',
+            usability: '易用性问题', config: '配置问题', data: '数据问题', requirement: '需求问题',
+        };
+        const priorityLabels = {
+            critical: '最高', high: '较高', normal: '普通', low: '较低', lowest: '最低',
+        };
+        const platformLabels = {
+            server: '服务端', h5: 'H5', android: 'Android', ios: 'IOS', harmony: '鸿蒙', pc_web: 'PCWeb端',
+        };
+        const discoveryPhaseLabels = {
+            smoke: '冒烟测试', round_1: '第一轮测试', round_2: '第二轮测试',
+            regression: '回归测试', acceptance: '验收阶段', integration: '组件（服务）集成测试阶段',
+            gray: '灰度阶段', production: '线上阶段',
+        };
+        const discoveryChannelLabels = {
+            user_feedback: '用户反馈', monitoring: '监控工具', log: '日志', sprint: '迭代发现',
+        };
+
         this.setMain(`
             <div class="max-w-7xl mx-auto p-8 space-y-6">
                 <!-- Header -->
@@ -208,6 +228,11 @@
                                         <span><i class="fa-solid fa-user mr-1"></i>报告者: ${bug.reporter_name || '未知'}</span>
                                         ${bug.assignee_name ? `<span class="text-purple-600"><i class="fa-solid fa-user-gear mr-1"></i>负责人: ${bug.assignee_name}</span>` : '<span class="text-orange-600"><i class="fa-solid fa-user-slash mr-1"></i>未分配</span>'}
                                         <span><i class="fa-solid fa-calendar mr-1"></i>创建于 ${new Date(bug.created_at).toLocaleDateString('zh-CN')}</span>
+                                        <span><i class="fa-solid fa-tag mr-1"></i>类型: ${bugTypeLabels[bug.bug_type] || '-'}</span>
+                                        <span><i class="fa-solid fa-flag mr-1"></i>优先级: ${priorityLabels[bug.priority] || '-'}</span>
+                                        <span><i class="fa-solid fa-desktop mr-1"></i>平台: ${platformLabels[bug.platform] || '-'}</span>
+                                        <span><i class="fa-solid fa-magnifying-glass-chart mr-1"></i>阶段: ${discoveryPhaseLabels[bug.discovery_phase] || '-'}</span>
+                                        ${bug.discovery_channel ? `<span><i class="fa-solid fa-comments mr-1"></i>渠道: ${discoveryChannelLabels[bug.discovery_channel] || bug.discovery_channel}</span>` : ''}
                                         ${bug.latest_stack_trace ? `<span class="text-gray-600"><i class="fa-solid fa-terminal mr-1"></i>含异常堆栈</span>` : ''}
                                         ${bug.sprint_name ? `<span class="text-indigo-600"><i class="fa-solid fa-rotate mr-1"></i>${bug.sprint_name}</span>` : ''}
                                         ${bug.requirement_title ? `<span class="text-blue-600"><i class="fa-solid fa-file-lines mr-1"></i>${bug.requirement_title}</span>` : ''}

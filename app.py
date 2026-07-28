@@ -70,6 +70,31 @@ def ensure_item_code_schema():
         db.session.commit()
 
 
+def ensure_bug_dict_schema():
+    """兼容历史数据库：补齐 bug 表新增的 5 个字典字段（必填字段带默认值）。"""
+    inspector = inspect(db.engine)
+    if 'bug' not in inspector.get_table_names():
+        return
+    existing_columns = {column['name'] for column in inspector.get_columns('bug')}
+    additions = [
+        ('bug_type', 'VARCHAR(32)', 'functional'),
+        ('priority', 'VARCHAR(16)', 'normal'),
+        ('platform', 'VARCHAR(32)', 'server'),
+        ('discovery_phase', 'VARCHAR(32)', 'round_1'),
+        ('discovery_channel', 'VARCHAR(32)', None),
+    ]
+    changed = False
+    for column_name, column_type, default_value in additions:
+        if column_name not in existing_columns:
+            default_clause = 'NULL' if default_value is None else f"'{default_value}'"
+            db.session.execute(text(
+                f"ALTER TABLE bug ADD COLUMN {column_name} {column_type} DEFAULT {default_clause}"
+            ))
+            changed = True
+    if changed:
+        db.session.commit()
+
+
 def create_app():
     app = Flask(__name__, static_folder='static', static_url_path='/static')
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-this')
@@ -90,6 +115,10 @@ def create_app():
     app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'no-reply@pongcode.local')
     app.config['RESET_TOKEN_MAX_AGE'] = int(os.getenv('RESET_TOKEN_MAX_AGE', '3600'))
     app.config['APP_BASE_URL']        = os.getenv('APP_BASE_URL', 'http://localhost:5000')
+
+    # 外部开放接口（OAuth2 client_credentials）
+    app.config['JWT_SECRET']    = os.getenv('JWT_SECRET', 'dev-jwt-secret-change-this')
+    app.config['OAUTH_CLIENTS'] = os.getenv('OAUTH_CLIENTS', '[{"client_id":"poseidon","client_secret":"poseidon-pongcode-secret"}]')
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -132,6 +161,7 @@ def create_app():
         ensure_bug_evidence_schema()
         ensure_project_team_schema()
         ensure_item_code_schema()
+        ensure_bug_dict_schema()
 
     return app
 
