@@ -16,6 +16,64 @@
         return normalized.startsWith('/static/') ? normalized : '#';
     }
 
+    // Bug 字典字段（需与后端 models.py 中 BUG_TYPE_LABELS 等保持一致）
+    const BUG_TYPE_LABELS = {
+        functional: '功能问题',
+        performance: '性能问题',
+        api: '接口问题',
+        security: '安全问题',
+        ui: 'UI 问题',
+        compatibility: '兼容性问题',
+        usability: '易用性问题',
+        config: '配置问题',
+        data: '数据问题',
+        requirement: '需求问题',
+    };
+    const PRIORITY_LABELS = {
+        critical: '最高',
+        high: '较高',
+        normal: '普通',
+        low: '较低',
+        lowest: '最低',
+    };
+    const PLATFORM_LABELS = {
+        server: '服务端',
+        h5: 'H5',
+        android: 'Android',
+        ios: 'IOS',
+        harmony: '鸿蒙',
+        pc_web: 'PCWeb端',
+    };
+    const DISCOVERY_PHASE_LABELS = {
+        smoke: '冒烟测试',
+        round_1: '第一轮测试',
+        round_2: '第二轮测试',
+        regression: '回归测试',
+        acceptance: '验收阶段',
+        integration: '组件（服务）集成测试阶段',
+        gray: '灰度阶段',
+        production: '线上阶段',
+    };
+    const DISCOVERY_CHANNEL_LABELS = {
+        user_feedback: '用户反馈',
+        monitoring: '监控工具',
+        log: '日志',
+        sprint: '迭代发现',
+    };
+
+    function renderSelectOptions(labels, selectedValue, { placeholder = '' } = {}) {
+        let html = placeholder !== null ? `<option value="">${escapeHtml(placeholder)}</option>` : '';
+        for (const [value, label] of Object.entries(labels)) {
+            const sel = String(selectedValue) === value ? 'selected' : '';
+            html += `<option value="${value}" ${sel}>${escapeHtml(label)}</option>`;
+        }
+        return html;
+    }
+
+    function labelOf(labels, value, fallback = '-') {
+        return labels[value] ?? fallback;
+    }
+
     const DEFAULT_BUG_STEPS_TEMPLATE = `【复现环境】
 浏览器/系统：
 账号：
@@ -176,6 +234,38 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">缺陷类型 <span class="text-red-500">*</span></label>
+                                <select name="bug_type" required class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(BUG_TYPE_LABELS, '', { placeholder: '请选择' })}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">优先级 <span class="text-red-500">*</span></label>
+                                <select name="priority" required class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(PRIORITY_LABELS, '', { placeholder: '请选择' })}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">缺陷平台 <span class="text-red-500">*</span></label>
+                                <select name="platform" required class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(PLATFORM_LABELS, '', { placeholder: '请选择' })}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">发现阶段 <span class="text-red-500">*</span></label>
+                                <select name="discovery_phase" required class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(DISCOVERY_PHASE_LABELS, '', { placeholder: '请选择' })}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">发现渠道</label>
+                                <select name="discovery_channel" class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(DISCOVERY_CHANNEL_LABELS, '', { placeholder: '请选择（可选）' })}
+                                </select>
+                            </div>
+                        </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">复现步骤</label>
                             <textarea name="steps_to_reproduce" data-bug-steps-template="1" rows="14" style="min-height: 19rem;" class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-3 px-4 text-sm placeholder-gray-400 transition-all resize-y">${escapeHtml(DEFAULT_BUG_STEPS_TEMPLATE)}</textarea>
@@ -322,6 +412,31 @@
                 </div>
 
                 <div class="space-y-5">
+                    <div class="bg-white rounded-xl p-4 border border-gray-200">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-3 text-sm">
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">缺陷类型</div>
+                                <div class="font-medium text-gray-900">${escapeHtml(labelOf(BUG_TYPE_LABELS, bug.bug_type))}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">优先级</div>
+                                <div class="font-medium text-gray-900">${escapeHtml(labelOf(PRIORITY_LABELS, bug.priority))}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">缺陷平台</div>
+                                <div class="font-medium text-gray-900">${escapeHtml(labelOf(PLATFORM_LABELS, bug.platform))}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">发现阶段</div>
+                                <div class="font-medium text-gray-900">${escapeHtml(labelOf(DISCOVERY_PHASE_LABELS, bug.discovery_phase))}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">发现渠道</div>
+                                <div class="font-medium text-gray-900">${bug.discovery_channel ? escapeHtml(labelOf(DISCOVERY_CHANNEL_LABELS, bug.discovery_channel)) : '<span class="text-gray-400">未填写</span>'}</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
                         <h4 class="text-sm font-bold text-gray-700 mb-2">缺陷描述</h4>
                         <p class="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">${safeDescription}</p>
@@ -487,6 +602,38 @@
                                     <option value="fixed" ${bug.status === 'fixed' || bug.status === 'resolved' ? 'selected' : ''}>已修复</option>
                                     <option value="closed" ${bug.status === 'closed' ? 'selected' : ''}>已验证</option>
                                     <option value="rejected" ${bug.status === 'rejected' ? 'selected' : ''}>已拒绝</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">缺陷类型 <span class="text-red-500">*</span></label>
+                                <select name="bug_type" required class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(BUG_TYPE_LABELS, bug.bug_type || '', { placeholder: '请选择' })}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">优先级 <span class="text-red-500">*</span></label>
+                                <select name="priority" required class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(PRIORITY_LABELS, bug.priority || '', { placeholder: '请选择' })}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">缺陷平台 <span class="text-red-500">*</span></label>
+                                <select name="platform" required class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(PLATFORM_LABELS, bug.platform || '', { placeholder: '请选择' })}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">发现阶段 <span class="text-red-500">*</span></label>
+                                <select name="discovery_phase" required class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(DISCOVERY_PHASE_LABELS, bug.discovery_phase || '', { placeholder: '请选择' })}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">发现渠道</label>
+                                <select name="discovery_channel" class="block w-full rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring-0 py-2.5 px-4 text-sm bg-white">
+                                    ${renderSelectOptions(DISCOVERY_CHANNEL_LABELS, bug.discovery_channel || '', { placeholder: '请选择（可选）' })}
                                 </select>
                             </div>
                         </div>
