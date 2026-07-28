@@ -16,6 +16,11 @@ from models import (
     BugWorkLog,
     Project,
     organization_members,
+    BUG_TYPE_LABELS,
+    PRIORITY_LABELS,
+    PLATFORM_LABELS,
+    DISCOVERY_PHASE_LABELS,
+    DISCOVERY_CHANNEL_LABELS,
 )
 from routes.input_utils import parse_nullable_int, parse_int, parse_float, parse_date
 from routes.item_codes import allocate_item_code
@@ -26,6 +31,25 @@ ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 MAX_EVIDENCE_IMAGE_COUNT = 5
 MAX_EVIDENCE_IMAGE_SIZE = 5 * 1024 * 1024
 BUG_STATUSES = {'open', 'in_progress', 'fixed', 'closed', 'rejected'}
+BUG_DICT_FIELDS = {
+    'bug_type': BUG_TYPE_LABELS,
+    'priority': PRIORITY_LABELS,
+    'platform': PLATFORM_LABELS,
+    'discovery_phase': DISCOVERY_PHASE_LABELS,
+    'discovery_channel': DISCOVERY_CHANNEL_LABELS,
+}
+
+
+def _validate_bug_dict_field(name, value, required=True):
+    """校验 bug 字典字段：必填 + 枚举值合法。返回 (value, error_msg)。"""
+    if value is None or value == '':
+        if required:
+            return None, f'{name} 为必填项'
+        return None, None
+    allowed = BUG_DICT_FIELDS[name]
+    if value not in allowed:
+        return None, f'无效的 {name} 值'
+    return value, None
 
 
 def _normalize_bug_status(status):
@@ -224,6 +248,21 @@ def create_bug(project_id):
         status = _parse_bug_status(data.get('status', 'open'))
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
+    bug_type, err = _validate_bug_dict_field('bug_type', data.get('bug_type') or 'functional')
+    if err:
+        return jsonify({'error': err}), 400
+    priority, err = _validate_bug_dict_field('priority', data.get('priority') or 'normal')
+    if err:
+        return jsonify({'error': err}), 400
+    platform, err = _validate_bug_dict_field('platform', data.get('platform') or 'server')
+    if err:
+        return jsonify({'error': err}), 400
+    discovery_phase, err = _validate_bug_dict_field('discovery_phase', data.get('discovery_phase') or 'round_1')
+    if err:
+        return jsonify({'error': err}), 400
+    discovery_channel, err = _validate_bug_dict_field('discovery_channel', data.get('discovery_channel'), required=False)
+    if err:
+        return jsonify({'error': err}), 400
     item_code, sprint_error = allocate_item_code(sprint_id, project_id)
     if sprint_error:
         return jsonify({'error': sprint_error}), 404
@@ -232,6 +271,11 @@ def create_bug(project_id):
         description=data['description'],
         severity=severity,
         status=status,
+        bug_type=bug_type,
+        priority=priority,
+        platform=platform,
+        discovery_phase=discovery_phase,
+        discovery_channel=discovery_channel,
         steps_to_reproduce=data.get('steps_to_reproduce'),
         expected_result=data.get('expected_result'),
         actual_result=data.get('actual_result'),
@@ -305,6 +349,12 @@ def update_bug(bug_id):
         bug.actual_result = data['actual_result']
     if 'environment' in data:
         bug.environment = data['environment']
+    for dict_field in BUG_DICT_FIELDS:
+        if dict_field in data:
+            value, err = _validate_bug_dict_field(dict_field, data[dict_field], required=False)
+            if err:
+                return jsonify({'error': err}), 400
+            setattr(bug, dict_field, value)
     if 'time_estimate' in data:
         try:
             bug.time_estimate = parse_float(data['time_estimate'], 'time_estimate', default=0)
