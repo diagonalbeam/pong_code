@@ -13,6 +13,7 @@ import {
 import { apiErrorMessage } from '@/api/client'
 import type { Bug, BugEvidence, Requirement, Sprint, User, WorkLog } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import ScreenshotUpload from '@/components/screenshot-upload.vue'
 import StatusTag from '@/components/status-tag.vue'
 import { bugStatusLabels } from '@/shared/bug'
 import WorklogForm from './worklog-form.vue'
@@ -133,10 +134,6 @@ async function remove() {
       return
     ElMessage.error(apiErrorMessage(error, '删除缺陷失败'))
   }
-}
-
-function onFiles(event: Event) {
-  evidenceFiles.value = Array.from((event.target as HTMLInputElement).files || []).slice(0, 5)
 }
 
 async function addEvidence() {
@@ -279,8 +276,8 @@ async function removeWorklog(log: WorkLog) {
               <el-form-item label="异常堆栈">
                 <el-input v-model="evidenceForm.stack_trace" data-testid="add-bug-evidence-stack-input" data-stack-input type="textarea" :rows="7" />
               </el-form-item>
-              <el-form-item label="截图（最多 5 张，每张不超过 5MB）">
-                <input class="max-w-full text-sm text-[var(--pc-text-secondary)]" data-testid="add-bug-evidence-file-input" type="file" multiple accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" @change="onFiles">
+              <el-form-item label="截图">
+                <ScreenshotUpload v-model="evidenceFiles" test-id="add-bug-evidence-file-input" />
               </el-form-item>
               <el-button type="primary" data-testid="add-bug-evidence-submit-button" :loading="evidenceSubmitting" @click="addEvidence">
                 添加证据

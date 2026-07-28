@@ -5,6 +5,7 @@ import { addBugEvidence, createBug } from '@/api/bugs'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint, User } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import ScreenshotUpload from '@/components/screenshot-upload.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -56,11 +57,6 @@ watch(() => props.modelValue, (open) => {
   })
   files.value = []
 })
-
-function onFileChange(event: Event) {
-  const input = event.target as HTMLInputElement
-  files.value = Array.from(input.files || []).slice(0, 5)
-}
 
 async function submit() {
   if (!form.title.trim() || !form.description.trim()) {
@@ -156,8 +152,8 @@ async function submit() {
       <el-form-item label="异常堆栈">
         <el-input v-model="form.evidence_stack_trace" data-stack-input type="textarea" :rows="5" />
       </el-form-item>
-      <el-form-item label="截图（最多 5 张，每张不超过 5MB）">
-        <input class="max-w-full text-sm text-[var(--pc-text-secondary)]" type="file" multiple accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" @change="onFileChange">
+      <el-form-item label="截图">
+        <ScreenshotUpload v-model="files" />
       </el-form-item>
     </el-form>
     <template #footer>
