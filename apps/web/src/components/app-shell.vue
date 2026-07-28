@@ -830,11 +830,4 @@ async function logout() {
   transform: none;
 }
 
-.pc-mobile-context-row {
-  scrollbar-width: none;
-}
-
-.pc-mobile-context-row::-webkit-scrollbar {
-  display: none;
-}
 </style>
