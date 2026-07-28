@@ -8,6 +8,7 @@ import { getUsers } from '@/api/users'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatusTag from '@/components/status-tag.vue'
 import SprintDialog from '@/components/business/sprint-dialog.vue'
@@ -103,8 +104,9 @@ onMounted(load)
         <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-md:ml-0">{{ filtered.length }} 个迭代</span>
       </div>
 
-      <div v-loading="loading" class="pc-data-panel max-md:border-0">
-        <div v-if="filtered.length" data-testid="desktop-table" class="max-md:hidden">
+      <div class="pc-data-panel max-md:border-0">
+        <LoadingSkeleton v-if="loading" variant="table" embedded />
+        <div v-else-if="filtered.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="filtered" @row-click="openBoard">
             <el-table-column prop="name" label="名称" min-width="220" show-overflow-tooltip />
             <el-table-column label="状态" width="110">
@@ -150,7 +152,7 @@ onMounted(load)
           </el-table>
         </div>
 
-        <div class="hidden gap-3 max-md:grid">
+        <div v-if="!loading" class="hidden gap-3 max-md:grid">
           <article v-for="sprint in filtered" :key="sprint.id" class="grid gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-3.5" role="button" tabindex="0" @click="openBoard(sprint)" @keydown.enter.self="openBoard(sprint)" @keydown.space.self.prevent="openBoard(sprint)">
             <header class="flex justify-between gap-3">
               <strong class="text-[15px] font-semibold">{{ sprint.name }}</strong>

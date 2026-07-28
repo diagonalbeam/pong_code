@@ -7,6 +7,7 @@ import { getOrganizationMembers } from '@/api/organizations'
 import { apiErrorMessage } from '@/api/client'
 import type { Organization, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
 
@@ -44,7 +45,7 @@ onMounted(load)
 <template>
   <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader :title="`${organization?.name || ''} · 组织成员`" :description="`共 ${members.length} 位成员`" />
-    <section v-loading="loading" class="min-h-60">
+    <section class="min-h-60">
       <div class="pc-filter-bar max-sm:flex-wrap">
         <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
           <el-input v-model="search" clearable placeholder="搜索成员">
@@ -57,7 +58,8 @@ onMounted(load)
           {{ filtered.length }} 位成员
         </span>
       </div>
-      <div v-if="filtered.length" class="pc-list-panel px-4">
+      <LoadingSkeleton v-if="loading" variant="list" />
+      <div v-else-if="filtered.length" class="pc-list-panel px-4">
         <article v-for="member in filtered" :key="member.id" class="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] py-2.5 last:border-b-0">
           <el-avatar :size="36" :style="getUserAvatarStyle(member.username)">
             {{ member.username.slice(0, 1).toUpperCase() }}
@@ -76,7 +78,7 @@ onMounted(load)
           </div>
         </article>
       </div>
-      <EmptyState v-else-if="!loading" title="没有匹配的成员" />
+      <EmptyState v-else title="没有匹配的成员" />
     </section>
   </div>
 </template>

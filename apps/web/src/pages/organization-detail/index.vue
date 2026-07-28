@@ -8,6 +8,7 @@ import { deleteProject } from '@/api/projects'
 import { apiErrorMessage } from '@/api/client'
 import type { OrganizationDetails, Project } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import ProjectDialog from '@/components/business/project-dialog.vue'
 import TeamDialog from '@/components/business/team-dialog.vue'
@@ -102,7 +103,7 @@ onMounted(load)
       </el-button>
     </PageHeader>
 
-    <section v-loading="loading" class="min-h-60">
+    <section class="min-h-60">
       <div class="pc-filter-bar max-sm:flex-wrap">
         <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
           <el-input v-model="search" clearable placeholder="搜索项目">
@@ -121,7 +122,8 @@ onMounted(load)
         </span>
       </div>
 
-      <div v-if="filteredProjects.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+      <LoadingSkeleton v-if="loading" variant="cards" />
+      <div v-else-if="filteredProjects.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
         <article
           v-for="project in filteredProjects"
           :key="project.id"
@@ -177,7 +179,7 @@ onMounted(load)
           </footer>
         </article>
       </div>
-      <EmptyState v-else-if="!loading" :title="data?.projects.length ? '没有匹配的项目' : '还没有项目'" :description="data?.projects.length ? '换一个团队或搜索关键词试试。' : '创建项目后开始规划迭代。'">
+      <EmptyState v-else :title="data?.projects.length ? '没有匹配的项目' : '还没有项目'" :description="data?.projects.length ? '换一个团队或搜索关键词试试。' : '创建项目后开始规划迭代。'">
         <el-button v-if="data?.can_manage_projects && !data.projects.length" type="primary" data-testid="create-project-empty-button" @click="createProject">
           创建项目
         </el-button>

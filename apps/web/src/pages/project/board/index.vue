@@ -24,6 +24,7 @@ import { getUsers } from '@/api/users'
 import { apiErrorMessage } from '@/api/client'
 import type { BoardItem, BoardResponse, Requirement, Sprint, Swimlane, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import StatusTag from '@/components/status-tag.vue'
 import BugDialog from '@/components/business/bug-dialog.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
@@ -316,7 +317,8 @@ watch(
 
 <template>
   <div class="w-full p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
-    <div v-loading="loading">
+    <LoadingSkeleton v-if="loading && !board" variant="board" />
+    <div v-else v-loading="loading">
       <EmptyState
         v-if="!loading && board && !board.has_sprint"
         title="暂无可用迭代"

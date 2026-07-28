@@ -8,6 +8,7 @@ import { apiErrorMessage } from '@/api/client'
 import type { Organization, Team, User } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
 import { useAuthStore } from '@/stores/auth'
@@ -110,7 +111,7 @@ onMounted(load)
         添加成员
       </el-button>
     </PageHeader>
-    <section v-loading="loading" class="min-h-60">
+    <section class="min-h-60">
       <div class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 text-sm text-[var(--pc-text-secondary)]">
         <span class="text-xs text-[var(--pc-text-muted)]">所属组织</span>
         <RouterLink v-if="organization" class="text-[var(--pc-action)] no-underline" :to="`/organizations/${organization.id}`">
@@ -118,7 +119,8 @@ onMounted(load)
         </RouterLink>
         <span class="ml-auto text-xs text-[var(--pc-text-muted)]">{{ members.length }} 位成员</span>
       </div>
-      <div v-if="members.length" class="pc-list-panel px-4">
+      <LoadingSkeleton v-if="loading" variant="list" />
+      <div v-else-if="members.length" class="pc-list-panel px-4">
         <article v-for="member in members" :key="member.id" class="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--pc-border-soft)] py-2.5 last:border-b-0">
           <el-avatar :size="36" :style="getUserAvatarStyle(member.username)">
             {{ member.username.slice(0, 1).toUpperCase() }}
@@ -132,7 +134,7 @@ onMounted(load)
           </el-tag>
         </article>
       </div>
-      <EmptyState v-else-if="!loading" title="团队还没有成员" />
+      <EmptyState v-else title="团队还没有成员" />
     </section>
 
     <AppDialog v-model="memberDialogOpen" title="添加团队成员" width="500px" :loading="submitting">

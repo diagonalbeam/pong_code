@@ -8,6 +8,7 @@ import { getUsers } from '@/api/users'
 import { apiErrorMessage } from '@/api/client'
 import type { Bug, Requirement, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import OverflowTooltip from '@/components/overflow-tooltip.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
@@ -132,8 +133,9 @@ onMounted(load)
         <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-lg:ml-0">{{ bugs.length }} 条缺陷</span>
       </div>
 
-      <div v-loading="loading" class="pc-data-panel max-md:border-0">
-        <div v-if="bugs.length" data-testid="desktop-table" class="max-md:hidden">
+      <div class="pc-data-panel max-md:border-0">
+        <LoadingSkeleton v-if="loading" variant="table" embedded />
+        <div v-else-if="bugs.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="bugs" @row-click="openBug">
             <el-table-column prop="item_code" label="编号" width="110">
               <template #default="{ row }">{{ row.item_code || `BUG-${row.id}` }}</template>
@@ -183,7 +185,7 @@ onMounted(load)
           </el-table>
         </div>
 
-        <div class="hidden gap-3 max-md:grid">
+        <div v-if="!loading" class="hidden gap-3 max-md:grid">
           <article v-for="item in bugs" :key="item.id" class="grid gap-2.5 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-3.5" role="button" tabindex="0" @click="openBug(item)" @keydown.enter.self="openBug(item)" @keydown.space.self.prevent="openBug(item)">
             <header class="flex items-center justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
               <span>{{ item.item_code || `BUG-${item.id}` }}</span>

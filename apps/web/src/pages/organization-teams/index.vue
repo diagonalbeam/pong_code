@@ -7,6 +7,7 @@ import { getOrganizationTeams } from '@/api/teams'
 import { apiErrorMessage } from '@/api/client'
 import type { Organization, Team } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import TeamDialog from '@/components/business/team-dialog.vue'
 
@@ -50,7 +51,7 @@ onMounted(load)
         <el-icon><Plus /></el-icon>创建团队
       </el-button>
     </PageHeader>
-    <section v-loading="loading" class="min-h-60">
+    <section class="min-h-60">
       <div class="pc-filter-bar max-sm:flex-wrap">
         <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
           <el-input v-model="search" clearable placeholder="搜索团队">
@@ -63,7 +64,8 @@ onMounted(load)
           {{ filtered.length }} 个团队
         </span>
       </div>
-      <div v-if="filtered.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+      <LoadingSkeleton v-if="loading" variant="cards" />
+      <div v-else-if="filtered.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
         <article
           v-for="team in filtered"
           :key="team.id"
@@ -92,7 +94,7 @@ onMounted(load)
           </footer>
         </article>
       </div>
-      <EmptyState v-else-if="!loading" :title="search ? '没有匹配的团队' : '还没有团队'">
+      <EmptyState v-else :title="search ? '没有匹配的团队' : '还没有团队'">
         <el-button v-if="!search" type="primary" data-testid="create-team-empty-button" @click="createOpen = true">
           创建团队
         </el-button>

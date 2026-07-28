@@ -6,6 +6,7 @@ import { deleteOrganization, getOrganizations } from '@/api/organizations'
 import { apiErrorMessage } from '@/api/client'
 import type { Organization } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import OrganizationActions from '@/components/business/organization-actions.vue'
 import OrganizationCard from '@/components/business/organization-card.vue'
@@ -63,7 +64,7 @@ onMounted(load)
     <PageHeader title="组织" description="查看、创建或加入协作组织。">
       <OrganizationActions ref="actions" @changed="load" />
     </PageHeader>
-    <section v-loading="loading" class="min-h-60">
+    <section class="min-h-60">
       <div class="pc-filter-bar max-sm:flex-wrap">
         <div class="w-full max-w-[360px] max-sm:max-w-none max-sm:basis-full">
           <el-input v-model="search" clearable placeholder="搜索组织" />
@@ -72,7 +73,8 @@ onMounted(load)
           {{ filtered.length }} 个组织
         </span>
       </div>
-      <div v-if="filtered.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+      <LoadingSkeleton v-if="loading" variant="cards" />
+      <div v-else-if="filtered.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
         <OrganizationCard
           v-for="organization in filtered"
           :key="organization.id"
@@ -82,7 +84,7 @@ onMounted(load)
           @remove="removeOrganization(organization)"
         />
       </div>
-      <EmptyState v-else-if="!loading" :title="search ? '没有匹配的组织' : '还没有组织'" :description="search ? '尝试使用其他关键词。' : '创建一个组织，或按准确名称加入已有组织。'">
+      <EmptyState v-else :title="search ? '没有匹配的组织' : '还没有组织'" :description="search ? '尝试使用其他关键词。' : '创建一个组织，或按准确名称加入已有组织。'">
         <div v-if="!search" class="flex gap-2">
           <el-button data-testid="join-org-empty-button" @click="actions?.openJoin()">
             加入组织

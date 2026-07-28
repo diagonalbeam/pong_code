@@ -7,6 +7,7 @@ import { deleteOrganization, getOrganizations } from '@/api/organizations'
 import { apiErrorMessage } from '@/api/client'
 import type { Organization } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
 import OrganizationActions from '@/components/business/organization-actions.vue'
@@ -86,28 +87,27 @@ onMounted(load)
         </RouterLink>
       </div>
 
-      <div v-loading="loading" class="min-h-60">
-        <div v-if="organizationPreview.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
-          <OrganizationCard
-            v-for="organization in organizationPreview"
-            :key="organization.id"
-            :organization="organization"
-            :can-delete="organization.owner_id === auth.user?.id"
-            @open="router.push(`/organizations/${organization.id}`)"
-            @remove="removeOrganization(organization)"
-          />
-        </div>
-        <EmptyState v-else-if="!loading" title="还没有组织" description="创建一个组织，或按准确名称加入已有组织。">
-          <div class="flex gap-2">
-            <el-button data-testid="join-org-empty-button" @click="actions?.openJoin()">
-              加入组织
-            </el-button>
-            <el-button type="primary" data-testid="create-org-empty-button" @click="actions?.openCreate()">
-              创建组织
-            </el-button>
-          </div>
-        </EmptyState>
+      <LoadingSkeleton v-if="loading" variant="cards" :rows="3" />
+      <div v-else-if="organizationPreview.length" class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+        <OrganizationCard
+          v-for="organization in organizationPreview"
+          :key="organization.id"
+          :organization="organization"
+          :can-delete="organization.owner_id === auth.user?.id"
+          @open="router.push(`/organizations/${organization.id}`)"
+          @remove="removeOrganization(organization)"
+        />
       </div>
+      <EmptyState v-else title="还没有组织" description="创建一个组织，或按准确名称加入已有组织。">
+        <div class="flex gap-2">
+          <el-button data-testid="join-org-empty-button" @click="actions?.openJoin()">
+            加入组织
+          </el-button>
+          <el-button type="primary" data-testid="create-org-empty-button" @click="actions?.openCreate()">
+            创建组织
+          </el-button>
+        </div>
+      </EmptyState>
     </section>
   </div>
 </template>

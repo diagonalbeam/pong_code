@@ -6,6 +6,7 @@ import { getRequirements, getRequirementStats } from '@/api/requirements'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import OverflowTooltip from '@/components/overflow-tooltip.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
@@ -110,8 +111,9 @@ onMounted(load)
         <span class="ml-auto shrink-0 text-xs text-[var(--pc-text-muted)] max-md:ml-0">{{ requirements.length }} 条需求</span>
       </div>
 
-      <div v-loading="loading" class="pc-data-panel max-md:border-0">
-        <div v-if="requirements.length" data-testid="desktop-table" class="max-md:hidden">
+      <div class="pc-data-panel max-md:border-0">
+        <LoadingSkeleton v-if="loading" variant="table" embedded />
+        <div v-else-if="requirements.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="requirements" @row-click="openRequirement">
             <el-table-column label="需求" min-width="300">
               <template #default="{ row }">
@@ -153,7 +155,7 @@ onMounted(load)
           </el-table>
         </div>
 
-        <div class="hidden gap-3 max-md:grid">
+        <div v-if="!loading" class="hidden gap-3 max-md:grid">
           <article v-for="item in requirements" :key="item.id" class="grid gap-2.5 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-3.5" role="button" tabindex="0" @click="openRequirement(item)" @keydown.enter.self="openRequirement(item)" @keydown.space.self.prevent="openRequirement(item)">
             <header class="flex justify-between gap-3">
               <span class="text-xs font-semibold text-[var(--pc-action)]">P{{ item.priority }}</span>

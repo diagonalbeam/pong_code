@@ -9,6 +9,7 @@ import { getUsers } from '@/api/users'
 import { getWorkbench } from '@/api/workbench'
 import { apiErrorMessage } from '@/api/client'
 import type { Bug, Issue, Requirement, Sprint, User, WorkbenchResponse } from '@/api/types'
+import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
@@ -126,11 +127,13 @@ onMounted(load)
       <StatCard label="待办缺陷" :value="data?.bugs.length || 0" hint="由我负责或报告的未终结缺陷" />
     </section>
 
-    <div v-loading="loading" class="grid grid-cols-[minmax(320px,0.85fr)_minmax(0,1.35fr)] gap-4 max-lg:grid-cols-1">
+    <div class="grid grid-cols-[minmax(320px,0.85fr)_minmax(0,1.35fr)] gap-4 max-lg:grid-cols-1">
       <section class="pc-section-panel p-4">
         <h2 class="mt-0 mb-3 text-lg font-semibold">我的待办</h2>
-        <div>
-          <h3 class="mt-4 mb-1.5 text-xs font-semibold text-[var(--pc-text-secondary)]">任务</h3>
+        <LoadingSkeleton v-if="loading" variant="list" embedded />
+        <template v-else>
+          <div>
+            <h3 class="mt-4 mb-1.5 text-xs font-semibold text-[var(--pc-text-secondary)]">任务</h3>
           <article
             v-for="task in data?.tasks || []"
             :key="task.id"
@@ -158,10 +161,10 @@ onMounted(load)
               </button>
             </div>
           </article>
-          <el-empty v-if="!data?.tasks.length" :image-size="64" description="没有待办任务" />
-        </div>
-        <div>
-          <h3 class="mt-4 mb-1.5 text-xs font-semibold text-[var(--pc-text-secondary)]">缺陷</h3>
+            <el-empty v-if="!data?.tasks.length" :image-size="64" description="没有待办任务" />
+          </div>
+          <div>
+            <h3 class="mt-4 mb-1.5 text-xs font-semibold text-[var(--pc-text-secondary)]">缺陷</h3>
           <article
             v-for="bug in data?.bugs || []"
             :key="bug.id"
@@ -186,15 +189,17 @@ onMounted(load)
               </button>
             </div>
           </article>
-          <el-empty v-if="!data?.bugs.length" :image-size="64" description="没有待办缺陷" />
-        </div>
+            <el-empty v-if="!data?.bugs.length" :image-size="64" description="没有待办缺陷" />
+          </div>
+        </template>
       </section>
 
       <section class="pc-data-panel">
         <header class="pc-panel-header">
           <h2>工时明细</h2>
         </header>
-        <div data-testid="desktop-table" class="max-md:hidden">
+        <LoadingSkeleton v-if="loading" variant="table" embedded />
+        <div v-else data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="data?.work_logs || []">
             <el-table-column prop="date" label="日期" width="112" />
             <el-table-column prop="item_title" label="工作项" min-width="180" show-overflow-tooltip />
@@ -211,7 +216,7 @@ onMounted(load)
             </el-table-column>
           </el-table>
         </div>
-        <div class="hidden gap-3 max-md:grid max-md:p-3">
+        <div v-if="!loading" class="hidden gap-3 max-md:grid max-md:p-3">
           <article v-for="log in data?.work_logs || []" :key="`${log.type}-${log.id}`" class="relative rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] p-3">
             <strong class="block pr-[52px] text-sm">{{ log.item_title }}</strong>
             <span class="mt-1 block pr-[52px] text-xs text-[var(--pc-text-secondary)]">{{ log.date }} · {{ log.project_name }}</span>
