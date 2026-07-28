@@ -15,7 +15,19 @@ import type { Bug, BugEvidence, Requirement, Sprint, User, WorkLog } from '@/api
 import AppDialog from '@/components/app-dialog.vue'
 import ScreenshotUpload from '@/components/screenshot-upload.vue'
 import StatusTag from '@/components/status-tag.vue'
-import { bugStatusLabels } from '@/shared/bug'
+import {
+  bugDiscoveryChannelLabels,
+  bugDiscoveryPhaseLabels,
+  bugPlatformLabels,
+  bugPriorityLabels,
+  bugStatusLabels,
+  bugTypeLabels,
+  type BugDiscoveryChannel,
+  type BugDiscoveryPhase,
+  type BugPlatform,
+  type BugPriority,
+  type BugType,
+} from '@/shared/bug'
 import WorklogForm from './worklog-form.vue'
 import WorklogList from './worklog-list.vue'
 
@@ -46,6 +58,11 @@ const form = reactive({
   description: '',
   severity: 3,
   status: 'open',
+  bug_type: 'functional' as BugType,
+  priority: 'normal' as BugPriority,
+  platform: 'server' as BugPlatform,
+  discovery_phase: 'round_1' as BugDiscoveryPhase,
+  discovery_channel: undefined as BugDiscoveryChannel | undefined,
   steps_to_reproduce: '',
   time_estimate: 0,
   assignee_id: undefined as number | undefined,
@@ -79,6 +96,11 @@ async function load() {
       description: result.bug.description,
       severity: result.bug.severity,
       status: result.bug.status === 'resolved' ? 'fixed' : result.bug.status,
+      bug_type: (result.bug.bug_type || 'functional') as BugType,
+      priority: (result.bug.priority || 'normal') as BugPriority,
+      platform: (result.bug.platform || 'server') as BugPlatform,
+      discovery_phase: (result.bug.discovery_phase || 'round_1') as BugDiscoveryPhase,
+      discovery_channel: (result.bug.discovery_channel || undefined) as BugDiscoveryChannel | undefined,
       steps_to_reproduce: result.bug.steps_to_reproduce || '',
       time_estimate: result.bug.time_estimate || 0,
       assignee_id: result.bug.assignee_id || undefined,
@@ -103,6 +125,7 @@ async function save() {
       ...form,
       title: form.title.trim(),
       description: form.description.trim(),
+      discovery_channel: form.discovery_channel || null,
       assignee_id: form.assignee_id || null,
       sprint_id: form.sprint_id || null,
       requirement_id: form.requirement_id || null,
@@ -202,7 +225,7 @@ async function removeWorklog(log: WorkLog) {
     :model-value="modelValue"
     title="缺陷详情"
     title-testid="bug-detail-title"
-    width="min(92vw, 820px)"
+    width="min(94vw, 984px)"
     :loading="loading || saving"
     :show-footer="tab === 'detail'"
     @update:model-value="emit('update:modelValue', $event)"
@@ -243,6 +266,31 @@ async function removeWorklog(log: WorkLog) {
               <el-form-item label="严重程度">
                 <el-select v-model="form.severity" class="w-full">
                   <el-option v-for="level in 5" :key="level" :label="`S${level}`" :value="level" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="缺陷类型" required>
+                <el-select v-model="form.bug_type" class="w-full">
+                  <el-option v-for="(label, value) in bugTypeLabels" :key="value" :label="label" :value="value" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="紧急程度" required>
+                <el-select v-model="form.priority" class="w-full">
+                  <el-option v-for="(label, value) in bugPriorityLabels" :key="value" :label="label" :value="value" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="缺陷平台" required>
+                <el-select v-model="form.platform" class="w-full">
+                  <el-option v-for="(label, value) in bugPlatformLabels" :key="value" :label="label" :value="value" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="发现阶段" required>
+                <el-select v-model="form.discovery_phase" class="w-full">
+                  <el-option v-for="(label, value) in bugDiscoveryPhaseLabels" :key="value" :label="label" :value="value" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="发现渠道">
+                <el-select v-model="form.discovery_channel" clearable class="w-full" placeholder="请选择（可选）">
+                  <el-option v-for="(label, value) in bugDiscoveryChannelLabels" :key="value" :label="label" :value="value" />
                 </el-select>
               </el-form-item>
               <el-form-item label="负责人">

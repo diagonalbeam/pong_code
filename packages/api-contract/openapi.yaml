@@ -740,3 +740,20 @@ components:
           type: number
         time_spent:
           type: number
+        bug_type:
+          type: string
+          enum: [functional, performance, api, security, ui, compatibility, usability, config, data, requirement]
+        priority:
+          type: string
+          enum: [critical, high, normal, low, lowest]
+        platform:
+          type: string
+          enum: [server, h5, android, ios, harmony, pc_web]
+        discovery_phase:
+          type: string
+          enum: [smoke, round_1, round_2, regression, acceptance, integration, gray, production]
+        discovery_channel:
+          type:
+            - string
+            - "null"
+          enum: [user_feedback, monitoring, log, sprint, null]

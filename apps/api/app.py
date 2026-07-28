@@ -187,7 +187,7 @@ def create_app():
     @app.route('/<path:path>')
     def web_history_fallback(path):
         """Vue Router History 回退，同时避免把未知 API 请求伪装成 HTML。"""
-        if path == 'api' or path.startswith(('api/', 'static/', 'assets/')):
+        if path == 'api' or path.startswith(('api/', 'static/', 'assets/', 'oauth/', 'external/')):
             abort(404)
         web_dist_dir = get_web_dist_dir()
         requested_file = os.path.join(web_dist_dir, path)

@@ -5,7 +5,7 @@ from flask_login import UserMixin
 from extensions import db, login_manager
 
 
-# Bug 字段字典（前后端共用，前端需在 app.modals.bug.js 维护同样一份）
+# Bug 字段字典（前后端共用）
 BUG_TYPE_LABELS = {
     'functional': '功能问题',
     'performance': '性能问题',
@@ -452,7 +452,7 @@ class Bug(db.Model):
     severity = db.Column(db.Integer, default=3)  # 1 (致命) to 5 (建议)
     status = db.Column(db.String(20), default='open')  # open, in_progress, fixed, closed (verified), rejected
     bug_type = db.Column(db.String(32), nullable=False, default='functional')  # 缺陷类型
-    priority = db.Column(db.String(16), nullable=False, default='normal')  # 优先级（与 severity 严重程度正交）
+    priority = db.Column(db.String(16), nullable=False, default='normal')  # 紧急程度（与 severity 严重程度正交）
     platform = db.Column(db.String(32), nullable=False, default='server')  # 缺陷平台
     discovery_phase = db.Column(db.String(32), nullable=False, default='round_1')  # 发现阶段
     discovery_channel = db.Column(db.String(32), nullable=True)  # 发现渠道（非必填）

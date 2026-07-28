@@ -6,6 +6,18 @@ import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint, User } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
 import ScreenshotUpload from '@/components/screenshot-upload.vue'
+import {
+  bugDiscoveryChannelLabels,
+  bugDiscoveryPhaseLabels,
+  bugPlatformLabels,
+  bugPriorityLabels,
+  bugTypeLabels,
+  type BugDiscoveryChannel,
+  type BugDiscoveryPhase,
+  type BugPlatform,
+  type BugPriority,
+  type BugType,
+} from '@/shared/bug'
 
 const props = defineProps<{
   modelValue: boolean
@@ -32,6 +44,11 @@ const form = reactive({
   description: '',
   severity: 3,
   status: 'open',
+  bug_type: 'functional' as BugType,
+  priority: 'normal' as BugPriority,
+  platform: 'server' as BugPlatform,
+  discovery_phase: 'round_1' as BugDiscoveryPhase,
+  discovery_channel: undefined as BugDiscoveryChannel | undefined,
   steps_to_reproduce: DEFAULT_STEPS,
   assignee_id: undefined as number | undefined,
   sprint_id: undefined as number | undefined,
@@ -48,6 +65,11 @@ watch(() => props.modelValue, (open) => {
     description: '',
     severity: 3,
     status: 'open',
+    bug_type: 'functional',
+    priority: 'normal',
+    platform: 'server',
+    discovery_phase: 'round_1',
+    discovery_channel: undefined,
     steps_to_reproduce: DEFAULT_STEPS,
     assignee_id: undefined,
     sprint_id: props.sprintId || undefined,
@@ -70,6 +92,11 @@ async function submit() {
       description: form.description.trim(),
       severity: form.severity,
       status: form.status,
+      bug_type: form.bug_type,
+      priority: form.priority,
+      platform: form.platform,
+      discovery_phase: form.discovery_phase,
+      discovery_channel: form.discovery_channel || null,
       steps_to_reproduce: form.steps_to_reproduce,
       assignee_id: form.assignee_id || null,
       sprint_id: form.sprint_id || null,
@@ -107,7 +134,7 @@ async function submit() {
   <AppDialog
     :model-value="modelValue"
     title="新建缺陷"
-    width="760px"
+    width="min(94vw, 912px)"
     :loading="submitting"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -122,6 +149,31 @@ async function submit() {
         <el-input v-model="form.steps_to_reproduce" type="textarea" :rows="7" resize="vertical" />
       </el-form-item>
       <div class="pc-form-grid grid grid-cols-2 max-sm:grid-cols-1">
+        <el-form-item label="缺陷类型" required>
+          <el-select v-model="form.bug_type" class="w-full">
+            <el-option v-for="(label, value) in bugTypeLabels" :key="value" :label="label" :value="value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="紧急程度" required>
+          <el-select v-model="form.priority" class="w-full">
+            <el-option v-for="(label, value) in bugPriorityLabels" :key="value" :label="label" :value="value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="缺陷平台" required>
+          <el-select v-model="form.platform" class="w-full">
+            <el-option v-for="(label, value) in bugPlatformLabels" :key="value" :label="label" :value="value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发现阶段" required>
+          <el-select v-model="form.discovery_phase" class="w-full">
+            <el-option v-for="(label, value) in bugDiscoveryPhaseLabels" :key="value" :label="label" :value="value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发现渠道">
+          <el-select v-model="form.discovery_channel" clearable class="w-full" placeholder="请选择（可选）">
+            <el-option v-for="(label, value) in bugDiscoveryChannelLabels" :key="value" :label="label" :value="value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="严重程度">
           <el-select v-model="form.severity" class="w-full">
             <el-option v-for="level in 5" :key="level" :label="`S${level}`" :value="level" />

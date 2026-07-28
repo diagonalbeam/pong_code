@@ -815,6 +815,16 @@ export interface components {
             evidence_count?: number;
             time_estimate?: number;
             time_spent?: number;
+            /** @enum {string} */
+            bug_type?: "functional" | "performance" | "api" | "security" | "ui" | "compatibility" | "usability" | "config" | "data" | "requirement";
+            /** @enum {string} */
+            priority?: "critical" | "high" | "normal" | "low" | "lowest";
+            /** @enum {string} */
+            platform?: "server" | "h5" | "android" | "ios" | "harmony" | "pc_web";
+            /** @enum {string} */
+            discovery_phase?: "smoke" | "round_1" | "round_2" | "regression" | "acceptance" | "integration" | "gray" | "production";
+            /** @enum {string|null} */
+            discovery_channel?: "user_feedback" | "monitoring" | "log" | "sprint" | null;
         };
     };
     responses: never;

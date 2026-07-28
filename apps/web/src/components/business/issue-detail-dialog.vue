@@ -156,7 +156,7 @@ async function removeWorklog(log: WorkLog) {
   <AppDialog
     :model-value="modelValue"
     title="任务详情"
-    width="min(92vw, 720px)"
+    width="min(94vw, 864px)"
     :loading="loading || saving"
     :show-footer="tab === 'detail'"
     @update:model-value="emit('update:modelValue', $event)"

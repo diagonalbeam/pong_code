@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MoreFilled, Plus, Search, Setting } from '@element-plus/icons-vue'
+import { Plus, Search, Setting } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -137,16 +137,16 @@ onMounted(load)
             <el-table-column label="工时" width="90">
               <template #default="{ row }">{{ row.time_spent }}h</template>
             </el-table-column>
-            <el-table-column label="操作" width="72" fixed="right" align="center">
+            <el-table-column label="操作" width="80" fixed="right" align="center">
               <template #default="{ row }">
-                <button
-                  type="button"
-                  class="mx-auto grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
-                  :aria-label="`编辑迭代 ${row.name}`"
+                <el-button
+                  link
+                  type="primary"
+                  data-testid="sprint-detail-action"
                   @click.stop="openSprint(row)"
                 >
-                  <el-icon><MoreFilled /></el-icon>
-                </button>
+                  详情
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -158,14 +158,13 @@ onMounted(load)
               <strong class="text-[15px] font-semibold">{{ sprint.name }}</strong>
               <div class="flex items-center gap-1">
                 <StatusTag :status="sprint.status" :label="sprint.status_label" />
-                <button
-                  type="button"
-                  class="grid h-8 w-8 place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
-                  :aria-label="`编辑迭代 ${sprint.name}`"
+                <el-button
+                  link
+                  type="primary"
                   @click.stop="openSprint(sprint)"
                 >
-                  <el-icon><MoreFilled /></el-icon>
-                </button>
+                  详情
+                </el-button>
               </div>
             </header>
             <el-progress :percentage="sprint.progress" :stroke-width="7" />

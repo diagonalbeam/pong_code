@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Clock, Edit, MoreFilled, WarningFilled } from '@element-plus/icons-vue'
+import { Clock, Document, Edit, MoreFilled, WarningFilled } from '@element-plus/icons-vue'
 import Sortable, { type SortableEvent } from 'sortablejs'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import type { BoardItem } from '@/api/types'
@@ -55,7 +55,7 @@ function emitMove(item: BoardItem, status: BoardStatus, laneId = props.laneId) {
   })
 }
 
-function onEnd(event: SortableEvent) {
+function handleSortEnd(event: SortableEvent) {
   const itemId = Number((event.item as HTMLElement).dataset.itemId)
   const itemType = (event.item as HTMLElement).dataset.itemType as 'task' | 'bug'
   const target = event.to as HTMLElement
@@ -108,11 +108,18 @@ onMounted(() => {
     delayOnTouchOnly: true,
     delay: 180,
     touchStartThreshold: 4,
-    onEnd,
+    onStart() {
+      document.body.classList.add('is-dragging')
+    },
+    onEnd(event) {
+      document.body.classList.remove('is-dragging')
+      handleSortEnd(event)
+    },
   })
 })
 
 onBeforeUnmount(() => {
+  document.body.classList.remove('is-dragging')
   sortable?.destroy()
   sortable = null
 })
@@ -156,6 +163,18 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
           </span>
           <div class="flex items-center gap-0.5">
             <button
+              v-if="item.item_type === 'bug'"
+              data-card-action
+              data-testid="board-bug-view-button"
+              class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[color-mix(in_srgb,var(--pc-danger)_12%,var(--pc-surface))] hover:text-[var(--pc-danger)]"
+              type="button"
+              aria-label="查看缺陷"
+              title="查看"
+              @click.stop="emit('open', item)"
+            >
+              <el-icon><Document /></el-icon>
+            </button>
+            <button
               data-card-action
               class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
               type="button"
@@ -195,7 +214,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
             </el-dropdown>
           </div>
         </header>
-        <h4 class="m-0 text-sm leading-[1.4] font-semibold text-[var(--pc-text)]">{{ item.title }}</h4>
+        <h4 class="m-0 min-w-0 text-sm leading-[1.4] font-semibold break-words text-[var(--pc-text)]" style="overflow-wrap: anywhere">{{ item.title }}</h4>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-[var(--pc-text-secondary)]">
           <span
             class="inline-flex items-center gap-[3px] font-semibold text-[var(--pc-action)] data-[severity=true]:text-[var(--pc-danger)]"

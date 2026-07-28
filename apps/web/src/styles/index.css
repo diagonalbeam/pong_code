@@ -180,6 +180,14 @@ button:active:not(:disabled),
   color: var(--pc-text-secondary);
 }
 
+.el-button.is-link {
+  min-height: auto;
+  height: auto;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
+}
+
 .el-button.is-circle {
   width: var(--pc-control-height);
   min-width: var(--pc-control-height);
@@ -586,6 +594,12 @@ button:active:not(:disabled),
   rotate: 0.75deg;
   will-change: transform;
   transition: box-shadow 120ms ease, opacity 120ms ease !important;
+}
+
+body.is-dragging,
+body.is-dragging * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 @media (max-width: 767px) {

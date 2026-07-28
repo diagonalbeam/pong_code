@@ -72,7 +72,7 @@ async function submit() {
   <AppDialog
     :model-value="modelValue"
     title="新建任务"
-    width="620px"
+    width="min(94vw, 744px)"
     :loading="submitting"
     @update:model-value="emit('update:modelValue', $event)"
   >

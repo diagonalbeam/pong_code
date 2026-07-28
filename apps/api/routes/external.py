@@ -204,7 +204,7 @@ def _serialize_sprint(s):
         'description': s.description,
         'goal': s.goal,
         'status': s.status,
-        'url': f'{_get_base_url()}/#/projects/{s.project_id}/board?sprintId={s.id}',
+        'url': f'{_get_base_url()}/organizations/{s.project.organization_id}/projects/{s.project_id}/board?sprintId={s.id}',
         'projectInfo': {
             'id': s.project.id if s.project else None,
             'name': s.project.name if s.project else None,

@@ -15,7 +15,7 @@ import StatCard from '@/components/stat-card.vue'
 import StatusTag from '@/components/status-tag.vue'
 import BugDialog from '@/components/business/bug-dialog.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
-import { bugStatusLabels } from '@/shared/bug'
+import { bugDictLabel, bugPlatformLabels, bugPriorityLabels, bugStatusLabels, bugTypeLabels } from '@/shared/bug'
 import { useProjectContext } from '@/shared/use-project-context'
 
 interface BugStats {
@@ -143,7 +143,7 @@ onMounted(load)
             <el-table-column label="缺陷" min-width="280">
               <template #default="{ row }">
                 <div class="grid min-w-0 gap-1">
-                  <strong class="truncate text-[15px] font-semibold">{{ row.title }}</strong>
+                  <strong class="min-w-0 break-words text-[15px] font-semibold" style="overflow-wrap: anywhere">{{ row.title }}</strong>
                   <OverflowTooltip
                     :content="row.description"
                     testid="bug-description-overflow"
@@ -151,6 +151,15 @@ onMounted(load)
                   />
                 </div>
               </template>
+            </el-table-column>
+            <el-table-column label="类型" width="110">
+              <template #default="{ row }">{{ bugDictLabel(bugTypeLabels, row.bug_type) }}</template>
+            </el-table-column>
+            <el-table-column label="紧急程度" width="100">
+              <template #default="{ row }">{{ bugDictLabel(bugPriorityLabels, row.priority) }}</template>
+            </el-table-column>
+            <el-table-column label="平台" width="100">
+              <template #default="{ row }">{{ bugDictLabel(bugPlatformLabels, row.platform) }}</template>
             </el-table-column>
             <el-table-column label="严重程度" width="110">
               <template #default="{ row }"><span class="text-xs font-semibold text-[var(--pc-danger)]">S{{ row.severity }}</span></template>
@@ -191,10 +200,11 @@ onMounted(load)
               <span>{{ item.item_code || `BUG-${item.id}` }}</span>
               <StatusTag :status="item.status" :label="bugStatusLabels[item.status]" />
             </header>
-            <strong class="text-[15px] font-semibold">{{ item.title }}</strong>
-            <p class="m-0 line-clamp-2 text-[13px] text-[var(--pc-text-secondary)]">{{ item.description }}</p>
-            <footer class="flex items-center justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
+            <strong class="min-w-0 break-words text-[15px] font-semibold" style="overflow-wrap: anywhere">{{ item.title }}</strong>
+            <p class="m-0 line-clamp-2 min-w-0 break-words text-[13px] text-[var(--pc-text-secondary)]" style="overflow-wrap: anywhere; word-break: break-word">{{ item.description }}</p>
+            <footer class="flex flex-wrap items-center justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
               <span class="text-xs font-semibold text-[var(--pc-danger)]">S{{ item.severity }}</span>
+              <span>{{ bugDictLabel(bugTypeLabels, item.bug_type) }}</span>
               <span>{{ item.assignee_name || '未分配' }}</span>
               <span>{{ item.evidence_count || 0 }} 条证据</span>
             </footer>

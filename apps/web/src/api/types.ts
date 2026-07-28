@@ -99,6 +99,14 @@ export interface Issue extends ContractIssue {
   requirement_title: string | null
 }
 
+import type {
+  BugDiscoveryChannel,
+  BugDiscoveryPhase,
+  BugPlatform,
+  BugPriority,
+  BugType,
+} from '@/shared/bug'
+
 export interface Bug extends ContractBug {
   id: number
   item_type?: 'bug'
@@ -108,6 +116,11 @@ export interface Bug extends ContractBug {
   description: string
   severity: number
   status: 'open' | 'in_progress' | 'fixed' | 'resolved' | 'closed' | 'rejected'
+  bug_type: BugType
+  priority: BugPriority
+  platform: BugPlatform
+  discovery_phase: BugDiscoveryPhase
+  discovery_channel: BugDiscoveryChannel | null
   steps_to_reproduce: string | null
   expected_result: string | null
   actual_result: string | null
