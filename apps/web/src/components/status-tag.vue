@@ -35,6 +35,9 @@ const type = computed(() => {
 
 <template>
   <el-tag :type="type" effect="light" round>
-    {{ label || labels[status] || status }}
+    <span class="inline-flex items-center gap-1.5">
+      <span>{{ label || labels[status] || status }}</span>
+      <slot name="suffix" />
+    </span>
   </el-tag>
 </template>

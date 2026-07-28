@@ -1,12 +1,13 @@
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AppShell from './app-shell.vue'
 
 const testState = vi.hoisted(() => ({
   route: {
     path: '/workbench',
-    params: {},
+    params: {} as Record<string, string>,
+    query: {} as Record<string, string>,
     meta: { title: '工作台' },
     name: 'workbench',
   },
@@ -20,6 +21,12 @@ const testState = vi.hoisted(() => ({
   },
 }))
 
+const apiMocks = vi.hoisted(() => ({
+  getOrganization: vi.fn(),
+  getOrganizations: vi.fn().mockResolvedValue([]),
+  getProject: vi.fn(),
+}))
+
 vi.mock('vue-router', () => ({
   useRoute: () => testState.route,
   useRouter: () => ({
@@ -29,7 +36,12 @@ vi.mock('vue-router', () => ({
 }))
 
 vi.mock('@/api/organizations', () => ({
-  getOrganizations: vi.fn().mockResolvedValue([]),
+  getOrganization: apiMocks.getOrganization,
+  getOrganizations: apiMocks.getOrganizations,
+}))
+
+vi.mock('@/api/projects', () => ({
+  getProject: apiMocks.getProject,
 }))
 
 vi.mock('@/stores/auth', () => ({
@@ -124,6 +136,17 @@ function mountShell() {
 }
 
 describe('应用外壳', () => {
+  beforeEach(() => {
+    testState.route.path = '/workbench'
+    testState.route.params = {}
+    testState.route.query = {}
+    testState.route.meta = { title: '工作台' }
+    testState.route.name = 'workbench'
+    testState.push.mockReset()
+    apiMocks.getOrganization.mockReset()
+    apiMocks.getProject.mockReset()
+  })
+
   it('在顶栏控制侧栏，并在收起时居中菜单图标和展示菜单 Tooltip', async () => {
     const wrapper = mountShell()
 
@@ -161,5 +184,33 @@ describe('应用外壳', () => {
     const avatarStyle = wrapper.get('[data-avatar]').attributes('style')
     expect(avatarStyle).toContain('background-color: rgb(88, 86, 214)')
     expect(avatarStyle).toContain('color: rgb(255, 255, 255)')
+  })
+
+  it('先展示当前项目，再在下一行提供迭代切换', async () => {
+    testState.route.path = '/organizations/1/projects/10/board'
+    testState.route.params = { orgId: '1', projectId: '10' }
+    testState.route.query = { sprint: '101' }
+    testState.route.meta = { title: '看板' }
+    testState.route.name = 'project-board'
+    apiMocks.getOrganization.mockResolvedValue({
+      projects: [
+        { id: 10, name: '支付平台' },
+        { id: 11, name: '消息中心' },
+      ],
+    })
+    apiMocks.getProject.mockResolvedValue({
+      active_sprint: { id: 101 },
+      sprints: [
+        { id: 101, name: '迭代 1' },
+        { id: 102, name: '迭代 2' },
+      ],
+    })
+    const wrapper = mountShell()
+    await vi.waitFor(() => {
+      expect(wrapper.get('[data-testid="sidebar-project-switcher"]').text()).toContain('支付平台')
+    })
+
+    expect(wrapper.get('[data-testid="sidebar-sprint-switcher"]').text()).toContain('迭代 1')
+    expect(wrapper.get('[data-testid="sidebar-project-switcher-menu"]').text()).toContain('消息中心')
   })
 })

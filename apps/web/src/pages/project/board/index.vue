@@ -1,7 +1,19 @@
 <script setup lang="ts">
-import { ArrowRight, Plus, Refresh, Tickets } from '@element-plus/icons-vue'
+import {
+  ArrowDown,
+  ArrowRight,
+  Calendar,
+  Check,
+  Clock,
+  CollectionTag,
+  List,
+  Plus,
+  Refresh,
+  Tickets,
+  TrendCharts,
+} from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { computed, onMounted, ref, toRaw } from 'vue'
+import { computed, onMounted, ref, toRaw, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { updateBug } from '@/api/bugs'
 import { updateIssue } from '@/api/issues'
@@ -12,7 +24,6 @@ import { getUsers } from '@/api/users'
 import { apiErrorMessage } from '@/api/client'
 import type { BoardItem, BoardResponse, Requirement, Sprint, Swimlane, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
-import PageHeader from '@/components/page-header.vue'
 import StatusTag from '@/components/status-tag.vue'
 import BugDialog from '@/components/business/bug-dialog.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
@@ -25,6 +36,7 @@ import {
   boardCollapsedStorageKey,
   boardLaneId,
   calculateBoardTotals,
+  calculateSwimlaneProgress,
   type BoardStatus,
 } from '@/shared/board'
 import { useProjectContext } from '@/shared/use-project-context'
@@ -59,6 +71,7 @@ const bugDialogOpen = ref(false)
 const selectedRequirementId = ref<number | null>(null)
 const selectedIssueId = ref<number | null>(null)
 const selectedBugId = ref<number | null>(null)
+const sprintStatusUpdating = ref(false)
 
 const swimlanes = computed(() => board.value?.swimlanes || [])
 const laneOptions = computed(() => swimlanes.value.map(lane => ({
@@ -68,6 +81,15 @@ const laneOptions = computed(() => swimlanes.value.map(lane => ({
 const sprint = computed(() => board.value?.sprint || null)
 const totals = computed(() => {
   return calculateBoardTotals(swimlanes.value)
+})
+const sprintDateRange = computed(() => {
+  if (sprint.value?.start_date && sprint.value.end_date)
+    return `${sprint.value.start_date} → ${sprint.value.end_date}`
+  if (sprint.value?.start_date)
+    return `从 ${sprint.value.start_date}`
+  if (sprint.value?.end_date)
+    return `截至 ${sprint.value.end_date}`
+  return '未设置迭代时间'
 })
 
 function laneId(lane: Swimlane) {
@@ -125,31 +147,37 @@ async function load() {
   }
 }
 
-async function changeSprint(value: number) {
-  selectedSprintId.value = value
-  loading.value = true
+async function updateSprintStatus(status: Sprint['status']) {
+  const currentSprint = sprint.value
+  if (!currentSprint || currentSprint.status === status || sprintStatusUpdating.value)
+    return
+
+  const localSprints = [
+    currentSprint,
+    details.value?.active_sprint,
+    ...(details.value?.sprints || []),
+  ].filter((item): item is Sprint => Boolean(item && item.id === currentSprint.id))
+  const snapshots = new Map(localSprints.map(item => [item, item.status]))
+  localSprints.forEach((item) => {
+    item.status = status
+  })
+  sprintStatusUpdating.value = true
+
   try {
-    await router.replace({ query: { ...route.query, sprint: String(value) } })
-    await loadBoard(value)
+    const updated = await updateSprint(currentSprint.id, { status })
+    localSprints.forEach((item) => {
+      Object.assign(item, updated)
+    })
+    ElMessage.success('迭代状态已更新')
   }
   catch (error) {
-    ElMessage.error(apiErrorMessage(error, '切换迭代失败'))
+    snapshots.forEach((previousStatus, item) => {
+      item.status = previousStatus
+    })
+    ElMessage.error(apiErrorMessage(error, '更新迭代状态失败'))
   }
   finally {
-    loading.value = false
-  }
-}
-
-async function updateSprintStatus(status: Sprint['status']) {
-  if (!sprint.value)
-    return
-  try {
-    await updateSprint(sprint.value.id, { status })
-    ElMessage.success('迭代状态已更新')
-    await Promise.all([loadProject(), loadBoard(sprint.value.id)])
-  }
-  catch (error) {
-    ElMessage.error(apiErrorMessage(error, '更新迭代状态失败'))
+    sprintStatusUpdating.value = false
   }
 }
 
@@ -263,35 +291,31 @@ async function moveItem(payload: {
 }
 
 onMounted(load)
+
+watch(
+  () => route.query.sprint,
+  async (value) => {
+    const nextSprintId = Number(value || 0)
+    if (!nextSprintId || nextSprintId === selectedSprintId.value)
+      return
+
+    selectedSprintId.value = nextSprintId
+    loading.value = true
+    try {
+      await loadBoard(nextSprintId)
+    }
+    catch (error) {
+      ElMessage.error(apiErrorMessage(error, '切换迭代失败'))
+    }
+    finally {
+      loading.value = false
+    }
+  },
+)
 </script>
 
 <template>
   <div class="w-full p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
-    <PageHeader :title="sprint?.name || `${details?.project.name || '项目'} · 看板`" description="按需求泳道推进任务与缺陷，拖动卡片即可更新状态和所属需求。">
-      <el-select
-        v-if="details?.sprints.length"
-        :model-value="selectedSprintId"
-        class="w-[220px] max-[800px]:w-full"
-        placeholder="选择迭代"
-        @change="changeSprint"
-      >
-        <el-option v-for="item in details.sprints" :key="item.id" :label="item.name" :value="item.id" />
-      </el-select>
-      <el-button :loading="loading" @click="loadBoard()">
-        <el-icon><Refresh /></el-icon>刷新
-      </el-button>
-      <el-dropdown split-button type="primary" data-testid="create-issue-button" @click="createIssue()" @command="createBugOpen = true">
-        <el-icon><Plus /></el-icon>新建任务
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="bug">
-              新建缺陷
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-    </PageHeader>
-
     <div v-loading="loading">
       <EmptyState
         v-if="!loading && board && !board.has_sprint"
@@ -304,45 +328,107 @@ onMounted(load)
       </EmptyState>
 
       <template v-else-if="sprint">
-        <section class="mb-[17px] flex items-center gap-5 rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-[17px] py-3.5 max-[800px]:flex-col max-[800px]:items-start">
-          <div class="flex items-center gap-2.5">
-            <span class="text-[13px] text-[var(--pc-text-secondary)]">迭代状态</span>
-            <el-dropdown @command="updateSprintStatus($event as Sprint['status'])">
-              <button type="button" class="cursor-pointer border-0 bg-transparent p-0" data-testid="board-sprint-status-trigger">
-                <StatusTag :status="sprint.status" :label="sprintStatusLabels[sprint.status]" />
-              </button>
-              <template #dropdown>
-                <el-dropdown-menu data-testid="board-sprint-status-menu">
-                  <el-dropdown-item v-for="(label, value) in sprintStatusLabels" :key="value" :command="value" :disabled="value === sprint.status">
-                    {{ label }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
-          <div class="flex flex-1 flex-wrap items-center gap-2.5 text-[13px] text-[var(--pc-text-secondary)] max-[800px]:w-full">
-            <span class="whitespace-nowrap"><b class="font-semibold text-[var(--pc-text)]">{{ swimlanes.length }}</b> 泳道</span>
-            <span class="whitespace-nowrap"><b class="font-semibold text-[var(--pc-text)]">{{ totals.items }}</b> 工作项</span>
-            <span class="whitespace-nowrap"><b class="font-semibold text-[var(--pc-text)]">{{ totals.hours }}</b> 小时</span>
-            <span class="whitespace-nowrap"><b class="font-semibold text-[var(--pc-text)]">{{ totals.progress }}%</b> 完成</span>
-          </div>
-          <label class="flex items-center gap-2.5 whitespace-nowrap">
-            <span class="text-[13px] text-[var(--pc-text-secondary)]">隐藏已完成</span>
-            <el-switch
-              :model-value="hideCompleted"
-              data-testid="board-hide-completed-toggle"
-              aria-label="隐藏已完成卡片"
-              @change="toggleHideCompleted(Boolean($event))"
-            />
-          </label>
-        </section>
+        <section class="mb-[17px]">
+          <div class="flex items-start justify-between gap-6 max-[980px]:flex-col">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-3">
+                <h1 class="m-0 min-w-0 font-['SF_Pro_Display',system-ui,-apple-system,sans-serif] text-[clamp(24px,2.2vw,30px)] leading-[1.2] font-semibold tracking-[-0.025em]">
+                  {{ sprint.name }}
+                </h1>
+                <el-dropdown
+                  trigger="click"
+                  :disabled="sprintStatusUpdating"
+                  @command="updateSprintStatus($event as Sprint['status'])"
+                >
+                  <button
+                    type="button"
+                    class="board-status-trigger cursor-pointer border-0 bg-transparent p-0"
+                    data-testid="board-sprint-status-trigger"
+                    :aria-busy="sprintStatusUpdating"
+                    aria-label="选择迭代状态"
+                  >
+                    <StatusTag :status="sprint.status" :label="sprintStatusLabels[sprint.status]">
+                      <template #suffix>
+                        <el-icon class="text-[11px] opacity-70"><ArrowDown /></el-icon>
+                      </template>
+                    </StatusTag>
+                  </button>
+                  <template #dropdown>
+                    <el-dropdown-menu data-testid="board-sprint-status-menu">
+                      <el-dropdown-item
+                        v-for="(label, value) in sprintStatusLabels"
+                        :key="value"
+                        :command="value"
+                        :disabled="sprintStatusUpdating"
+                      >
+                        <span class="board-status-dot mr-2 h-2 w-2 shrink-0 rounded-full" :data-status="value" />
+                        <span>{{ label }}</span>
+                        <el-icon v-if="value === sprint.status" class="ml-auto text-[var(--pc-action)]"><Check /></el-icon>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
+              <div
+                data-testid="board-summary"
+                class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-[var(--pc-text-secondary)]"
+              >
+                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <el-icon class="text-[var(--pc-action)]"><Calendar /></el-icon>
+                  {{ sprintDateRange }}
+                </span>
+                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <el-icon class="text-[var(--pc-action)]"><CollectionTag /></el-icon>
+                  {{ swimlanes.length }} 泳道
+                </span>
+                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <el-icon class="text-[var(--pc-action)]"><List /></el-icon>
+                  {{ totals.items }} 工作项
+                </span>
+                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <el-icon class="text-[var(--pc-action)]"><TrendCharts /></el-icon>
+                  {{ totals.progress }}% 完成
+                </span>
+                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <el-icon class="text-[var(--pc-action)]"><Clock /></el-icon>
+                  {{ totals.hours }}h 工时
+                </span>
+              </div>
+            </div>
 
-        <section class="mb-[17px] rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-[17px] py-3.5">
-          <div class="mb-2 flex items-center justify-between gap-2.5">
-            <span class="text-[13px] text-[var(--pc-text-secondary)]">迭代进度</span>
-            <strong class="text-[13px] text-[var(--pc-action)]">{{ totals.progress }}%</strong>
+            <div class="flex shrink-0 flex-wrap items-center justify-end gap-2 max-[980px]:w-full max-[980px]:justify-start">
+              <label class="inline-flex min-h-8 items-center gap-2.5 whitespace-nowrap rounded-[8px] border border-[var(--pc-border)] bg-[var(--pc-surface)] px-3">
+                <span class="text-[13px] font-medium text-[var(--pc-text-secondary)]">隐藏已完成</span>
+                <el-switch
+                  :model-value="hideCompleted"
+                  data-testid="board-hide-completed-toggle"
+                  aria-label="隐藏已完成卡片"
+                  @change="toggleHideCompleted(Boolean($event))"
+                />
+              </label>
+              <el-button :loading="loading" @click="loadBoard()">
+                <el-icon><Refresh /></el-icon>刷新
+              </el-button>
+              <el-dropdown split-button type="primary" data-testid="create-issue-button" @click="createIssue()" @command="createBugOpen = true">
+                <el-icon><Plus /></el-icon>新建任务
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="bug">
+                      新建缺陷
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
           </div>
-          <el-progress :percentage="totals.progress" :show-text="false" :stroke-width="8" />
+
+          <div class="mt-4 rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-[17px] py-3.5">
+            <div class="mb-2 flex items-center justify-between gap-2.5">
+              <span class="text-[13px] font-medium text-[var(--pc-text-secondary)]">迭代进度</span>
+              <strong class="text-[13px] text-[var(--pc-action)]">{{ totals.progress }}%</strong>
+            </div>
+            <el-progress :percentage="totals.progress" :show-text="false" :stroke-width="8" />
+          </div>
         </section>
 
         <div class="grid gap-3.5">
@@ -366,7 +452,21 @@ onMounted(load)
                 ><ArrowRight /></el-icon>
                 <span v-if="lane.requirement" class="text-[11px] font-semibold text-[var(--pc-action)]">P{{ lane.requirement.priority }}</span>
                 <strong class="overflow-hidden text-sm font-semibold text-ellipsis whitespace-nowrap">{{ lane.requirement?.title || '未分类' }}</strong>
-                <small class="text-xs whitespace-nowrap text-[var(--pc-text-muted)]">{{ lane.todo.length + lane.doing.length + lane.done.length }} 项</small>
+                <small class="text-xs whitespace-nowrap text-[var(--pc-text-muted)]">{{ lane.todo.length + lane.doing.length + lane.done.length }} 工作项</small>
+                <span
+                  class="flex items-center gap-1.5"
+                  :data-testid="`board-swimlane-progress-${laneId(lane)}`"
+                >
+                  <span class="h-1.5 w-20 overflow-hidden rounded-full bg-[var(--pc-border-soft)]">
+                    <span
+                      class="block h-full rounded-full bg-[var(--pc-action)] transition-[width] duration-300"
+                      :style="{ width: `${calculateSwimlaneProgress(lane)}%` }"
+                    />
+                  </span>
+                  <small class="min-w-8 text-xs font-medium text-[var(--pc-text-secondary)]">
+                    {{ calculateSwimlaneProgress(lane) }}%
+                  </small>
+                </span>
               </button>
               <el-button text size="small" @click="createIssue(lane.requirement?.id || null)">
                 <el-icon><Plus /></el-icon>添加任务
@@ -441,3 +541,31 @@ onMounted(load)
     />
   </div>
 </template>
+
+<style scoped>
+.board-status-trigger {
+  transition:
+    transform 120ms ease;
+}
+
+.board-status-trigger:hover {
+  transform: translateY(-1px);
+}
+
+.board-status-trigger:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--pc-action) 42%, transparent);
+  outline-offset: 2px;
+}
+
+.board-status-dot[data-status='open'] {
+  background: var(--pc-text-muted);
+}
+
+.board-status-dot[data-status='active'] {
+  background: var(--pc-warning);
+}
+
+.board-status-dot[data-status='closed'] {
+  background: var(--pc-success);
+}
+</style>

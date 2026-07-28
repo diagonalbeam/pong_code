@@ -6,6 +6,7 @@ import {
   boardLaneId,
   boardRequirementId,
   calculateBoardTotals,
+  calculateSwimlaneProgress,
 } from './board'
 
 function task(id: number, timeSpent = 0): BoardItem {
@@ -64,5 +65,22 @@ describe('看板共享规则', () => {
       hours: 5,
       progress: 50,
     })
+  })
+
+  it('按单条泳道统计完成率', () => {
+    const lane = {
+      requirement: null,
+      todo: [task(1)],
+      doing: [task(2)],
+      done: [task(3), task(4)],
+    } as Swimlane
+
+    expect(calculateSwimlaneProgress(lane)).toBe(50)
+    expect(calculateSwimlaneProgress({
+      requirement: null,
+      todo: [],
+      doing: [],
+      done: [],
+    } as Swimlane)).toBe(0)
   })
 })

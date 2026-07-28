@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Clock, Edit, MoreFilled, User, WarningFilled } from '@element-plus/icons-vue'
+import { Clock, Edit, MoreFilled, WarningFilled } from '@element-plus/icons-vue'
 import Sortable, { type SortableEvent } from 'sortablejs'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import type { BoardItem } from '@/api/types'
+import { getUserAvatarStyle } from '@/shared/avatar-color'
 
 type BoardStatus = 'todo' | 'doing' | 'done'
 interface BoardLaneOption {
@@ -37,6 +38,10 @@ let sortable: Sortable | null = null
 
 function requirementIdFromLane(laneId: string) {
   return laneId.startsWith('req-') ? Number(laneId.slice(4)) : null
+}
+
+function itemOwnerName(item: BoardItem) {
+  return item.assignee_name || (item.item_type === 'bug' ? item.reporter_name : null) || ''
 }
 
 function emitMove(item: BoardItem, status: BoardStatus, laneId = props.laneId) {
@@ -198,8 +203,15 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
           >
             {{ item.item_type === 'bug' ? `S${item.severity}` : `P${item.priority}` }}
           </span>
-          <span class="inline-flex items-center gap-[3px]">
-            <el-icon><User /></el-icon>{{ item.assignee_name || (item.item_type === 'bug' ? item.reporter_name : null) || '未分配' }}
+          <span class="inline-flex items-center gap-1">
+            <el-avatar
+              :size="18"
+              class="shrink-0 !inline-flex !items-center !justify-center !text-center !text-[9px] !leading-none font-semibold"
+              :style="getUserAvatarStyle(itemOwnerName(item))"
+            >
+              {{ itemOwnerName(item).slice(0, 1).toUpperCase() || '?' }}
+            </el-avatar>
+            {{ itemOwnerName(item) || '未分配' }}
           </span>
           <span v-if="item.time_spent" class="inline-flex items-center gap-[3px]">
             <el-icon><Clock /></el-icon>{{ item.time_spent }}h

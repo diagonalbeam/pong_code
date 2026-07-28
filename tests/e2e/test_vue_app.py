@@ -246,7 +246,16 @@ class VueAppE2ETestCase(unittest.TestCase):
         expect(account_summary.get_by_text(self.email, exact=True)).to_be_visible()
 
     def test_board_menu_moves_task_across_status_and_requirement(self):
-        organization, _, project, sprint = self._create_project_fixture()
+        organization, team, project, sprint = self._create_project_fixture()
+        alternate_project = self._api(
+            "post",
+            f"/api/organizations/{organization['id']}/projects",
+            {
+                "name": f"切换项目_{uuid4().hex[:8]}",
+                "description": "验证侧栏项目下拉选择",
+                "team_id": team["id"],
+            },
+        )
         requirement = self._api(
             "post",
             f"/api/projects/{project['id']}/requirements",
@@ -268,12 +277,27 @@ class VueAppE2ETestCase(unittest.TestCase):
                 "requirement_id": requirement["id"],
             },
         )
+        next_sprint = self._api(
+            "post",
+            f"/api/projects/{project['id']}/sprints",
+            {
+                "name": f"下一迭代_{uuid4().hex[:8]}",
+                "start_date": sprint["start_date"],
+                "end_date": sprint["end_date"],
+            },
+        )["sprint"]
         board_url = (
             f"{self.base_url}/organizations/{organization['id']}/projects/"
             f"{project['id']}/board?sprint={sprint['id']}"
         )
         self.page.goto(board_url)
         expect(self.page).to_have_title("看板 · PongCode")
+        sprint_status_select = self.page.get_by_test_id("board-sprint-status-trigger")
+        expect(sprint_status_select.locator(".el-tag")).to_be_visible()
+        expect(sprint_status_select).to_contain_text("进行中")
+        expect(self.page.get_by_test_id("sidebar-project-switcher")).to_contain_text(project["name"])
+        expect(self.page.get_by_test_id("sidebar-sprint-switcher")).to_contain_text(sprint["name"])
+        expect(self.page.get_by_role("combobox", name="选择迭代")).to_have_count(0)
         card = self.page.get_by_test_id("board-item").filter(has_text=issue["title"])
         expect(card).to_be_visible()
 
@@ -304,6 +328,20 @@ class VueAppE2ETestCase(unittest.TestCase):
         unassigned_lane = self.page.get_by_test_id("board-swimlane-unassigned")
         expect(unassigned_lane.get_by_text(issue["title"], exact=True)).to_be_visible()
         self.assertIsNone(self._api("get", f"/api/issues/{issue['id']}")["issue"]["requirement_id"])
+
+        self.page.get_by_test_id("sidebar-sprint-switcher").click()
+        self.page.get_by_role("menuitem", name=next_sprint["name"], exact=True).click()
+        expect(self.page).to_have_url(re.compile(rf"[?&]sprint={next_sprint['id']}(?:&|$)"))
+        expect(self.page.get_by_role("heading", name=next_sprint["name"], exact=True)).to_be_visible()
+
+        self.page.get_by_test_id("sidebar-project-switcher").click()
+        self.page.get_by_role("menuitem", name=alternate_project["name"], exact=True).click()
+        expect(self.page).to_have_url(
+            re.compile(
+                rf"/organizations/{organization['id']}/projects/"
+                rf"{alternate_project['id']}/board$"
+            )
+        )
 
     def test_board_drag_card_moves_task_across_status(self):
         organization, _, project, sprint = self._create_project_fixture()

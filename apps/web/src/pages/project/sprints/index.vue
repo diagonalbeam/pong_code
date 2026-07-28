@@ -12,6 +12,7 @@ import PageHeader from '@/components/page-header.vue'
 import StatusTag from '@/components/status-tag.vue'
 import SprintDialog from '@/components/business/sprint-dialog.vue'
 import SprintDetailDialog from '@/components/business/sprint-detail-dialog.vue'
+import { getUserAvatarStyle } from '@/shared/avatar-color'
 import { useProjectContext } from '@/shared/use-project-context'
 
 const router = useRouter()
@@ -118,7 +119,15 @@ onMounted(load)
               <template #default="{ row }">{{ row.category || '-' }}</template>
             </el-table-column>
             <el-table-column prop="owner_name" label="负责人" width="130">
-              <template #default="{ row }">{{ row.owner_name || '-' }}</template>
+              <template #default="{ row }">
+                <span v-if="row.owner_name" class="inline-flex items-center gap-2">
+                  <el-avatar :size="22" class="shrink-0 !inline-flex !items-center !justify-center !text-center !text-[10px] !leading-none font-semibold" :style="getUserAvatarStyle(row.owner_name)">
+                    {{ row.owner_name.slice(0, 1).toUpperCase() }}
+                  </el-avatar>
+                  <span>{{ row.owner_name }}</span>
+                </span>
+                <span v-else>-</span>
+              </template>
             </el-table-column>
             <el-table-column label="日期" width="210">
               <template #default="{ row }">{{ row.start_date || '-' }} 至 {{ row.end_date || '-' }}</template>
@@ -160,7 +169,13 @@ onMounted(load)
             <el-progress :percentage="sprint.progress" :stroke-width="7" />
             <footer class="flex justify-between gap-3 text-xs text-[var(--pc-text-secondary)]">
               <span>{{ sprint.start_date }} 至 {{ sprint.end_date }}</span>
-              <span>{{ sprint.owner_name || '未指定负责人' }}</span>
+              <span v-if="sprint.owner_name" class="inline-flex items-center gap-1.5">
+                <el-avatar :size="20" class="shrink-0 !inline-flex !items-center !justify-center !text-center !text-[9px] !leading-none font-semibold" :style="getUserAvatarStyle(sprint.owner_name)">
+                  {{ sprint.owner_name.slice(0, 1).toUpperCase() }}
+                </el-avatar>
+                <span>{{ sprint.owner_name }}</span>
+              </span>
+              <span v-else>未指定负责人</span>
             </footer>
           </article>
         </div>

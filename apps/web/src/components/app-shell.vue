@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import {
+  ArrowDown,
   Bell,
   Briefcase,
   Collection,
   DataBoard,
   Expand,
   Fold,
+  FolderOpened,
   House,
   List,
   Menu as MenuIcon,
@@ -19,10 +21,11 @@ import {
   UserFilled,
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getOrganizations } from '@/api/organizations'
-import type { Organization } from '@/api/types'
+import { getOrganization, getOrganizations } from '@/api/organizations'
+import { getProject } from '@/api/projects'
+import type { Organization, Project, Sprint } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
 import { getUserAvatarColor } from '@/shared/avatar-color'
 import { useAuthStore } from '@/stores/auth'
@@ -45,10 +48,27 @@ const mobileOpen = ref(false)
 const teamNavigationOpen = ref(false)
 const teamNavigationLoading = ref(false)
 const teamOrganizations = ref<Organization[]>([])
+const projectNavigationLoading = ref(false)
+const projectOptions = ref<Project[]>([])
+const sprintOptions = ref<Sprint[]>([])
+const activeSprintId = ref<number | null>(null)
 
 const orgId = computed(() => Number(route.params.orgId || 0))
 const projectId = computed(() => Number(route.params.projectId || 0))
 const isProject = computed(() => Boolean(projectId.value))
+const isBoard = computed(() => route.name === 'project-board')
+const currentProject = computed(() => (
+  projectOptions.value.find(project => project.id === projectId.value) || null
+))
+const selectedSprintId = computed(() => {
+  const requestedId = Number(route.query.sprint || 0)
+  if (requestedId && sprintOptions.value.some(sprint => sprint.id === requestedId))
+    return requestedId
+  return activeSprintId.value || sprintOptions.value[0]?.id || null
+})
+const selectedSprint = computed(() => (
+  sprintOptions.value.find(sprint => sprint.id === selectedSprintId.value) || null
+))
 const avatarStyle = computed(() => {
   const color = getUserAvatarColor(auth.user?.username ?? '')
 
@@ -107,6 +127,39 @@ const breadcrumbs = computed(() => {
   return items
 })
 
+watch(
+  [isProject, orgId, projectId],
+  async ([inProject, organizationId, currentProjectId]) => {
+    if (!inProject || !organizationId || !currentProjectId) {
+      projectOptions.value = []
+      sprintOptions.value = []
+      activeSprintId.value = null
+      return
+    }
+
+    projectNavigationLoading.value = true
+    try {
+      const [organization, project] = await Promise.all([
+        getOrganization(organizationId),
+        getProject(currentProjectId),
+      ])
+      projectOptions.value = organization.projects
+      sprintOptions.value = project.sprints
+      activeSprintId.value = project.active_sprint?.id || null
+    }
+    catch {
+      projectOptions.value = []
+      sprintOptions.value = []
+      activeSprintId.value = null
+      ElMessage.error('加载项目切换菜单失败')
+    }
+    finally {
+      projectNavigationLoading.value = false
+    }
+  },
+  { immediate: true },
+)
+
 async function openTeams() {
   teamNavigationLoading.value = true
   try {
@@ -132,6 +185,37 @@ async function openTeams() {
 function selectTeamOrganization(organizationId: number) {
   teamNavigationOpen.value = false
   void router.push(`/organizations/${organizationId}/teams`)
+}
+
+function switchProject(nextProjectId: number) {
+  if (nextProjectId === projectId.value)
+    return
+
+  const routeName = typeof route.name === 'string' && route.name.startsWith('project-')
+    ? route.name
+    : 'project-sprints'
+  mobileOpen.value = false
+  void router.push({
+    name: routeName,
+    params: {
+      ...route.params,
+      orgId: orgId.value,
+      projectId: nextProjectId,
+    },
+    query: {},
+  })
+}
+
+function switchSprint(nextSprintId: number) {
+  if (nextSprintId === selectedSprintId.value)
+    return
+  mobileOpen.value = false
+  void router.push({
+    query: {
+      ...route.query,
+      sprint: String(nextSprintId),
+    },
+  })
 }
 
 function navigate(path?: string, placeholder?: boolean, action?: string) {
@@ -198,9 +282,79 @@ async function logout() {
         </el-tooltip>
 
         <div v-if="isProject" class="mx-1 my-2 h-px bg-[var(--pc-border-soft)]" />
-        <p v-if="isProject && !collapsed" class="mt-0.5 mr-3 mb-1.5 ml-3 text-xs font-semibold text-[var(--pc-text-muted)]">
-          当前项目
-        </p>
+        <div v-if="isProject" class="mb-1">
+          <p v-if="!collapsed" class="mt-0.5 mr-3 mb-1.5 ml-3 text-xs font-semibold text-[var(--pc-text-muted)]">
+            当前项目
+          </p>
+          <el-tooltip
+            :content="currentProject?.name || '切换项目'"
+            :disabled="!collapsed"
+            placement="right"
+            :show-after="100"
+          >
+            <el-dropdown
+              class="block w-full"
+              trigger="click"
+              :disabled="projectNavigationLoading"
+              @command="switchProject(Number($event))"
+            >
+              <button
+                type="button"
+                data-testid="sidebar-project-switcher"
+                class="flex min-h-9 w-full cursor-pointer items-center rounded-[6px] border-0 bg-transparent text-sm font-semibold text-[var(--pc-text)] hover:bg-[var(--pc-surface-soft)]"
+                :class="collapsed ? 'justify-center px-0' : 'gap-2 px-3 text-left'"
+                :aria-label="collapsed ? `当前项目：${currentProject?.name || '加载中'}` : '切换项目'"
+              >
+                <el-icon class="w-5 shrink-0 text-base text-[var(--pc-action)]"><FolderOpened /></el-icon>
+                <span v-if="!collapsed" class="min-w-0 flex-1 truncate">{{ currentProject?.name || '加载中…' }}</span>
+                <el-icon v-if="!collapsed" class="shrink-0 text-xs text-[var(--pc-text-muted)]"><ArrowDown /></el-icon>
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu data-testid="sidebar-project-switcher-menu">
+                  <el-dropdown-item
+                    v-for="project in projectOptions"
+                    :key="project.id"
+                    :command="project.id"
+                    :disabled="project.id === projectId"
+                  >
+                    {{ project.name }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </el-tooltip>
+
+          <el-dropdown
+            v-if="isBoard && !collapsed && sprintOptions.length > 1"
+            class="mt-0.5 block w-full"
+            trigger="click"
+            :disabled="projectNavigationLoading"
+            @command="switchSprint(Number($event))"
+          >
+            <button
+              type="button"
+              data-testid="sidebar-sprint-switcher"
+              class="flex min-h-9 w-full cursor-pointer items-center gap-2 rounded-[6px] border-0 bg-transparent px-3 text-left text-[13px] text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
+              aria-label="切换迭代"
+            >
+              <el-icon class="w-5 shrink-0 text-base"><MenuIcon /></el-icon>
+              <span class="min-w-0 flex-1 truncate">{{ selectedSprint?.name || '选择迭代' }}</span>
+              <el-icon class="shrink-0 text-xs text-[var(--pc-text-muted)]"><ArrowDown /></el-icon>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu data-testid="sidebar-sprint-switcher-menu">
+                <el-dropdown-item
+                  v-for="sprint in sprintOptions"
+                  :key="sprint.id"
+                  :command="sprint.id"
+                  :disabled="sprint.id === selectedSprintId"
+                >
+                  {{ sprint.name }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
         <el-tooltip
           v-for="item in projectItems"
           :key="item.label"
@@ -244,6 +398,64 @@ async function logout() {
           <span>{{ item.label }}</span>
         </button>
         <div v-if="isProject" class="mx-1 my-2 h-px bg-[var(--pc-border-soft)]" />
+        <el-dropdown
+          v-if="isProject"
+          class="block w-full"
+          trigger="click"
+          :disabled="projectNavigationLoading"
+          @command="switchProject(Number($event))"
+        >
+          <button
+            type="button"
+            data-testid="mobile-project-switcher"
+            class="flex min-h-10 w-full cursor-pointer items-center gap-2.5 rounded-[6px] border-0 bg-transparent px-3 text-left text-sm font-semibold text-[var(--pc-text)] hover:bg-[var(--pc-surface-soft)]"
+          >
+            <el-icon class="w-5 shrink-0 text-lg text-[var(--pc-action)]"><FolderOpened /></el-icon>
+            <span class="min-w-0 flex-1 truncate">{{ currentProject?.name || '当前项目' }}</span>
+            <el-icon class="shrink-0 text-xs text-[var(--pc-text-muted)]"><ArrowDown /></el-icon>
+          </button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="project in projectOptions"
+                :key="project.id"
+                :command="project.id"
+                :disabled="project.id === projectId"
+              >
+                {{ project.name }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <el-dropdown
+          v-if="isProject && isBoard && sprintOptions.length > 1"
+          class="block w-full"
+          trigger="click"
+          :disabled="projectNavigationLoading"
+          @command="switchSprint(Number($event))"
+        >
+          <button
+            type="button"
+            data-testid="mobile-sprint-switcher"
+            class="flex min-h-10 w-full cursor-pointer items-center gap-2.5 rounded-[6px] border-0 bg-transparent px-3 text-left text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)]"
+          >
+            <el-icon class="w-5 shrink-0 text-lg"><MenuIcon /></el-icon>
+            <span class="min-w-0 flex-1 truncate">{{ selectedSprint?.name || '选择迭代' }}</span>
+            <el-icon class="shrink-0 text-xs text-[var(--pc-text-muted)]"><ArrowDown /></el-icon>
+          </button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="sprint in sprintOptions"
+                :key="sprint.id"
+                :command="sprint.id"
+                :disabled="sprint.id === selectedSprintId"
+              >
+                {{ sprint.name }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
         <button
           v-for="item in projectItems"
           :key="item.label"
@@ -343,7 +555,7 @@ async function logout() {
         </div>
       </header>
       <main class="min-h-[calc(100vh-var(--pc-header-height))]">
-        <RouterView />
+        <RouterView :key="route.path" />
       </main>
     </div>
 

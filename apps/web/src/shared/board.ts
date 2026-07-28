@@ -28,6 +28,11 @@ export function boardCollapsedStorageKey(
   return `${BOARD_COLLAPSED_SWIMLANES_STORAGE_PREFIX}:${userId}:${projectId}:${sprintId}`
 }
 
+export function calculateSwimlaneProgress(lane: Swimlane) {
+  const items = lane.todo.length + lane.doing.length + lane.done.length
+  return items ? Math.round(lane.done.length / items * 100) : 0
+}
+
 export function calculateBoardTotals(swimlanes: Swimlane[]) {
   const items: BoardItem[] = swimlanes.flatMap(lane => [...lane.todo, ...lane.doing, ...lane.done])
   const done = swimlanes.reduce((sum, lane) => sum + lane.done.length, 0)
