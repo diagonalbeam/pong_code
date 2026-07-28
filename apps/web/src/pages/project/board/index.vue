@@ -440,7 +440,7 @@ watch(
           </div>
         </section>
 
-        <div class="grid gap-8">
+        <div class="grid gap-4">
           <article
             v-for="lane in swimlanes"
             :key="laneId(lane)"
