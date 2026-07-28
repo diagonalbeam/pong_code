@@ -15,6 +15,7 @@ import StatCard from '@/components/stat-card.vue'
 import StatusTag from '@/components/status-tag.vue'
 import BugDialog from '@/components/business/bug-dialog.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
+import { getUserAvatarStyle } from '@/shared/avatar-color'
 import { bugDictLabel, bugPlatformLabels, bugPriorityLabels, bugStatusLabels, bugTypeLabels } from '@/shared/bug'
 import { useProjectContext } from '@/shared/use-project-context'
 
@@ -167,8 +168,20 @@ onMounted(load)
             <el-table-column label="状态" width="110">
               <template #default="{ row }"><StatusTag :status="row.status" :label="bugStatusLabels[row.status as Bug['status']]" /></template>
             </el-table-column>
-            <el-table-column prop="assignee_name" label="负责人" width="120">
-              <template #default="{ row }">{{ row.assignee_name || '未分配' }}</template>
+            <el-table-column prop="assignee_name" label="负责人" width="130">
+              <template #default="{ row }">
+                <span v-if="row.assignee_name" class="inline-flex items-center gap-2">
+                  <el-avatar
+                    :size="22"
+                    class="shrink-0 !inline-flex !items-center !justify-center !text-center !text-[10px] !leading-none font-semibold"
+                    :style="getUserAvatarStyle(row.assignee_name)"
+                  >
+                    {{ row.assignee_name.slice(0, 1).toUpperCase() }}
+                  </el-avatar>
+                  <span>{{ row.assignee_name }}</span>
+                </span>
+                <span v-else>未分配</span>
+              </template>
             </el-table-column>
             <el-table-column prop="sprint_name" label="迭代" min-width="140">
               <template #default="{ row }">{{ row.sprint_name || '未规划' }}</template>
@@ -205,7 +218,17 @@ onMounted(load)
             <footer class="flex flex-wrap items-center justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
               <span class="text-xs font-semibold text-[var(--pc-danger)]">S{{ item.severity }}</span>
               <span>{{ bugDictLabel(bugTypeLabels, item.bug_type) }}</span>
-              <span>{{ item.assignee_name || '未分配' }}</span>
+              <span v-if="item.assignee_name" class="inline-flex items-center gap-1.5">
+                <el-avatar
+                  :size="20"
+                  class="shrink-0 !inline-flex !items-center !justify-center !text-center !text-[9px] !leading-none font-semibold"
+                  :style="getUserAvatarStyle(item.assignee_name)"
+                >
+                  {{ item.assignee_name.slice(0, 1).toUpperCase() }}
+                </el-avatar>
+                <span>{{ item.assignee_name }}</span>
+              </span>
+              <span v-else>未分配</span>
               <span>{{ item.evidence_count || 0 }} 条证据</span>
             </footer>
           </article>
