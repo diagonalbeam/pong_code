@@ -128,7 +128,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
   <div
     ref="root"
     data-testid="board-column"
-    class="flex min-h-[92px] flex-col gap-2 rounded-[8px] border border-dashed border-[var(--pc-border)] bg-[var(--pc-surface-soft)] p-2"
+    class="flex min-h-[92px] flex-col gap-2 p-1"
     :data-status="status"
     :data-lane-id="laneId"
     :aria-label="`${status} 工作项列表`"
@@ -138,7 +138,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
         v-for="item in items"
         :key="`${item.item_type}-${item.id}`"
         data-board-item
-        class="grid cursor-grab gap-2.5 rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-3 transition-[border-color,box-shadow,opacity] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_45%,var(--pc-border))] active:cursor-grabbing data-[bug=true]:border-l-[3px] data-[bug=true]:border-l-[var(--pc-danger)]"
+        class="grid cursor-grab gap-2.5 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-3 transition-[border-color,box-shadow,opacity] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_45%,var(--pc-border))] active:cursor-grabbing data-[bug=true]:border-l-[3px] data-[bug=true]:border-l-[var(--pc-danger)]"
         :data-bug="item.item_type === 'bug' || undefined"
         data-testid="board-item"
         :data-item-id="item.id"
@@ -157,7 +157,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
           <div class="flex items-center gap-0.5">
             <button
               data-card-action
-              class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-md border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
+              class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
               type="button"
               aria-label="编辑工作项"
               title="编辑工作项"
@@ -169,7 +169,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
               <button
                 data-testid="board-item-move-button"
                 data-card-action
-                class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-md border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
+                class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
                 type="button"
                 aria-label="移动工作项"
                 @click.stop

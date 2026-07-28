@@ -484,7 +484,7 @@ async function logout() {
           <button
             type="button"
             data-testid="sidebar-navigation-item"
-            class="flex min-h-10 w-full cursor-pointer items-center rounded-[6px] border-0 bg-transparent text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)] data-[active=true]:bg-[color-mix(in_srgb,var(--pc-action)_9%,transparent)] data-[active=true]:font-semibold data-[active=true]:text-[var(--pc-action)]"
+            class="flex min-h-10 w-full cursor-pointer items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)] data-[active=true]:bg-[color-mix(in_srgb,var(--pc-action)_9%,transparent)] data-[active=true]:font-semibold data-[active=true]:text-[var(--pc-action)]"
             :class="collapsed ? 'justify-center px-0' : 'gap-2.5 px-3 text-left'"
             :data-active="(route.path === item.path || (item.action === 'teams' && ['organization-teams', 'team-detail'].includes(String(route.name)))) || undefined"
             :aria-label="collapsed ? item.label : undefined"
@@ -513,7 +513,7 @@ async function logout() {
           <button
             type="button"
             data-testid="sidebar-navigation-item"
-            class="flex min-h-10 w-full cursor-pointer items-center rounded-[6px] border-0 bg-transparent text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)] data-[active=true]:bg-[color-mix(in_srgb,var(--pc-action)_9%,transparent)] data-[active=true]:font-semibold data-[active=true]:text-[var(--pc-action)] data-[placeholder=true]:text-[var(--pc-text-muted)]"
+            class="flex min-h-10 w-full cursor-pointer items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)] data-[active=true]:bg-[color-mix(in_srgb,var(--pc-action)_9%,transparent)] data-[active=true]:font-semibold data-[active=true]:text-[var(--pc-action)] data-[placeholder=true]:text-[var(--pc-text-muted)]"
             :class="collapsed ? 'justify-center px-0' : 'gap-2.5 px-3 text-left'"
             :data-active="Boolean(item.path && route.path === item.path) || undefined"
             :data-placeholder="item.placeholder || undefined"
@@ -537,7 +537,7 @@ async function logout() {
           v-for="item in mainItems"
           :key="item.label"
           type="button"
-          class="flex min-h-10 w-full cursor-pointer items-center gap-2.5 rounded-[6px] border-0 bg-transparent px-3 text-left text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)] data-[active=true]:bg-[color-mix(in_srgb,var(--pc-action)_9%,transparent)] data-[active=true]:font-semibold data-[active=true]:text-[var(--pc-action)]"
+          class="flex min-h-10 w-full cursor-pointer items-center gap-2.5 rounded-[var(--pc-radius-sm)] border-0 bg-transparent px-3 text-left text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)] data-[active=true]:bg-[color-mix(in_srgb,var(--pc-action)_9%,transparent)] data-[active=true]:font-semibold data-[active=true]:text-[var(--pc-action)]"
           :data-active="(route.path === item.path || (item.action === 'teams' && ['organization-teams', 'team-detail'].includes(String(route.name)))) || undefined"
           @click="navigate(item.path, false, item.action)"
         >
@@ -552,7 +552,7 @@ async function logout() {
           v-for="item in projectItems"
           :key="item.label"
           type="button"
-          class="flex min-h-10 w-full cursor-pointer items-center gap-2.5 rounded-[6px] border-0 bg-transparent px-3 text-left text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)] data-[active=true]:bg-[color-mix(in_srgb,var(--pc-action)_9%,transparent)] data-[active=true]:font-semibold data-[active=true]:text-[var(--pc-action)] data-[placeholder=true]:text-[var(--pc-text-muted)]"
+          class="flex min-h-10 w-full cursor-pointer items-center gap-2.5 rounded-[var(--pc-radius-sm)] border-0 bg-transparent px-3 text-left text-sm text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)] data-[active=true]:bg-[color-mix(in_srgb,var(--pc-action)_9%,transparent)] data-[active=true]:font-semibold data-[active=true]:text-[var(--pc-action)] data-[placeholder=true]:text-[var(--pc-text-muted)]"
           :data-active="Boolean(item.path && route.path === item.path) || undefined"
           :data-placeholder="item.placeholder || undefined"
           @click="navigate(item.path, item.placeholder)"
@@ -572,7 +572,7 @@ async function logout() {
           <div class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
             <button
               type="button"
-              class="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-[6px] border-0 bg-transparent text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)] md:hidden"
+              class="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)] md:hidden"
               aria-label="打开导航"
               @click="mobileOpen = true"
             >
@@ -585,7 +585,7 @@ async function logout() {
               <button
                 type="button"
                 data-testid="desktop-sidebar-toggle"
-                class="hidden h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-[6px] border-0 bg-transparent text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)] md:grid"
+                class="hidden h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)] md:grid"
                 :aria-label="collapsed ? '展开侧栏' : '收起侧栏'"
                 @click="collapsed = !collapsed"
               >
@@ -596,7 +596,7 @@ async function logout() {
             <nav class="hidden min-w-0 flex-1 items-center overflow-hidden whitespace-nowrap text-sm md:flex" aria-label="面包屑">
               <button
                 type="button"
-                class="h-8 shrink-0 cursor-pointer rounded-[6px] border-0 bg-transparent px-1.5 font-semibold text-[var(--pc-text)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
+                class="h-8 shrink-0 cursor-pointer rounded-[var(--pc-radius-sm)] border-0 bg-transparent px-1.5 font-semibold text-[var(--pc-text)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
                 @click="navigate('/dashboard')"
               >
                 PongCode
@@ -663,7 +663,7 @@ async function logout() {
                   <button
                     v-if="item.path"
                     type="button"
-                    class="h-8 shrink-0 cursor-pointer rounded-[6px] border-0 bg-transparent px-1.5 text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
+                    class="h-8 shrink-0 cursor-pointer rounded-[var(--pc-radius-sm)] border-0 bg-transparent px-1.5 text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
                     @click="navigate(item.path)"
                   >
                     {{ item.label }}
@@ -680,7 +680,7 @@ async function logout() {
             <button
               type="button"
               data-testid="theme-toggle"
-              class="grid h-10 w-10 cursor-pointer place-items-center rounded-[6px] border-0 bg-transparent p-0 text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
+              class="grid h-10 w-10 cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
               :aria-label="theme.isDark ? '切换到亮色' : '切换到暗色'"
               @click="theme.toggle"
             >
@@ -689,7 +689,7 @@ async function logout() {
             <el-badge data-testid="header-notification" class="pc-header-notification" :value="3" :max="99">
               <button
                 type="button"
-                class="grid h-10 w-10 cursor-pointer place-items-center rounded-[6px] border-0 bg-transparent p-0 text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
+                class="grid h-10 w-10 cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
                 aria-label="通知"
                 @click="ElMessage.info('通知功能开发中')"
               >
@@ -700,7 +700,7 @@ async function logout() {
               <button
                 type="button"
                 data-testid="user-trigger"
-                class="grid h-10 w-10 cursor-pointer place-items-center rounded-[6px] border-0 bg-transparent p-1 hover:bg-[var(--pc-surface-soft)]"
+                class="grid h-10 w-10 cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-1 hover:bg-[var(--pc-surface-soft)]"
                 aria-label="用户菜单"
               >
                 <el-avatar :size="32" class="text-xs font-semibold" :style="avatarStyle">
@@ -804,10 +804,10 @@ async function logout() {
           v-for="organization in teamOrganizations"
           :key="organization.id"
           type="button"
-          class="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[8px] border border-[var(--pc-border)] bg-[var(--pc-surface)] px-[17px] text-left hover:border-[var(--pc-action)] hover:bg-[var(--pc-surface-soft)]"
+          class="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] px-[17px] text-left hover:border-[var(--pc-action)] hover:bg-[var(--pc-surface-soft)]"
           @click="selectTeamOrganization(organization.id)"
         >
-          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-[6px] bg-[color-mix(in_srgb,var(--pc-action)_12%,var(--pc-surface))] text-sm font-semibold text-[var(--pc-action)]">
+          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-[var(--pc-radius-sm)] bg-[color-mix(in_srgb,var(--pc-action)_12%,var(--pc-surface))] text-sm font-semibold text-[var(--pc-action)]">
             {{ organization.name.slice(0, 1) }}
           </span>
           <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ organization.name }}</span>

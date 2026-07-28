@@ -11,7 +11,7 @@ defineProps<{
   <el-empty :image-size="72">
     <template #image>
       <div
-        class="m-auto grid h-16 w-16 place-items-center rounded-[8px] bg-[var(--pc-surface-soft)] text-[var(--pc-text-muted)]"
+        class="m-auto grid h-16 w-16 place-items-center rounded-[var(--pc-radius-md)] bg-[var(--pc-surface-soft)] text-[var(--pc-text-muted)]"
         aria-hidden="true"
       >
         <el-icon :size="30">

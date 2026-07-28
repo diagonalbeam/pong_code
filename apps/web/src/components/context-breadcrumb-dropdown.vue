@@ -77,7 +77,7 @@ function handleVisibleChange(visible: boolean) {
       <button
         type="button"
         :data-testid="testId"
-        class="pc-context-trigger flex h-8 min-w-0 cursor-pointer items-center gap-1 rounded-[6px] border-0 bg-transparent px-1.5 text-sm font-medium text-[var(--pc-text)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)] disabled:cursor-wait disabled:text-[var(--pc-text-muted)]"
+        class="pc-context-trigger flex h-8 min-w-0 cursor-pointer items-center gap-1 rounded-[var(--pc-radius-sm)] border-0 bg-transparent px-1.5 text-sm font-medium text-[var(--pc-text)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)] disabled:cursor-wait disabled:text-[var(--pc-text-muted)]"
         :style="{ maxWidth: `${maxWidth}px` }"
         :aria-label="`切换${contextName}：${label}`"
       >

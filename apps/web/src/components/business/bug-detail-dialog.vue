@@ -287,7 +287,7 @@ async function removeWorklog(log: WorkLog) {
             </el-form>
 
             <div class="mt-[17px] grid gap-3">
-              <article v-for="evidence in evidences" :key="evidence.id" class="rounded-[8px] border border-[var(--pc-border-soft)] p-[17px]">
+              <article v-for="evidence in evidences" :key="evidence.id" class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] p-[17px]">
                 <header class="flex items-center justify-between gap-3">
                   <strong class="text-sm">{{ evidence.creator_name || '未知用户' }}</strong>
                   <time class="text-xs text-[var(--pc-text-muted)]">{{ evidence.created_at?.replace('T', ' ').slice(0, 16) }}</time>
@@ -295,7 +295,7 @@ async function removeWorklog(log: WorkLog) {
                 <p v-if="evidence.comment" class="mt-3 mb-0 whitespace-pre-wrap">
                   {{ evidence.comment }}
                 </p>
-                <pre v-if="evidence.stack_trace" class="mt-3 mb-0 max-h-[260px] overflow-auto rounded-[8px] bg-[#171719] p-3 font-mono text-xs whitespace-pre-wrap text-[#f5f5f7]">{{ evidence.stack_trace }}</pre>
+                <pre v-if="evidence.stack_trace" class="mt-3 mb-0 max-h-[260px] overflow-auto rounded-[var(--pc-radius-card)] bg-[#171719] p-3 font-mono text-xs whitespace-pre-wrap text-[#f5f5f7]">{{ evidence.stack_trace }}</pre>
                 <div v-if="evidence.attachments.length" class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
                   <a
                     v-for="attachment in evidence.attachments"
@@ -305,7 +305,7 @@ async function removeWorklog(log: WorkLog) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <img class="aspect-square w-full rounded-[8px] object-cover" :src="attachment.url" :alt="attachment.file_name">
+                    <img class="aspect-square w-full rounded-[var(--pc-radius-sm)] object-cover" :src="attachment.url" :alt="attachment.file_name">
                     <span class="overflow-hidden text-ellipsis whitespace-nowrap">{{ attachment.file_name }}</span>
                   </a>
                 </div>

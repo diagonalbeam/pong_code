@@ -112,7 +112,7 @@ onMounted(load)
       </el-button>
     </PageHeader>
     <section class="min-h-60">
-      <div class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface-soft)] p-3 text-sm text-[var(--pc-text-secondary)]">
+      <div class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--pc-radius-card)] bg-[var(--pc-surface-soft)] p-3 text-sm text-[var(--pc-text-secondary)]">
         <span class="text-xs text-[var(--pc-text-muted)]">所属组织</span>
         <RouterLink v-if="organization" class="text-[var(--pc-action)] no-underline" :to="`/organizations/${organization.id}`">
           {{ organization.name }}

@@ -410,7 +410,7 @@ watch(
             </div>
 
             <div class="flex shrink-0 flex-wrap items-center justify-end gap-2 max-[980px]:w-full max-[980px]:justify-start">
-              <label class="inline-flex min-h-8 items-center gap-2.5 whitespace-nowrap rounded-[8px] border border-[var(--pc-border)] bg-[var(--pc-surface)] px-3">
+              <label class="inline-flex min-h-8 items-center gap-2.5 whitespace-nowrap px-1">
                 <span class="text-[13px] font-medium text-[var(--pc-text-secondary)]">隐藏已完成</span>
                 <el-switch
                   :model-value="hideCompleted"
@@ -435,23 +435,18 @@ watch(
             </div>
           </div>
 
-          <div class="mt-4 rounded-[8px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-[17px] py-3.5">
-            <div class="mb-2 flex items-center justify-between gap-2.5">
-              <span class="text-[13px] font-medium text-[var(--pc-text-secondary)]">迭代进度</span>
-              <strong class="text-[13px] text-[var(--pc-action)]">{{ totals.progress }}%</strong>
-            </div>
-            <el-progress :percentage="totals.progress" :show-text="false" :stroke-width="8" />
+          <div class="mt-4 flex items-center" data-testid="board-progress">
+            <el-progress :percentage="totals.progress" :stroke-width="8" class="w-full" />
           </div>
         </section>
 
-        <div class="grid gap-3.5">
+        <div class="grid gap-8">
           <article
             v-for="lane in swimlanes"
             :key="laneId(lane)"
-            class="overflow-hidden rounded-[8px] border border-[var(--pc-border)] bg-[var(--pc-surface)]"
             :data-testid="`board-swimlane-${laneId(lane)}`"
           >
-            <header class="flex min-h-[52px] items-center justify-between gap-3 border-b border-[var(--pc-border-soft)] px-3 py-1.5">
+            <header class="flex min-h-[44px] items-center justify-between gap-3 px-1 py-1">
               <button
                 type="button"
                 class="flex min-h-10 min-w-0 cursor-pointer items-center gap-2 border-0 bg-transparent px-1.5 text-left text-[var(--pc-text)]"
@@ -486,9 +481,13 @@ watch(
               </el-button>
             </header>
 
-            <div v-if="!collapsed.has(laneId(lane))" class="grid grid-cols-[repeat(3,minmax(260px,1fr))] gap-3 overflow-x-auto p-3">
-              <section v-for="column in statusColumns" :key="column.value">
-                <header class="flex min-h-[34px] items-center gap-[7px] px-1">
+            <div v-if="!collapsed.has(laneId(lane))" class="grid grid-cols-[repeat(3,minmax(260px,1fr))] gap-3 overflow-x-auto pt-1 pb-1">
+              <section
+                v-for="column in statusColumns"
+                :key="column.value"
+                class="rounded-[var(--pc-radius-card)] bg-[var(--pc-surface-soft)] p-2.5"
+              >
+                <header class="flex min-h-[30px] items-center gap-[7px] px-1">
                   <span
                     class="h-2 w-2 rounded-full bg-[var(--pc-text-muted)] data-[status=doing]:bg-[var(--pc-action)] data-[status=done]:bg-[var(--pc-success)]"
                     :data-status="column.value"

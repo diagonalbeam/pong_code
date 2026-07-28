@@ -68,11 +68,7 @@ withDefaults(defineProps<{
             <span class="pc-skeleton__block h-8 w-36" />
           </div>
         </div>
-        <div class="pc-skeleton__board-progress">
-          <div class="flex items-center justify-between gap-3">
-            <span class="pc-skeleton__block h-3 w-16" />
-            <span class="pc-skeleton__block h-3 w-10" />
-          </div>
+        <div class="mt-4">
           <span class="pc-skeleton__block h-2 w-full rounded-full" />
         </div>
       </section>
@@ -246,30 +242,13 @@ withDefaults(defineProps<{
   gap: 8px;
 }
 
-.pc-skeleton__board-progress {
-  display: grid;
-  gap: 10px;
-  padding: 14px 17px;
-  border: 1px solid var(--pc-border-soft);
-  border-radius: var(--pc-radius-card);
-  background: var(--pc-surface);
-}
-
-.pc-skeleton__board-lane {
-  overflow: hidden;
-  border: 1px solid var(--pc-border);
-  border-radius: var(--pc-radius-card);
-  background: var(--pc-surface);
-}
-
 .pc-skeleton__board-lane > header {
   display: flex;
-  min-height: 52px;
+  min-height: 44px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--pc-border-soft);
+  padding: 4px;
 }
 
 .pc-skeleton__board-columns {
@@ -277,7 +256,12 @@ withDefaults(defineProps<{
   grid-template-columns: repeat(3, minmax(260px, 1fr));
   gap: 12px;
   overflow-x: auto;
-  padding: 12px;
+}
+
+.pc-skeleton__board-columns > section {
+  padding: 10px;
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-surface-soft);
 }
 
 .pc-skeleton__board-card {
@@ -288,6 +272,7 @@ withDefaults(defineProps<{
   padding: 14px;
   border: 1px solid var(--pc-border-soft);
   border-radius: var(--pc-radius-card);
+  background: var(--pc-surface);
 }
 
 @keyframes pc-skeleton-shimmer {
