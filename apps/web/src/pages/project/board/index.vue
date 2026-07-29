@@ -525,12 +525,12 @@ watch(
             v-for="lane in swimlanes"
             :key="laneId(lane)"
             :data-testid="`board-swimlane-${laneId(lane)}`"
-            class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-3"
+            class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-3 py-1.5"
           >
-            <header class="flex min-h-[44px] items-center justify-between gap-3 px-1 py-1">
+            <header class="flex min-h-8 items-center justify-between gap-3 px-1">
               <button
                 type="button"
-                class="flex min-h-10 min-w-0 cursor-pointer items-center gap-2 border-0 bg-transparent px-1.5 text-left text-[var(--pc-text)]"
+                class="flex min-h-8 min-w-0 cursor-pointer items-center gap-2 border-0 bg-transparent px-1.5 text-left text-[var(--pc-text)]"
                 :data-testid="`board-swimlane-toggle-${laneId(lane)}`"
                 :aria-expanded="!collapsed.has(laneId(lane))"
                 @click="toggleLane(laneId(lane))"
