@@ -6,6 +6,7 @@ import { updateSprintRequirements } from '@/api/sprints'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import RequirementBindList from '@/components/business/requirement-bind-list.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -47,18 +48,6 @@ watch(
   },
   { immediate: true },
 )
-
-function isOccupied(item: Requirement) {
-  return item.sprint_id !== null && item.sprint_id !== props.sprintId
-}
-
-function bindingLabel(item: Requirement) {
-  if (item.sprint_id === props.sprintId)
-    return '已绑定当前迭代'
-  if (isOccupied(item))
-    return `已被“${item.sprint_name || '其他迭代'}”绑定`
-  return '未绑定迭代'
-}
 
 async function submit() {
   const selected = new Set(selectedIds.value)
@@ -107,7 +96,7 @@ async function submit() {
     title-testid="board-requirement-bind-dialog-title"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <div class="mb-4 flex items-center justify-between gap-4">
+    <div class="mb-3 flex items-center justify-between gap-4">
       <span class="text-sm font-semibold" data-testid="board-requirement-selected-count">
         已选 {{ selectedIds.length }} 个
       </span>
@@ -116,36 +105,14 @@ async function submit() {
       </el-input>
     </div>
 
-    <el-checkbox-group
-      v-if="filteredRequirements.length"
-      v-model="selectedIds"
-      class="grid max-h-[52vh] gap-2 overflow-y-auto pr-1"
-      data-testid="board-requirement-list"
-    >
-      <el-checkbox
-        v-for="item in filteredRequirements"
-        :key="item.id"
-        :value="item.id"
-        :disabled="isOccupied(item)"
-        border
-        class="m-0! h-auto! min-h-14 w-full px-3! py-2!"
-      >
-        <span class="flex min-w-0 flex-1 items-center gap-3">
-          <span class="min-w-0 flex-1">
-            <strong class="block truncate text-sm text-[var(--pc-text)]">{{ item.title }}</strong>
-            <span class="mt-1 block truncate text-xs text-[var(--pc-text-secondary)]">{{ item.content }}</span>
-          </span>
-          <el-tag
-            size="small"
-            :type="item.sprint_id === sprintId ? 'primary' : isOccupied(item) ? 'info' : undefined"
-            effect="plain"
-            class="shrink-0"
-          >
-            {{ bindingLabel(item) }}
-          </el-tag>
-        </span>
-      </el-checkbox>
-    </el-checkbox-group>
+    <div v-if="filteredRequirements.length" class="max-h-[52vh] overflow-y-auto pr-1">
+      <RequirementBindList
+        v-model="selectedIds"
+        :requirements="filteredRequirements"
+        :sprint-id="sprintId"
+        list-testid="board-requirement-list"
+      />
+    </div>
     <el-empty
       v-else
       :image-size="72"
@@ -167,10 +134,3 @@ async function submit() {
     </template>
   </AppDialog>
 </template>
-
-<style scoped>
-[data-testid='board-requirement-list'] :deep(.el-checkbox__label) {
-  min-width: 0;
-  flex: 1;
-}
-</style>

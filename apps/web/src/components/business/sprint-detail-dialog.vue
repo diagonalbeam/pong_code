@@ -13,6 +13,7 @@ import {
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint, User, WorkLog } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import RequirementBindList from '@/components/business/requirement-bind-list.vue'
 import StatusTag from '@/components/status-tag.vue'
 import WorklogForm from './worklog-form.vue'
 import WorklogList from './worklog-list.vue'
@@ -151,40 +152,6 @@ function clearRequirementSelection() {
   selectedRequirements.value = []
 }
 
-function isRequirementOccupied(item: Requirement) {
-  return item.sprint_id !== null && item.sprint_id !== props.sprintId
-}
-
-function requirementBindingLabel(item: Requirement) {
-  if (item.sprint_id === props.sprintId)
-    return '已绑定当前迭代'
-  if (isRequirementOccupied(item))
-    return `已被“${item.sprint_name || '其他迭代'}”绑定`
-  return '未绑定迭代'
-}
-
-const requirementStatusLabels: Record<string, string> = {
-  pending: '等待排期',
-  in_progress: '进行中',
-  testing: '等待测试',
-  completed: '已完成',
-}
-
-function requirementStatusLabel(status: string) {
-  return requirementStatusLabels[status] || status
-}
-
-/** 与设计稿一致：进行中蓝、等待橙、完成绿；色值沿用全局 token */
-function requirementStatusColor(status: string) {
-  if (status === 'completed')
-    return 'var(--pc-success)'
-  if (status === 'in_progress')
-    return 'var(--pc-action)'
-  if (status === 'pending' || status === 'testing')
-    return 'var(--pc-warning)'
-  return 'var(--pc-text-muted)'
-}
-
 async function addWorklog(value: { date: string; hours: number; description: string }, done: () => void) {
   if (!props.sprintId)
     return
@@ -278,32 +245,13 @@ async function remove() {
           </el-form>
         </el-tab-pane>
         <el-tab-pane :label="`需求 (${selectedRequirements.length})`" name="requirements">
-          <el-checkbox-group v-if="allRequirements.length" v-model="selectedRequirements" data-requirement-list class="mb-[17px] block w-full">
-            <el-checkbox
-              v-for="item in allRequirements"
-              :key="item.id"
-              :value="item.id"
-              :disabled="isRequirementOccupied(item)"
-              class="requirement-row"
-            >
-              <span class="requirement-row__body">
-                <strong class="requirement-row__title">{{ item.title }}</strong>
-                <span class="requirement-row__priority">P{{ item.priority }}</span>
-                <span class="requirement-row__status" :style="{ color: requirementStatusColor(item.status) }">
-                  <i class="requirement-row__dot" aria-hidden="true" />
-                  {{ requirementStatusLabel(item.status) }}
-                </span>
-                <el-tag
-                  size="small"
-                  :type="item.sprint_id === sprintId ? 'primary' : isRequirementOccupied(item) ? 'info' : undefined"
-                  effect="plain"
-                  class="ml-2 shrink-0"
-                >
-                  {{ requirementBindingLabel(item) }}
-                </el-tag>
-              </span>
-            </el-checkbox>
-          </el-checkbox-group>
+          <RequirementBindList
+            v-if="allRequirements.length && sprintId"
+            v-model="selectedRequirements"
+            :requirements="allRequirements"
+            :sprint-id="sprintId"
+            class="mb-[17px]"
+          />
           <el-empty v-else :image-size="64" description="项目还没有需求" />
           <div v-if="allRequirements.length" class="flex items-center gap-3">
             <el-button type="primary" :loading="saving" @click="saveRequirements">
@@ -334,89 +282,3 @@ async function remove() {
     </template>
   </AppDialog>
 </template>
-
-<style scoped>
-[data-requirement-list] :deep(.requirement-row.el-checkbox) {
-  display: flex;
-  width: 100%;
-  height: auto;
-  min-height: 48px;
-  margin: 0;
-  padding: 0;
-  align-items: center;
-}
-
-[data-requirement-list] :deep(.requirement-row .el-checkbox__inner) {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-}
-
-[data-requirement-list] :deep(.requirement-row .el-checkbox__label) {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  width: 100%;
-  margin-left: 10px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--pc-border-soft);
-  line-height: 1.4;
-  color: var(--pc-text);
-}
-
-[data-requirement-list] :deep(.requirement-row.el-checkbox:last-child .el-checkbox__label) {
-  border-bottom: 0;
-}
-
-.requirement-row__body {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.requirement-row__title {
-  overflow: hidden;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--pc-text);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.requirement-row__priority {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--pc-action) 12%, var(--pc-surface));
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--pc-action);
-}
-
-.requirement-row__status {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.requirement-row__dot {
-  display: block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-</style>
