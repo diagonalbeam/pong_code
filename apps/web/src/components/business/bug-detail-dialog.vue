@@ -227,7 +227,6 @@ async function removeWorklog(log: WorkLog) {
     title-testid="bug-detail-title"
     width="min(94vw, 984px)"
     :loading="loading || saving"
-    :show-footer="tab === 'detail'"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #header-extra>
@@ -259,7 +258,7 @@ async function removeWorklog(log: WorkLog) {
                   <el-option label="待处理" value="open" />
                   <el-option label="处理中" value="in_progress" />
                   <el-option label="已修复" value="fixed" />
-                  <el-option label="已关闭" value="closed" />
+                  <el-option label="已验证" value="closed" />
                   <el-option label="已拒绝" value="rejected" />
                 </el-select>
               </el-form-item>
@@ -327,9 +326,6 @@ async function removeWorklog(log: WorkLog) {
               <el-form-item label="截图">
                 <ScreenshotUpload v-model="evidenceFiles" test-id="add-bug-evidence-file-input" />
               </el-form-item>
-              <el-button type="primary" data-testid="add-bug-evidence-submit-button" :loading="evidenceSubmitting" @click="addEvidence">
-                添加证据
-              </el-button>
             </el-form>
 
             <div class="mt-[17px]">
@@ -377,11 +373,27 @@ async function removeWorklog(log: WorkLog) {
       </el-tabs>
     </div>
     <template #footer>
-      <el-button type="danger" text @click="remove">
-        <el-icon><Delete /></el-icon>删除缺陷
-      </el-button>
-      <el-button type="primary" :loading="saving" @click="save">
-        保存修改
+      <template v-if="tab === 'detail'">
+        <el-button type="danger" text @click="remove">
+          <el-icon><Delete /></el-icon>删除缺陷
+        </el-button>
+        <el-button @click="emit('update:modelValue', false)">
+          取消
+        </el-button>
+        <el-button type="primary" :loading="saving" @click="save">
+          保存
+        </el-button>
+      </template>
+      <template v-else-if="tab === 'evidence'">
+        <el-button @click="tab = 'detail'">
+          返回详情
+        </el-button>
+        <el-button type="primary" data-testid="add-bug-evidence-submit-button" :loading="evidenceSubmitting" @click="addEvidence">
+          提交证据
+        </el-button>
+      </template>
+      <el-button v-else @click="emit('update:modelValue', false)">
+        关闭
       </el-button>
     </template>
   </AppDialog>

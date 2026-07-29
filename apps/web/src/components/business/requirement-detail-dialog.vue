@@ -94,7 +94,7 @@ async function remove() {
   if (!props.requirementId || !requirement.value)
     return
   try {
-    await ElMessageBox.confirm(`确认删除需求“${requirement.value.title}”？关联工作项将保留但不再归属该需求。`, '删除需求', {
+    await ElMessageBox.confirm(`确认删除需求“${requirement.value.title}”？需求内的任务及任务工时也会被删除，此操作不可撤销。`, '删除需求', {
       type: 'warning',
       confirmButtonText: '删除',
     })

@@ -1,5 +1,5 @@
 import { http } from './client'
-import type { Requirement } from './types'
+import type { Requirement, Sprint } from './types'
 
 export function getRequirements(
   projectId: number,
@@ -26,4 +26,29 @@ export function updateRequirement(id: number, data: Record<string, unknown>) {
 
 export function deleteRequirement(id: number) {
   return http.delete<{ success: boolean }>(`/requirements/${id}`)
+}
+
+export function batchDeleteRequirements(projectId: number, requirementIds: number[]) {
+  return http.post<{
+    success: boolean
+    deleted_count: number
+    deleted_issue_count: number
+  }>(`/projects/${projectId}/requirements/batch-delete`, {
+    requirement_ids: requirementIds,
+  })
+}
+
+export function batchBindRequirementsToSprint(
+  projectId: number,
+  requirementIds: number[],
+  sprintId: number,
+) {
+  return http.post<{
+    success: boolean
+    updated_count: number
+    sprint: Sprint
+  }>(`/projects/${projectId}/requirements/batch-bind-sprint`, {
+    requirement_ids: requirementIds,
+    sprint_id: sprintId,
+  })
 }

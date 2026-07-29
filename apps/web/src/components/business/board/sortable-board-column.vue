@@ -4,6 +4,7 @@ import Sortable, { type SortableEvent } from 'sortablejs'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import type { BoardItem } from '@/api/types'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
+import { bugStatusLabels } from '@/shared/bug'
 import BoardTimeDropdown from './board-time-dropdown.vue'
 
 type BoardStatus = 'todo' | 'doing' | 'done'
@@ -52,6 +53,12 @@ function requirementIdFromLane(laneId: string) {
 
 function itemOwnerName(item: BoardItem) {
   return item.assignee_name || (item.item_type === 'bug' ? item.reporter_name : null) || ''
+}
+
+function bugStatusLabel(item: BoardItem) {
+  if (item.item_type !== 'bug')
+    return ''
+  return bugStatusLabels[item.status] || '待处理'
 }
 
 function emitMove(item: BoardItem, status: BoardStatus, laneId = props.laneId) {
@@ -249,6 +256,14 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
           </span>
           <span class="mx-0.5 h-3 w-px shrink-0 bg-[var(--pc-border)]" aria-hidden="true" />
           <BoardTimeDropdown :item="item" @changed="emit('changed')" />
+          <span
+            v-if="item.item_type === 'bug'"
+            class="ml-auto inline-flex shrink-0 items-center rounded-full bg-[color-mix(in_srgb,var(--pc-danger)_10%,var(--pc-surface))] px-2 py-0.5 text-[11px] font-medium text-[var(--pc-danger)]"
+            :aria-label="`缺陷状态：${bugStatusLabel(item)}`"
+            :title="`缺陷状态：${bugStatusLabel(item)}`"
+          >
+            {{ bugStatusLabel(item) }}
+          </span>
         </footer>
       </article>
     </template>

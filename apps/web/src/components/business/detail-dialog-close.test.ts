@@ -209,7 +209,7 @@ describe('详情弹窗保存成功后的关闭行为', () => {
     const wrapper = mountDialog(component, props)
     await flushPromises()
 
-    const saveButton = wrapper.findAll('button').find(button => button.text().trim() === '保存修改')
+    const saveButton = wrapper.findAll('button').find(button => button.text().trim().startsWith('保存'))
     expect(saveButton).toBeDefined()
     await saveButton!.trigger('click')
     await flushPromises()

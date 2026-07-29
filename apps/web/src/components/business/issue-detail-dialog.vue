@@ -158,7 +158,6 @@ async function removeWorklog(log: WorkLog) {
     title="任务详情"
     width="min(94vw, 864px)"
     :loading="loading || saving"
-    :show-footer="tab === 'detail'"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #header-extra>
@@ -213,11 +212,19 @@ async function removeWorklog(log: WorkLog) {
       </el-tabs>
     </div>
     <template #footer>
-      <el-button type="danger" text @click="remove">
-        <el-icon><Delete /></el-icon>删除任务
-      </el-button>
-      <el-button type="primary" data-testid="edit-issue-save-button" :loading="saving" @click="save">
-        保存修改
+      <template v-if="tab === 'detail'">
+        <el-button type="danger" text @click="remove">
+          <el-icon><Delete /></el-icon>删除任务
+        </el-button>
+        <el-button @click="emit('update:modelValue', false)">
+          取消
+        </el-button>
+        <el-button type="primary" data-testid="edit-issue-save-button" :loading="saving" @click="save">
+          保存
+        </el-button>
+      </template>
+      <el-button v-else @click="emit('update:modelValue', false)">
+        关闭
       </el-button>
     </template>
   </AppDialog>

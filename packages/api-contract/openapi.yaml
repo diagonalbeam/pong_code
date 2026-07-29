@@ -222,6 +222,72 @@ paths:
     get:
       operationId: getRequirementStats
       responses: *json-response
+  /api/projects/{projectId}/requirements/batch-delete:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    post:
+      operationId: batchDeleteRequirements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requirement_ids]
+              properties:
+                requirement_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        "200":
+          description: 批量删除结果
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, deleted_count, deleted_issue_count]
+                properties:
+                  success:
+                    type: boolean
+                  deleted_count:
+                    type: integer
+                  deleted_issue_count:
+                    type: integer
+  /api/projects/{projectId}/requirements/batch-bind-sprint:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    post:
+      operationId: batchBindRequirementsToSprint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requirement_ids, sprint_id]
+              properties:
+                requirement_ids:
+                  type: array
+                  items:
+                    type: integer
+                sprint_id:
+                  type: integer
+      responses:
+        "200":
+          description: 批量绑定结果
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, updated_count, sprint]
+                properties:
+                  success:
+                    type: boolean
+                  updated_count:
+                    type: integer
+                  sprint:
+                    $ref: "#/components/schemas/Sprint"
   /api/projects/{projectId}/issues:
     parameters:
       - $ref: "#/components/parameters/ProjectId"
@@ -296,8 +362,38 @@ paths:
       responses: *json-response
     put:
       operationId: updateSprintRequirements
-      requestBody: *json-body
-      responses: *json-response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requirement_ids]
+              properties:
+                requirement_ids:
+                  type: array
+                  items:
+                    type: integer
+                delete_unbound_tasks:
+                  type: boolean
+                  default: false
+      responses:
+        "200":
+          description: 迭代需求关联更新结果
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sprint, requirements, deleted_issue_count]
+                properties:
+                  sprint:
+                    $ref: "#/components/schemas/Sprint"
+                  requirements:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Requirement"
+                  deleted_issue_count:
+                    type: integer
 
   /api/requirements/{requirementId}:
     parameters:

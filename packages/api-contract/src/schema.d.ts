@@ -400,6 +400,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{projectId}/requirements/batch-delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: components["parameters"]["ProjectId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["batchDeleteRequirements"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{projectId}/requirements/batch-bind-sprint": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: components["parameters"]["ProjectId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["batchBindRequirementsToSprint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{projectId}/issues": {
         parameters: {
             query?: never;
@@ -1626,6 +1662,71 @@ export interface operations {
             };
         };
     };
+    batchDeleteRequirements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: components["parameters"]["ProjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    requirement_ids: number[];
+                };
+            };
+        };
+        responses: {
+            /** @description 批量删除结果 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        deleted_count: number;
+                        deleted_issue_count: number;
+                    };
+                };
+            };
+        };
+    };
+    batchBindRequirementsToSprint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: components["parameters"]["ProjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    requirement_ids: number[];
+                    sprint_id: number;
+                };
+            };
+        };
+        responses: {
+            /** @description 批量绑定结果 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        updated_count: number;
+                        sprint: components["schemas"]["Sprint"];
+                    };
+                };
+            };
+        };
+    };
     createIssue: {
         parameters: {
             query?: never;
@@ -1881,19 +1982,23 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    [key: string]: unknown;
+                    requirement_ids: number[];
+                    /** @default false */
+                    delete_unbound_tasks?: boolean;
                 };
             };
         };
         responses: {
-            /** @description 请求成功 */
+            /** @description 迭代需求关联更新结果 */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        [key: string]: unknown;
+                        sprint: components["schemas"]["Sprint"];
+                        requirements: components["schemas"]["Requirement"][];
+                        deleted_issue_count: number;
                     };
                 };
             };

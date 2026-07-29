@@ -95,7 +95,7 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
     title-testid="bug-view-title"
     width="min(94vw, 984px)"
     :loading="loading"
-    :show-footer="false"
+    :show-footer="true"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #header-extra>
@@ -323,6 +323,11 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
         </section>
       </template>
     </div>
+    <template #footer>
+      <el-button @click="emit('update:modelValue', false)">
+        关闭
+      </el-button>
+    </template>
   </AppDialog>
 </template>
 

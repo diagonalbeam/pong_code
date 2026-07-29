@@ -31,6 +31,7 @@ import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
 import BugViewDialog from '@/components/business/bug-view-dialog.vue'
 import IssueDialog from '@/components/business/issue-dialog.vue'
 import IssueDetailDialog from '@/components/business/issue-detail-dialog.vue'
+import BoardRequirementBindDialog from '@/components/business/board/board-requirement-bind-dialog.vue'
 import SortableBoardColumn from '@/components/business/board/sortable-board-column.vue'
 import {
   BOARD_HIDE_COMPLETED_STORAGE_KEY,
@@ -75,6 +76,7 @@ const createBugOpen = ref(false)
 const issueDialogOpen = ref(false)
 const bugViewOpen = ref(false)
 const bugDialogOpen = ref(false)
+const requirementBindOpen = ref(false)
 const bugDialogTab = ref<'detail' | 'evidence' | 'time'>('detail')
 const selectedRequirementId = ref<number | null>(null)
 const selectedIssueId = ref<number | null>(null)
@@ -481,6 +483,12 @@ watch(
                   @change="toggleHideCompleted(Boolean($event))"
                 />
               </label>
+              <el-button
+                data-testid="board-bind-requirements-button"
+                @click="requirementBindOpen = true"
+              >
+                <el-icon><CollectionTag /></el-icon>绑定需求
+              </el-button>
               <el-button :disabled="refreshing" data-testid="board-refresh-button" @click="refreshBoard">
                 <el-icon :class="{ 'animate-spin': refreshing }"><Refresh /></el-icon>刷新
               </el-button>
@@ -621,6 +629,13 @@ watch(
       :users="users"
       :initial-tab="bugDialogTab"
       @changed="loadBoard()"
+    />
+    <BoardRequirementBindDialog
+      v-if="sprint"
+      v-model="requirementBindOpen"
+      :sprint-id="sprint.id"
+      :requirements="requirements"
+      @updated="refreshBoard"
     />
   </div>
 </template>

@@ -3,7 +3,7 @@ export const bugStatusLabels = {
   in_progress: '处理中',
   fixed: '已修复',
   resolved: '已修复',
-  closed: '已关闭',
+  closed: '已验证',
   rejected: '已拒绝',
 } as const
 

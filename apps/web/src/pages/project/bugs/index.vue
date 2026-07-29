@@ -114,7 +114,7 @@ onMounted(load)
       <StatCard label="全部缺陷" :value="stats.total" tone="danger" />
       <StatCard label="待处理" :value="stats.open" tone="danger" />
       <StatCard label="处理中" :value="stats.in_progress" tone="warning" />
-      <StatCard label="已修复/关闭" :value="stats.fixed + stats.closed" tone="success" />
+      <StatCard label="已修复/验证" :value="stats.fixed + stats.closed" tone="success" />
     </section>
 
     <section>
@@ -129,7 +129,7 @@ onMounted(load)
             <el-option label="待处理" value="open" />
             <el-option label="处理中" value="in_progress" />
             <el-option label="已修复" value="fixed" />
-            <el-option label="已关闭" value="closed" />
+            <el-option label="已验证" value="closed" />
             <el-option label="已拒绝" value="rejected" />
           </el-select>
         </div>

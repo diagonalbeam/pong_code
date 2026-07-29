@@ -36,6 +36,7 @@ const sprint = ref<Sprint | null>(null)
 const workLogs = ref<WorkLog[]>([])
 const canDelete = ref(false)
 const selectedRequirements = ref<number[]>([])
+const initialRequirements = ref<number[]>([])
 const form = reactive({
   name: '',
   status: 'active',
@@ -65,6 +66,7 @@ async function load() {
     workLogs.value = details.work_logs
     canDelete.value = details.can_delete
     selectedRequirements.value = requirements.requirements.map(item => item.id)
+    initialRequirements.value = [...selectedRequirements.value]
     Object.assign(form, {
       name: details.sprint.name,
       status: details.sprint.status,
@@ -109,9 +111,30 @@ async function save() {
 async function saveRequirements() {
   if (!props.sprintId)
     return
+
+  const selected = new Set(selectedRequirements.value)
+  const unboundCount = initialRequirements.value.filter(id => !selected.has(id)).length
+  if (unboundCount > 0) {
+    try {
+      await ElMessageBox.confirm(
+        `取消绑定后，对应的 ${unboundCount} 个需求下属于当前迭代的任务及工时将被删除，此操作不可撤销。确定继续吗？`,
+        '确认取消绑定',
+        {
+          type: 'warning',
+          confirmButtonText: '确定继续',
+        },
+      )
+    }
+    catch (error) {
+      if (error === 'cancel' || error === 'close')
+        return
+      throw error
+    }
+  }
+
   saving.value = true
   try {
-    await updateSprintRequirements(props.sprintId, selectedRequirements.value)
+    await updateSprintRequirements(props.sprintId, selectedRequirements.value, unboundCount > 0)
     ElMessage.success('关联需求已更新')
     await load()
     emit('changed')
@@ -126,6 +149,18 @@ async function saveRequirements() {
 
 function clearRequirementSelection() {
   selectedRequirements.value = []
+}
+
+function isRequirementOccupied(item: Requirement) {
+  return item.sprint_id !== null && item.sprint_id !== props.sprintId
+}
+
+function requirementBindingLabel(item: Requirement) {
+  if (item.sprint_id === props.sprintId)
+    return '已绑定当前迭代'
+  if (isRequirementOccupied(item))
+    return `已被“${item.sprint_name || '其他迭代'}”绑定`
+  return '未绑定迭代'
 }
 
 const requirementStatusLabels: Record<string, string> = {
@@ -248,6 +283,7 @@ async function remove() {
               v-for="item in allRequirements"
               :key="item.id"
               :value="item.id"
+              :disabled="isRequirementOccupied(item)"
               class="requirement-row"
             >
               <span class="requirement-row__body">
@@ -257,6 +293,14 @@ async function remove() {
                   <i class="requirement-row__dot" aria-hidden="true" />
                   {{ requirementStatusLabel(item.status) }}
                 </span>
+                <el-tag
+                  size="small"
+                  :type="item.sprint_id === sprintId ? 'primary' : isRequirementOccupied(item) ? 'info' : undefined"
+                  effect="plain"
+                  class="ml-2 shrink-0"
+                >
+                  {{ requirementBindingLabel(item) }}
+                </el-tag>
               </span>
             </el-checkbox>
           </el-checkbox-group>

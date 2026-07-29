@@ -282,9 +282,19 @@ button:active:not(:disabled),
 }
 
 .pc-dialog .el-dialog__header {
+  flex: none;
   min-height: 44px;
   margin: 0;
   padding: 20px 52px 0 20px;
+}
+
+.pc-dialog .el-dialog__body {
+  flex: 1 1 auto;
+  overscroll-behavior: contain;
+}
+
+.pc-dialog .el-dialog__footer {
+  flex: none;
 }
 
 .el-dialog__title {

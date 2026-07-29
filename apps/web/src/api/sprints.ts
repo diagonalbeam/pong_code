@@ -25,8 +25,17 @@ export function getSprintRequirements(id: number) {
   return http.get<{ requirements: Requirement[] }>(`/sprints/${id}/requirements`)
 }
 
-export function updateSprintRequirements(id: number, requirementIds: number[]) {
-  return http.put<{ sprint: Sprint; requirements: Requirement[] }>(`/sprints/${id}/requirements`, {
+export function updateSprintRequirements(
+  id: number,
+  requirementIds: number[],
+  deleteUnboundTasks = false,
+) {
+  return http.put<{
+    sprint: Sprint
+    requirements: Requirement[]
+    deleted_issue_count: number
+  }>(`/sprints/${id}/requirements`, {
     requirement_ids: requirementIds,
+    delete_unbound_tasks: deleteUnboundTasks,
   })
 }
