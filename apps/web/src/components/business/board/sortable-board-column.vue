@@ -22,6 +22,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   open: [item: BoardItem]
+  view: [item: BoardItem]
   changed: []
   move: [payload: {
     itemId: number
@@ -34,6 +35,13 @@ const emit = defineEmits<{
     newIndex?: number
   }]
 }>()
+
+function openCard(item: BoardItem) {
+  if (item.item_type === 'bug')
+    emit('view', item)
+  else
+    emit('open', item)
+}
 
 const root = ref<HTMLElement | null>(null)
 let sortable: Sortable | null = null
@@ -155,8 +163,8 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
         tabindex="0"
         role="button"
         title="拖动卡片可移动，双击打开详情"
-        @dblclick="emit('open', item)"
-        @keydown.enter="emit('open', item)"
+        @dblclick="openCard(item)"
+        @keydown.enter="openCard(item)"
       >
         <header class="flex min-h-5 min-w-0 items-center justify-between gap-2 leading-none">
           <span class="inline-flex min-w-0 items-center gap-1 text-[12px] leading-none font-semibold text-[var(--pc-text)]">
@@ -172,12 +180,13 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
               type="button"
               aria-label="查看缺陷"
               title="查看"
-              @click.stop="emit('open', item)"
+              @click.stop="emit('view', item)"
             >
               <el-icon><Document /></el-icon>
             </button>
             <button
               data-card-action
+              data-testid="board-item-edit-button"
               class="grid h-5 w-5 cursor-pointer place-items-center rounded-[4px] border-0 bg-transparent p-0 text-[13px] text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
               type="button"
               aria-label="编辑工作项"

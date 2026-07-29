@@ -15,6 +15,7 @@ import StatCard from '@/components/stat-card.vue'
 import StatusTag from '@/components/status-tag.vue'
 import BugDialog from '@/components/business/bug-dialog.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
+import BugViewDialog from '@/components/business/bug-view-dialog.vue'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
 import { bugDictLabel, bugPlatformLabels, bugPriorityLabels, bugStatusLabels, bugTypeLabels } from '@/shared/bug'
 import { useProjectContext } from '@/shared/use-project-context'
@@ -41,7 +42,9 @@ const filters = reactive({
   assignee_id: '' as number | 'unassigned' | '',
 })
 const createOpen = ref(false)
+const viewOpen = ref(false)
 const detailOpen = ref(false)
+const detailTab = ref<'detail' | 'evidence' | 'time'>('detail')
 const selectedBugId = ref<number | null>(null)
 const hasFilters = computed(() => Boolean(filters.search || filters.status || filters.severity || filters.assignee_id))
 
@@ -80,6 +83,19 @@ function resetFilters() {
 
 function openBug(item: Bug) {
   selectedBugId.value = item.id
+  viewOpen.value = true
+}
+
+function editBug(item: Bug, tab: 'detail' | 'evidence' | 'time' = 'detail') {
+  selectedBugId.value = item.id
+  viewOpen.value = false
+  detailTab.value = tab
+  detailOpen.value = true
+}
+
+function editBugFromView(tab: 'detail' | 'evidence' | 'time' = 'detail') {
+  viewOpen.value = false
+  detailTab.value = tab
   detailOpen.value = true
 }
 
@@ -192,7 +208,7 @@ onMounted(load)
             <el-table-column label="工时" width="90">
               <template #default="{ row }">{{ row.time_spent || 0 }}h</template>
             </el-table-column>
-            <el-table-column label="操作" width="80" fixed="right" align="center">
+            <el-table-column label="操作" width="120" fixed="right" align="center">
               <template #default="{ row }">
                 <el-button
                   link
@@ -201,6 +217,14 @@ onMounted(load)
                   @click.stop="openBug(row)"
                 >
                   详情
+                </el-button>
+                <el-button
+                  link
+                  type="primary"
+                  data-testid="bug-edit-action"
+                  @click.stop="editBug(row)"
+                >
+                  编辑
                 </el-button>
               </template>
             </el-table-column>
@@ -253,12 +277,18 @@ onMounted(load)
       :users="users"
       @saved="load"
     />
+    <BugViewDialog
+      v-model="viewOpen"
+      :bug-id="selectedBugId"
+      @edit="editBugFromView"
+    />
     <BugDetailDialog
       v-model="detailOpen"
       :bug-id="selectedBugId"
       :requirements="requirements"
       :sprints="details?.sprints || []"
       :users="users"
+      :initial-tab="detailTab"
       @changed="load"
     />
   </div>

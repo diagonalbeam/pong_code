@@ -109,6 +109,7 @@ function mountPage(component: Component) {
     global: {
       stubs: {
         BugDialog: true,
+        BugViewDialog: detailDialogStub('bug-view-dialog'),
         BugDetailDialog: detailDialogStub('bug-detail-dialog'),
         ElButton: ButtonStub,
         ElIcon: PassThroughStub,
@@ -191,7 +192,7 @@ describe('详情表格的明确操作入口与溢出提示', () => {
     expect(wrapper.get('[data-testid="requirement-detail-dialog"]').attributes('data-open')).toBe('true')
   })
 
-  it('缺陷表格提供详情操作列并为缺陷描述启用 overflow tooltip', async () => {
+  it('缺陷表格提供详情与编辑操作列并为缺陷描述启用 overflow tooltip', async () => {
     const wrapper = mountPage(BugsPage)
     await flushPromises()
 
@@ -200,6 +201,10 @@ describe('详情表格的明确操作入口与溢出提示', () => {
       .toContain('完整缺陷详情')
 
     await wrapper.get('[data-testid="bug-detail-action"]').trigger('click')
+    expect(wrapper.get('[data-testid="bug-view-dialog"]').attributes('data-open')).toBe('true')
+
+    await wrapper.get('[data-testid="bug-edit-action"]').trigger('click')
+    expect(wrapper.get('[data-testid="bug-view-dialog"]').attributes('data-open')).toBe('false')
     expect(wrapper.get('[data-testid="bug-detail-dialog"]').attributes('data-open')).toBe('true')
   })
 })

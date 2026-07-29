@@ -28,6 +28,7 @@ import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import StatusTag from '@/components/status-tag.vue'
 import BugDialog from '@/components/business/bug-dialog.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
+import BugViewDialog from '@/components/business/bug-view-dialog.vue'
 import IssueDialog from '@/components/business/issue-dialog.vue'
 import IssueDetailDialog from '@/components/business/issue-detail-dialog.vue'
 import SortableBoardColumn from '@/components/business/board/sortable-board-column.vue'
@@ -72,7 +73,9 @@ let collapsePreferenceKey = ''
 const createIssueOpen = ref(false)
 const createBugOpen = ref(false)
 const issueDialogOpen = ref(false)
+const bugViewOpen = ref(false)
 const bugDialogOpen = ref(false)
+const bugDialogTab = ref<'detail' | 'evidence' | 'time'>('detail')
 const selectedRequirementId = ref<number | null>(null)
 const selectedIssueId = ref<number | null>(null)
 const selectedBugId = ref<number | null>(null)
@@ -261,12 +264,26 @@ function createIssue(requirementId: number | null = null) {
 function openItem(item: BoardItem) {
   if (item.item_type === 'bug') {
     selectedBugId.value = item.id
+    bugDialogTab.value = 'detail'
     bugDialogOpen.value = true
   }
   else {
     selectedIssueId.value = item.id
     issueDialogOpen.value = true
   }
+}
+
+function viewBug(item: BoardItem) {
+  if (item.item_type !== 'bug')
+    return
+  selectedBugId.value = item.id
+  bugViewOpen.value = true
+}
+
+function editBugFromView(tab: 'detail' | 'evidence' | 'time' = 'detail') {
+  bugViewOpen.value = false
+  bugDialogTab.value = tab
+  bugDialogOpen.value = true
 }
 
 async function moveItem(payload: {
@@ -548,6 +565,7 @@ watch(
                   :items="lane[column.value]"
                   :hide-items="column.value === 'done' && hideCompleted"
                   @open="openItem"
+                  @view="viewBug"
                   @move="moveItem"
                   @changed="loadBoard()"
                 />
@@ -590,12 +608,18 @@ watch(
       :users="users"
       @changed="loadBoard()"
     />
+    <BugViewDialog
+      v-model="bugViewOpen"
+      :bug-id="selectedBugId"
+      @edit="editBugFromView"
+    />
     <BugDetailDialog
       v-model="bugDialogOpen"
       :bug-id="selectedBugId"
       :requirements="requirements"
       :sprints="details?.sprints || []"
       :users="users"
+      :initial-tab="bugDialogTab"
       @changed="loadBoard()"
     />
   </div>
