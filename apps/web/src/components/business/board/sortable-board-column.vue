@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Document, Edit, MoreFilled, WarningFilled } from '@element-plus/icons-vue'
+import { Box, Document, Edit, MoreFilled, WarningFilled } from '@element-plus/icons-vue'
 import Sortable, { type SortableEvent } from 'sortablejs'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import type { BoardItem } from '@/api/types'
@@ -278,9 +278,10 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
     <div
       v-else-if="!items.length"
       data-board-column-placeholder
-      class="grid min-h-[96px] flex-1 place-items-center text-xs text-[var(--pc-text-muted)]"
+      class="flex min-h-[96px] flex-1 flex-col items-center justify-center gap-2 text-xs text-[var(--pc-text-muted)]"
     >
-      暂无
+      <el-icon :size="28" class="opacity-70"><Box /></el-icon>
+      <span>暂无任务</span>
     </div>
   </div>
 </template>

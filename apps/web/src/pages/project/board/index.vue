@@ -525,6 +525,7 @@ watch(
             v-for="lane in swimlanes"
             :key="laneId(lane)"
             :data-testid="`board-swimlane-${laneId(lane)}`"
+            class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-3"
           >
             <header class="flex min-h-[44px] items-center justify-between gap-3 px-1 py-1">
               <button
@@ -540,7 +541,7 @@ watch(
                 ><ArrowRight /></el-icon>
                 <span v-if="lane.requirement" class="text-[11px] font-semibold text-[var(--pc-action)]">P{{ lane.requirement.priority }}</span>
                 <strong class="overflow-hidden text-sm font-semibold text-ellipsis whitespace-nowrap">{{ lane.requirement?.title || '未分类' }}</strong>
-                <small class="text-xs whitespace-nowrap text-[var(--pc-text-muted)]">{{ lane.todo.length + lane.doing.length + lane.done.length }} 工作项</small>
+                <small class="text-xs whitespace-nowrap text-[var(--pc-text-muted)]">{{ lane.todo.length + lane.doing.length + lane.done.length }} 个任务</small>
                 <span
                   class="flex items-center gap-1.5"
                   :data-testid="`board-swimlane-progress-${laneId(lane)}`"
