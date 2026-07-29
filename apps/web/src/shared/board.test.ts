@@ -7,6 +7,7 @@ import {
   boardRequirementId,
   calculateBoardTotals,
   calculateSwimlaneProgress,
+  isSwimlaneInactive,
 } from './board'
 
 function task(id: number, timeSpent = 0): BoardItem {
@@ -82,5 +83,28 @@ describe('看板共享规则', () => {
       doing: [],
       done: [],
     } as Swimlane)).toBe(0)
+  })
+
+  it('没有待处理或进行中工作项的泳道视为非活跃', () => {
+    expect(isSwimlaneInactive({
+      requirement: null,
+      todo: [],
+      doing: [],
+      done: [task(1)],
+    } as Swimlane)).toBe(true)
+
+    expect(isSwimlaneInactive({
+      requirement: null,
+      todo: [task(1)],
+      doing: [],
+      done: [],
+    } as Swimlane)).toBe(false)
+
+    expect(isSwimlaneInactive({
+      requirement: null,
+      todo: [],
+      doing: [task(2)],
+      done: [task(3)],
+    } as Swimlane)).toBe(false)
   })
 })

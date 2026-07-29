@@ -28,6 +28,11 @@ export function boardCollapsedStorageKey(
   return `${BOARD_COLLAPSED_SWIMLANES_STORAGE_PREFIX}:${userId}:${projectId}:${sprintId}`
 }
 
+/** 泳道没有待处理、进行中工作项时视为非活跃，默认折叠。 */
+export function isSwimlaneInactive(lane: Swimlane) {
+  return lane.todo.length === 0 && lane.doing.length === 0
+}
+
 export function calculateSwimlaneProgress(lane: Swimlane) {
   const items = lane.todo.length + lane.doing.length + lane.done.length
   return items ? Math.round(lane.done.length / items * 100) : 0

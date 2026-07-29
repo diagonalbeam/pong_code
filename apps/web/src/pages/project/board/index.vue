@@ -38,6 +38,7 @@ import {
   boardLaneId,
   calculateBoardTotals,
   calculateSwimlaneProgress,
+  isSwimlaneInactive,
   type BoardStatus,
 } from '@/shared/board'
 import { useProjectContext } from '@/shared/use-project-context'
@@ -67,6 +68,7 @@ const requirements = ref<Requirement[]>([])
 const selectedSprintId = ref<number | null>(null)
 const hideCompleted = ref(localStorage.getItem(BOARD_HIDE_COMPLETED_STORAGE_KEY) === 'true')
 const collapsed = ref(new Set<string>())
+let collapsePreferenceKey = ''
 const createIssueOpen = ref(false)
 const createBugOpen = ref(false)
 const issueDialogOpen = ref(false)
@@ -117,6 +119,24 @@ function readCollapsed() {
   }
 }
 
+function applyInactiveLaneDefaults() {
+  const next = new Set(collapsed.value)
+  for (const lane of swimlanes.value) {
+    if (isSwimlaneInactive(lane))
+      next.add(laneId(lane))
+  }
+  collapsed.value = next
+}
+
+function syncCollapsedPreferences() {
+  const key = collapseStorageKey()
+  if (key === collapsePreferenceKey)
+    return
+  collapsePreferenceKey = key
+  readCollapsed()
+  applyInactiveLaneDefaults()
+}
+
 async function loadBoard(sprintId = selectedSprintId.value) {
   const result = await getProjectBoard(projectId.value, sprintId || undefined)
   board.value = result
@@ -133,7 +153,7 @@ async function loadBoard(sprintId = selectedSprintId.value) {
   }
   if (result.sprint?.id) {
     selectedSprintId.value = result.sprint.id
-    readCollapsed()
+    syncCollapsedPreferences()
     if (String(route.query.sprint || '') !== String(result.sprint.id))
       await router.replace({ query: { ...route.query, sprint: String(result.sprint.id) } })
   }
