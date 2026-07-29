@@ -26,7 +26,7 @@ function avatarInitial(name: string) {
     <article
       v-for="log in logs"
       :key="log.id"
-      class="group border-b border-[var(--pc-border-soft)] py-3"
+      class="group border-b border-[var(--pc-border-soft)] py-3 last:border-b-0"
     >
       <div class="flex items-center gap-3">
         <el-avatar
