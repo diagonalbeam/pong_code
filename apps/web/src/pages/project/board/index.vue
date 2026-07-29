@@ -263,6 +263,13 @@ function createIssue(requirementId: number | null = null) {
   createIssueOpen.value = true
 }
 
+function onCreateCommand(command: string | number | object) {
+  if (command === 'bug')
+    createBugOpen.value = true
+  else if (command === 'bind-requirements')
+    requirementBindOpen.value = true
+}
+
 function openItem(item: BoardItem) {
   if (item.item_type === 'bug') {
     selectedBugId.value = item.id
@@ -483,21 +490,24 @@ watch(
                   @change="toggleHideCompleted(Boolean($event))"
                 />
               </label>
-              <el-button
-                data-testid="board-bind-requirements-button"
-                @click="requirementBindOpen = true"
-              >
-                <el-icon><CollectionTag /></el-icon>绑定需求
-              </el-button>
               <el-button :disabled="refreshing" data-testid="board-refresh-button" @click="refreshBoard">
                 <el-icon :class="{ 'animate-spin': refreshing }"><Refresh /></el-icon>刷新
               </el-button>
-              <el-dropdown split-button type="primary" data-testid="create-issue-button" @click="createIssue()" @command="createBugOpen = true">
+              <el-dropdown
+                split-button
+                type="primary"
+                data-testid="create-issue-button"
+                @click="createIssue()"
+                @command="onCreateCommand"
+              >
                 <el-icon><Plus /></el-icon>新建任务
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item command="bug">
                       新建缺陷
+                    </el-dropdown-item>
+                    <el-dropdown-item command="bind-requirements" data-testid="board-bind-requirements-button">
+                      绑定需求
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
