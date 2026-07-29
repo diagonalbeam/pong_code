@@ -104,6 +104,10 @@ Dockerfile 使用多阶段构建：
 
 ## 架构资料
 
-- [目标架构与已确认决策](docs/architecture/pongcode-monorepo-target.md)
-- [旧版到新版功能对照表](docs/architecture/feature-parity-matrix.md)
+- [目标架构与已确认决策](docs/architecture/pongcode-monorepo-target.md)（已实施）
+- [旧版到新版功能对照表](docs/architecture/feature-parity-matrix.md)（迁移完成）
 - [API 契约](packages/api-contract/openapi.yaml)
+- [视觉规范](design.md)
+- Agent 开发指引：[CLAUDE.md](CLAUDE.md) / [AGENTS.md](AGENTS.md)
+
+`docs/superpowers/` 下为历史设计与实现计划快照，路径与前端技术栈可能仍指向旧原生 JS；以本 README、架构文档和当前代码为准。

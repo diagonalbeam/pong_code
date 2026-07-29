@@ -1,5 +1,7 @@
 # 缺陷录入表单优化设计
 
+> **归档说明（2026-07-29）**：历史设计快照。仓库已迁至 Vue 3 monorepo（`apps/web`），旧 `static/js` 前端已清理。缺陷录入的现行实现见 `apps/web/src/components/business/` 与 `apps/api/routes/bugs.py`；整体架构见 `docs/architecture/`。
+
 ## 背景
 当前缺陷录入流程已经支持基础字段、首次证据上传和后续补充证据，但实际使用中存在两个明显问题：
 

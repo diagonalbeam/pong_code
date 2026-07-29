@@ -6,177 +6,194 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-This is **PongCode**, a lightweight Agile project management tool with a Flask backend and vanilla JavaScript SPA frontend. It provides organizations, projects, sprints, and Kanban board functionality.
+**PongCode** 是轻量敏捷项目管理工具，支持组织、团队、项目、迭代、需求、任务、缺陷、看板、工时与缺陷证据。
+
+仓库已是前后端分离的 **pnpm monorepo**：Flask API + Vue 3 SPA。生产由 Flask/Gunicorn 同源提供 API、上传附件与 Vue History 回退。
 
 ### Tech Stack
-- **Backend**: Flask 3.0 + Flask-SQLAlchemy + Flask-Login
-- **Database**: SQLite (development)
-- **Frontend**: Vanilla JavaScript SPA with Tailwind CSS (via CDN) + Font Awesome + Chart.js
-- **Drag & Drop**: Sortable.js library for Kanban board
+- **Backend**: Flask 3 + Flask-SQLAlchemy + Flask-Login + Flask-Mail
+- **Database**: 默认 MySQL（`DATABASE_URL`）；测试与本地可用 SQLite
+- **Frontend**: Vue 3 + Element Plus + Vite 8 + TypeScript + Tailwind CSS 4
+- **State / Router**: Pinia、Vue Router（History）
+- **HTTP**: Axios（Session Cookie）
+- **Kanban**: SortableJS 业务组件封装
+- **Contracts**: `packages/api-contract`（OpenAPI → TypeScript 类型）
+- **Package manager**: pnpm 11
+
+视觉规范见根目录 [`design.md`](design.md)（Action Blue `#0066cc`，非旧版靛蓝主题）。
+
+---
+
+## Repository Layout
+
+```text
+apps/
+  api/                 # Flask 后端入口与业务
+    app.py
+    extensions.py
+    models.py
+    routes/
+    services/
+    requirements.txt
+  web/                 # Vue 3 SPA
+    src/
+      pages/           # 路由页面（小写连字符目录 + index.vue）
+      components/      # 通用与 business/ 业务组件
+      api/             # 按领域导出具名请求函数
+      shared/
+      router/
+      stores/
+      styles/
+packages/
+  api-contract/        # OpenAPI 与生成类型
+static/                # 运行时上传根目录（uploads/），非前端源码
+tests/                 # pytest（含 e2e/）
+docs/architecture/     # 目标架构与功能等价矩阵
+```
+
+根目录若仍有空的 `routes/`、`services/`，仅为历史残留，**不要**往那里加代码；后端代码在 `apps/api/`。
 
 ---
 
 ## Development Commands
 
-### Running the Application
+前置：Node.js 24+、pnpm 11.9+、Python 3.10+。
+
 ```bash
-# Activate virtual environment (if not already active)
-source .venv/bin/activate  # macOS/Linux
-# or
-.venv\Scripts\activate     # Windows
+pnpm install
+python3 -m venv .venv
+.venv/bin/pip install -r apps/api/requirements.txt
 
-# Install dependencies
-pip install -r requirements.txt
+# 同时启动 Flask(5001) + Vite(5173)
+pnpm dev
+# 访问 http://localhost:5173 （Vite 代理 /api、/static、/healthz）
 
-# Run development server (debug mode, port 5000)
-python app.py
+pnpm dev:api    # .venv/bin/python apps/api/app.py
+pnpm dev:web
 ```
 
-The app will be available at `http://localhost:5000`
+校验与构建：
 
-### Database Operations
-- Database file: `instance/mini_agile.db` (auto-created on first run)
-- Database schema is initialized automatically in `create_app()` using `db.create_all()`
-- To reset the database: Delete the `instance/mini_agile.db` file and restart the app
+```bash
+pnpm check          # typecheck + lint + vitest + pytest(非 e2e) + build
+pnpm typecheck
+pnpm lint
+pnpm test           # Vitest
+pnpm test:api       # pytest，忽略 tests/e2e
+pnpm test:e2e       # 先 build，再跑 Playwright E2E
+pnpm build          # 生成契约类型 + Vue 产物到 apps/web/dist
+```
+
+生产镜像见根目录 `Dockerfile` 与 [`README.md`](README.md)。
 
 ---
 
 ## Architecture
 
-### Backend Structure (Flask)
+### Backend（`apps/api`）
 
-**Entry Point**: [app.py](app.py)
-- `create_app()`: Factory function that configures Flask, initializes extensions, registers blueprints, and creates database tables
-- All routes are REST API endpoints prefixed with `/api/`
-- Authentication handled by Flask-Login with session-based auth
-- Frontend served as static files from `/` route pointing to `static/index.html`
+**入口**: [`apps/api/app.py`](apps/api/app.py)
+- `create_app()` 配置 Flask、扩展、Blueprint、表结构与历史字段兼容迁移
+- API 前缀 `/api/`；Session Cookie 认证（Flask-Login）
+- 生产静态：优先 `apps/api/static/app`（镜像），否则 `apps/web/dist`
+- History fallback：非 `/api`、`/static`、`/assets`、`/oauth`、`/external` 等返回 SPA `index.html`
+- 健康检查：`GET /healthz`
 
-**API 路由（按领域拆分）** [routes/](routes/)：
-- `routes/__init__.py`: `register_blueprints(app)` 注册所有 Blueprint
-- `routes/auth.py`: 认证（/api/auth — status, login, register, logout）
-- `routes/organizations.py`: 组织（/api/organizations — CRUD、加入、成员、组织下团队列表/创建）
-- `routes/teams.py`: 团队（/api/teams — 详情、加入/离开、成员管理）
-- `routes/projects.py`: 项目（创建、详情）
-- `routes/sprints.py`: 迭代与看板（sprint CRUD、工时、需求关联、/board）
-- `routes/issues.py`: 任务（issue CRUD、工时、移动、分配迭代、/users/search）
-- `routes/requirements.py`: 需求（CRUD、统计）
-- `routes/bugs.py`: 缺陷（CRUD、工时、统计）
+**启动路径注意**：`pnpm`/`gunicorn` 以 `apps/api` 为工作目录，因此代码里是 `from routes import ...`、`from models import ...`，不是 `apps.api.routes`。
 
-**Data Models** ([models.py](models.py)):
-- `User`: Authentication and user relationships
-- `Organization`: Owner-based organization with many-to-many member relationship
-- `Project`: Belongs to organization, has many sprints and issues
-- `Sprint`: Time-boxed iterations with status (open/active/closed)
-- `Issue`: Tasks with status (todo/doing/done), priority (1-5), and optional assignee
-- `organization_members`: Association table for many-to-many User ↔ Organization with role field
+**API 路由** [`apps/api/routes/`](apps/api/routes/)：
+- `auth.py` — 登录/注册/资料/忘记密码/重置密码（登录支持用户名或邮箱）
+- `organizations.py` / `teams.py` / `projects.py`
+- `sprints.py` — 迭代、工时、需求关联、看板
+- `issues.py` / `requirements.py` / `bugs.py`
+- `workbench.py` — 工作台
+- `external.py` — 外部开放查询（OAuth2 client_credentials + JWT）
+- `item_codes.py` / `input_utils.py` — 辅助逻辑
 
-**Extensions** ([extensions.py](extensions.py)):
-- `db`: SQLAlchemy instance (configured in app.py)
-- `login_manager`: Flask-Login instance (configured in app.py)
+**Models** [`apps/api/models.py`](apps/api/models.py)：
+`User`、`Organization`、`Team`、`Project`、`Sprint`、`Issue`、`Requirement`、`Bug`、各类 WorkLog / BugEvidence 等。模型均有 `to_dict()`。
 
-### Frontend Structure (Vanilla JavaScript SPA)
+**Extensions** [`apps/api/extensions.py`](apps/api/extensions.py)：`db`、`login_manager`、`mail`。
 
-**Single Page Application**: [static/js/app.js](static/js/app.js)
-- No build process or framework - pure JavaScript with a simple router
-- `app` object contains all application logic
-- API calls through `app.api()` helper with automatic 401 handling
-- Navigation handled by `app.navigate(view, data)` which rewrites the `#app-container` DOM
+### Frontend（`apps/web`）
 
-**Key Frontend Concepts**:
-- **State Management**: `app.user`, `app.currentOrg`, `app.currentProject`, `app.currentView`
-- **Router**: Switch statement in `app.navigate()` handles view routing
-- **Views**: `app.views.{login, register, dashboard, orgDetails, projectSprints, board}`
-- **Handlers**: Form submission handlers in `app.handlers`
-- **Modals**: Reusable modal system in `app.modals` with HTML templates
-- **Sidebar**: Dynamically rendered based on current view (dashboard vs project context)
-
-**API Communication**:
-- All API calls go through `app.api(endpoint, method, data)`
-- Returns JSON response or `null` on error
-- Automatic redirect to login on 401 (except for auth endpoints)
+- 页面：`src/pages/**/index.vue`（小写连字符目录）
+- 请求：`src/api/*.ts` 按领域导出具名函数；**不要**做聚合 `api` 对象
+- 状态：Pinia 仅 `auth`、`theme` 等确需跨页共享的状态；页面数据留在页面/composable
+- 路由：History；鉴权守卫与中文标题在 `src/router`
+- 看板：`src/components/business/board`
+- 样式：优先 Tailwind CSS 4 工具类；scoped/` :deep()` 仅用于第三方组件；设计令牌对齐 `design.md`
 
 ---
 
 ## Important Patterns
 
-### Database Relationships
-- `User.organizations`: Many-to-many via `organization_members` (default lazy='select')
-- `User.owned_organizations`: One-to-many with `lazy='dynamic'` (returns query object)
-- `Organization.members`: Inverse relationship, also `lazy='dynamic'`
-- **Note**: Mixed lazy loading strategies require careful handling when checking membership
+### Auth
+1. 前端初始化调 `GET /api/auth/status`
+2. Axios 带 Session Cookie；401 跳转登录（公开页除外）
+3. 后端 `@login_required`；未授权返回 JSON 401
 
-### Authentication Flow
-1. Frontend calls `app.api('/auth/status')` on init
-2. If authenticated, stores user in `app.user` and renders dashboard
-3. All API-protected routes use `@login_required` decorator
-4. Unauthorized handler returns JSON 401 response (not HTML redirect)
+### Database
+- 生产默认 MySQL，用 `DATABASE_URL` 覆盖
+- `db.create_all()` + 若干 `ensure_*_schema()` 兼容历史列，勿随意删库“重置”生产数据
+- 关系混用 `lazy='select'` / `lazy='dynamic'`，查成员时注意返回类型
 
-### Kanban Board Drag-and-Drop
-- Uses Sortable.js library (loaded via CDN in index.html)
-- Three columns: `#todo`, `#doing`, `#done`
-- On drop, calls `app.api('/issues/{id}/move', 'POST', {status})`
-- Server updates issue status in database
+### Kanban
+- 需求泳道 × 状态列；任务与缺陷可判别联合类型
+- 跨状态/跨泳道走现有更新接口；先乐观更新，失败回滚并重拉
+- 同列排序仅会话内有效
 
-### Date Handling
-- Sprint dates stored as Python `date` objects in database
-- Frontend sends dates as YYYY-MM-DD strings
-- Backend parses with `datetime.strptime(date_str, '%Y-%m-%d').date()`
-- Frontend displays dates using `.isoformat()` from backend responses
+### Dates
+- 后端 `date`；前后端用 `YYYY-MM-DD` / `.isoformat()`
 
-### Model Serialization
-- All models have `to_dict()` methods for JSON serialization
-- `to_dict()` includes related object data (e.g., `assignee_name`) to avoid N+1 queries
-- Progress calculation in `Sprint.to_dict()` computes percentage based on done/total issues
+### Contracts
+- 改 API 时同步 [`packages/api-contract/openapi.yaml`](packages/api-contract/openapi.yaml)
+- 契约与实现冲突时，以**当前服务端行为**为准修正文档
 
 ---
 
 ## Adding New Features
 
-### Adding a New API Endpoint
-1. 在对应领域的 [routes/](routes/) 模块中定义路由（如 `@bp.route('...', methods=['...'])`）
-2. 需要登录时使用 `@login_required`
-3. POST/PUT 数据用 `request.get_json()`
-4. 返回 `jsonify({...})` 及合适的状态码
-5. 前端通过 `app.api('/...')` 调用
+### 新 API
+1. 在 `apps/api/routes/` 对应领域模块加路由
+2. 需要登录用 `@login_required`
+3. 更新 `openapi.yaml`，必要时 `pnpm build` 刷新类型
+4. 前端在 `apps/web/src/api/` 增加具名函数并调用
 
-### Adding a New View
-1. Add view function to `app.views` in [static/js/app.js](static/js/app.js)
-2. Add case to router in `app.navigate()`
-3. Update sidebar rendering if navigation context changes
-4. Add modal form in `app.modals` if needed for data entry
-5. Add handler in `app.handlers` for form submission
+### 新页面
+1. `apps/web/src/pages/<name>/index.vue`
+2. 在 `src/router` 注册 History 路由与中文 `meta.title`
+3. 复杂表单/详情用 Dialog，保持与现有业务弹窗习惯一致
 
-### Adding a New Model Field
-1. Update model class in [models.py](models.py)
-2. Update `to_dict()` method if field should be serialized
-3. Delete `instance/mini_agile.db` to recreate database with new schema
-4. Update frontend forms and display logic as needed
+### 新模型字段
+1. 改 `apps/api/models.py` 与 `to_dict()`
+2. 如需兼容旧库，在 `app.py` 增加 `ensure_*_schema()` 补列
+3. 更新前端表单、展示与契约
 
 ---
 
 ## Configuration Notes
 
-- **SECRET_KEY**: Currently set to `'dev-key-change-this'` in [app.py:10](app.py#L10) - change for production
-- **Database**: SQLite at `sqlite:///mini_agile.db` (relative path, stored in `instance/` folder)
-- **Static Files**: Served from `static/` folder at root URL path `''`
-- **Debug Mode**: Enabled by default in [app.py:265](app.py#L265) (`app.run(debug=True, port=5000)`)
+常用环境变量：`DATABASE_URL`、`SECRET_KEY`、`BUG_EVIDENCE_UPLOAD_DIR`、邮件相关、`APP_BASE_URL`、`FRONTEND_DIST_DIR`、`PORT`（本地默认 5001，Docker/Gunicorn 默认 5000）、`JWT_SECRET`、`OAUTH_CLIENTS`。
+
+开发默认 `SECRET_KEY` / `JWT_SECRET` 仅为本地占位，生产必须覆盖。
 
 ---
 
 ## Testing
 
-No test suite is currently configured. When adding tests:
-- Consider pytest for backend tests
-- Use Flask's test client for API endpoint testing
-- Frontend tests would require a headless browser setup (e.g., Playwright/Selenium)
+- **Flask**：`pnpm test:api` 或 `pytest`（`pytest.ini` 设置 `pythonpath = apps/api`）
+- **Vue 单测**：`pnpm test`（Vitest）
+- **E2E**：`pnpm test:e2e`（生产构建 + 隔离 Flask + Playwright）；说明见 [`tests/e2e/README.md`](tests/e2e/README.md)
 
-##设计建议
-适用场景：强调“敏捷”、“快速”，目标用户更偏向互联网极客、年轻团队。
-主体色 (Primary Brand)：
-建议使用蓝紫色/靛蓝色。这种颜色比纯蓝更有活力，且在白色背景上更醒目。
-色值参考：#5E6AD2 (靛蓝) 或 #6366F1 (Indigo)。
-风格关键词：轻盈、通透、无框感。
-具体样式建议：
-圆角 (Radius)：较大圆角（6px - 8px）。视觉上更柔和、友好。
-阴影代替边框：列表可以用轻微的悬浮阴影（Box-shadow）代替生硬的边框线，增加“呼吸感”。
-字体：选择字重略大的无衬线字体（如 Inter 或 Roboto），增加现代感。
+旧原生 JS / `window.app` / Hash 路由相关测试与源码已清理，勿再按旧路径编写。
+
+---
+
+## 架构资料
+
+- [`README.md`](README.md) — 本地开发与 Docker
+- [`docs/architecture/pongcode-monorepo-target.md`](docs/architecture/pongcode-monorepo-target.md) — 已实施的目标架构
+- [`docs/architecture/feature-parity-matrix.md`](docs/architecture/feature-parity-matrix.md) — 功能等价矩阵
+- [`design.md`](design.md) — 视觉规范
+- `docs/superpowers/` — 历史设计/实现计划快照，可能与现状不符，以代码与上述架构文档为准
