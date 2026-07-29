@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { updateSprintRequirements } from '@/api/sprints'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement } from '@/api/types'
@@ -19,20 +18,9 @@ const emit = defineEmits<{
   'updated': []
 }>()
 
-const search = ref('')
 const selectedIds = ref<number[]>([])
 const initialIds = ref<number[]>([])
 const saving = ref(false)
-
-const filteredRequirements = computed(() => {
-  const keyword = search.value.trim().toLocaleLowerCase()
-  if (!keyword)
-    return props.requirements
-  return props.requirements.filter(item =>
-    item.title.toLocaleLowerCase().includes(keyword)
-    || item.content.toLocaleLowerCase().includes(keyword),
-  )
-})
 
 watch(
   () => [props.modelValue, props.sprintId, props.requirements] as const,
@@ -44,7 +32,6 @@ watch(
       .map(item => item.id)
     initialIds.value = currentIds
     selectedIds.value = [...currentIds]
-    search.value = ''
   },
   { immediate: true },
 )
@@ -96,27 +83,11 @@ async function submit() {
     title-testid="board-requirement-bind-dialog-title"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <div class="mb-3 flex items-center justify-between gap-4">
-      <span class="text-sm font-semibold" data-testid="board-requirement-selected-count">
-        已选 {{ selectedIds.length }} 个
-      </span>
-      <el-input v-model="search" clearable placeholder="搜索标题或内容" class="max-w-[320px]">
-        <template #prefix><el-icon><Search /></el-icon></template>
-      </el-input>
-    </div>
-
-    <div v-if="filteredRequirements.length" class="max-h-[52vh] overflow-y-auto pr-1">
-      <RequirementBindList
-        v-model="selectedIds"
-        :requirements="filteredRequirements"
-        :sprint-id="sprintId"
-        list-testid="board-requirement-list"
-      />
-    </div>
-    <el-empty
-      v-else
-      :image-size="72"
-      :description="requirements.length ? '没有匹配的需求' : '当前项目暂无需求'"
+    <RequirementBindList
+      v-model="selectedIds"
+      :requirements="requirements"
+      :sprint-id="sprintId"
+      list-testid="board-requirement-list"
     />
 
     <template #footer>

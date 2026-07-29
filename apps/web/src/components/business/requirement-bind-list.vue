@@ -1,12 +1,17 @@
 <script setup lang="ts">
+import { Search } from '@element-plus/icons-vue'
+import { computed, ref, watch } from 'vue'
 import type { Requirement } from '@/api/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: number[]
   requirements: Requirement[]
   sprintId: number
   listTestid?: string
-}>()
+  showSearch?: boolean
+}>(), {
+  showSearch: true,
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: number[]]
@@ -18,6 +23,38 @@ const requirementStatusLabels: Record<string, string> = {
   testing: '等待测试',
   completed: '已完成',
 }
+
+const search = ref('')
+const statusFilter = ref('pending')
+
+const statusOptions = [
+  { value: '', label: '全部状态' },
+  ...Object.entries(requirementStatusLabels).map(([value, label]) => ({ value, label })),
+]
+
+const visibleRequirements = computed(() => {
+  const keyword = search.value.trim().toLocaleLowerCase()
+  return props.requirements.filter((item) => {
+    const matchesKeyword = !keyword
+      || item.title.toLocaleLowerCase().includes(keyword)
+      || item.content.toLocaleLowerCase().includes(keyword)
+    const matchesStatus = !statusFilter.value || item.status === statusFilter.value
+    return matchesKeyword && matchesStatus
+  })
+})
+
+const visibleSelectedCount = computed(() => {
+  const visibleIds = new Set(visibleRequirements.value.map(item => item.id))
+  return props.modelValue.filter(id => visibleIds.has(id)).length
+})
+
+watch(
+  () => [props.sprintId, props.requirements] as const,
+  () => {
+    search.value = ''
+    statusFilter.value = 'pending'
+  },
+)
 
 function isOccupied(item: Requirement) {
   return item.sprint_id !== null && item.sprint_id !== props.sprintId
@@ -48,36 +85,117 @@ function statusColor(status: string) {
 </script>
 
 <template>
-  <el-checkbox-group
-    :model-value="modelValue"
-    class="requirement-bind-list block w-full"
-    :data-testid="listTestid"
-    data-requirement-list
-    @update:model-value="emit('update:modelValue', $event as number[])"
-  >
-    <el-checkbox
-      v-for="item in requirements"
-      :key="item.id"
-      :value="item.id"
-      :disabled="isOccupied(item)"
-      class="requirement-row"
-    >
-      <span class="requirement-row__body">
-        <strong class="requirement-row__title">{{ item.title }}</strong>
-        <span class="requirement-row__status" :style="{ color: statusColor(item.status) }">
-          <i class="requirement-row__dot" aria-hidden="true" />
-          {{ statusLabel(item.status) }}
-        </span>
-        <span class="requirement-row__binding">
-          <span class="requirement-row__priority">P{{ item.priority }}</span>
-          <span class="requirement-row__binding-text">{{ bindingLabel(item) }}</span>
-        </span>
+  <div class="requirement-bind-list">
+    <div class="requirement-bind-list__toolbar">
+      <span class="requirement-bind-list__count" data-testid="requirement-bind-selected-count">
+        已选 {{ visibleSelectedCount }} 个
       </span>
-    </el-checkbox>
-  </el-checkbox-group>
+      <div class="requirement-bind-list__filters">
+        <el-select
+          v-model="statusFilter"
+          class="requirement-bind-list__status"
+          data-testid="requirement-bind-status-filter"
+        >
+          <el-option
+            v-for="option in statusOptions"
+            :key="option.value || 'all'"
+            :label="option.label"
+            :value="option.value"
+          />
+        </el-select>
+        <el-input
+          v-if="showSearch"
+          v-model="search"
+          clearable
+          placeholder="搜索标题或内容"
+          class="requirement-bind-list__search"
+          data-testid="requirement-bind-search"
+        >
+          <template #prefix><el-icon><Search /></el-icon></template>
+        </el-input>
+      </div>
+    </div>
+
+    <el-checkbox-group
+      v-if="visibleRequirements.length"
+      :model-value="modelValue"
+      class="requirement-bind-list__items"
+      :data-testid="listTestid"
+      data-requirement-list
+      @update:model-value="emit('update:modelValue', $event as number[])"
+    >
+      <el-checkbox
+        v-for="item in visibleRequirements"
+        :key="item.id"
+        :value="item.id"
+        :disabled="isOccupied(item)"
+        class="requirement-row"
+      >
+        <span class="requirement-row__body">
+          <strong class="requirement-row__title">{{ item.title }}</strong>
+          <span class="requirement-row__status" :style="{ color: statusColor(item.status) }">
+            <i class="requirement-row__dot" aria-hidden="true" />
+            {{ statusLabel(item.status) }}
+          </span>
+          <span class="requirement-row__binding">
+            <span class="requirement-row__priority">P{{ item.priority }}</span>
+            <span class="requirement-row__binding-text">{{ bindingLabel(item) }}</span>
+          </span>
+        </span>
+      </el-checkbox>
+    </el-checkbox-group>
+    <el-empty
+      v-else
+      :image-size="72"
+      :description="requirements.length ? '没有匹配的需求' : '当前项目暂无需求'"
+    />
+  </div>
 </template>
 
 <style scoped>
+.requirement-bind-list__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+
+.requirement-bind-list__count {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pc-text);
+  white-space: nowrap;
+}
+
+.requirement-bind-list__filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.requirement-bind-list__status {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.requirement-bind-list__search {
+  width: 220px;
+  flex-shrink: 1;
+  min-width: 140px;
+}
+
+.requirement-bind-list__items {
+  display: block;
+  width: 100%;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 [data-requirement-list] :deep(.requirement-row.el-checkbox) {
   display: flex;
   width: 100%;
