@@ -166,7 +166,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="workbench mx-auto w-full max-w-[1100px] px-6 py-8 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
+  <div class="workbench mx-auto w-full max-w-[1920px] px-6 py-8 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader title="工作台" description="我的工时与未完成工作项">
       <div class="flex items-center gap-2.5">
         <span class="text-[13px] text-[var(--pc-text-muted)] max-sm:hidden">日期范围</span>

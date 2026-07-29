@@ -566,9 +566,9 @@ async function logout() {
     <div class="flex min-w-0 flex-col">
       <header
         data-testid="app-header"
-        class="sticky top-0 z-30 shrink-0 overflow-hidden border-b border-[var(--pc-border)] bg-[var(--pc-header)]"
+        class="sticky top-0 z-30 flex h-[var(--pc-header-height)] shrink-0 items-center overflow-hidden border-b border-[var(--pc-border)] bg-[var(--pc-header)]"
       >
-        <div class="flex h-[var(--pc-header-height)] items-center justify-between gap-2 px-[17px] max-md:pr-3 max-md:pl-2">
+        <div class="flex h-full min-w-0 flex-1 items-center justify-between gap-2 px-[17px] max-md:pr-3 max-md:pl-2">
           <div class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
             <button
               type="button"

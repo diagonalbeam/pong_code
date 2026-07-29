@@ -72,7 +72,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
+  <div class="mx-auto w-full max-w-[1920px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader :title="details?.project.name || '全部迭代'" description="查看、筛选和管理项目中的所有迭代。">
       <el-button @click="ElMessage.info('列设置功能开发中')">
         <el-icon><Setting /></el-icon>列设置
