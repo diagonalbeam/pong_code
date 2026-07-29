@@ -518,7 +518,7 @@ button:active:not(:disabled),
 }
 
 .el-table .el-table__cell {
-  padding: 10px 0;
+  padding: 12px 0;
 }
 
 .el-table th.el-table__cell {

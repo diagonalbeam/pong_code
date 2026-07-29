@@ -206,7 +206,7 @@ onMounted(load)
               <template #default="{ row }">{{ row.evidence_count || 0 }}</template>
             </el-table-column>
             <el-table-column label="工时" width="90">
-              <template #default="{ row }">{{ row.time_spent || 0 }}h</template>
+              <template #default="{ row }">{{ Number(row.time_spent || 0).toFixed(1).replace(/\.0$/, '') }}h</template>
             </el-table-column>
             <el-table-column label="操作" width="120" fixed="right" align="center">
               <template #default="{ row }">

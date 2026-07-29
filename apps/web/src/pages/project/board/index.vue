@@ -475,7 +475,7 @@ watch(
                 </span>
                 <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                   <el-icon class="text-[var(--pc-action)]"><Clock /></el-icon>
-                  {{ totals.hours }}h 工时
+                  {{ Number(totals.hours).toFixed(1).replace(/\.0$/, '') }}h 工时
                 </span>
               </div>
             </div>
@@ -525,6 +525,7 @@ watch(
             v-for="lane in swimlanes"
             :key="laneId(lane)"
             :data-testid="`board-swimlane-${laneId(lane)}`"
+            class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-3"
           >
             <header class="flex min-h-[44px] items-center justify-between gap-3 px-1 py-1">
               <button
@@ -540,7 +541,7 @@ watch(
                 ><ArrowRight /></el-icon>
                 <span v-if="lane.requirement" class="text-[11px] font-semibold text-[var(--pc-action)]">P{{ lane.requirement.priority }}</span>
                 <strong class="overflow-hidden text-sm font-semibold text-ellipsis whitespace-nowrap">{{ lane.requirement?.title || '未分类' }}</strong>
-                <small class="text-xs whitespace-nowrap text-[var(--pc-text-muted)]">{{ lane.todo.length + lane.doing.length + lane.done.length }} 工作项</small>
+                <small class="text-xs whitespace-nowrap text-[var(--pc-text-muted)]">{{ lane.todo.length + lane.doing.length + lane.done.length }} 个任务</small>
                 <span
                   class="flex items-center gap-1.5"
                   :data-testid="`board-swimlane-progress-${laneId(lane)}`"
@@ -561,13 +562,13 @@ watch(
               </el-button>
             </header>
 
-            <div v-if="!collapsed.has(laneId(lane))" class="grid grid-cols-[repeat(3,minmax(260px,1fr))] items-stretch gap-3 overflow-x-auto pt-1 pb-1">
+            <div v-if="!collapsed.has(laneId(lane))" class="grid grid-cols-[repeat(3,minmax(280px,1fr))] items-stretch gap-3 overflow-x-auto pt-1 pb-1">
               <section
                 v-for="column in statusColumns"
                 :key="column.value"
-                class="flex min-h-0 flex-col rounded-[var(--pc-radius-card)] bg-[var(--pc-surface-soft)] p-2.5"
+                class="flex min-h-0 flex-col rounded-[12px] bg-[var(--pc-surface-soft)] p-3"
               >
-                <header class="flex min-h-[30px] shrink-0 items-center gap-[7px] px-1">
+                <header class="flex min-h-[32px] shrink-0 items-center gap-2 px-1 pb-1">
                   <span
                     class="h-2 w-2 rounded-full bg-[var(--pc-text-muted)] data-[status=doing]:bg-[var(--pc-action)] data-[status=done]:bg-[var(--pc-success)]"
                     :data-status="column.value"

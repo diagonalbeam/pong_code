@@ -138,12 +138,12 @@ async function save() {
         data-card-action
         data-testid="board-time-badge"
         type="button"
-        class="board-time-badge inline-flex cursor-pointer items-center gap-1 rounded-[4px] border-0 bg-transparent p-0 text-[12px] tabular-nums text-[var(--pc-text-secondary)] transition-colors hover:text-[var(--pc-text)]"
+        class="board-time-badge inline-flex cursor-pointer items-center gap-1.5 rounded-[4px] border-0 bg-transparent p-0 text-[13px] leading-none tabular-nums text-[var(--pc-text-muted)] transition-colors hover:text-[var(--pc-text)]"
         :aria-label="`工时 ${label}，点击修改`"
         :title="`消耗 ${formatHours(spent)}h / 预估 ${formatHours(estimate)}h`"
         @click.stop
       >
-        <el-icon class="text-[13px]"><Clock /></el-icon>
+        <el-icon :size="14" class="text-[var(--pc-text-muted)]"><Clock /></el-icon>
         <span>{{ label }}</span>
       </button>
     </template>

@@ -215,7 +215,7 @@ class Sprint(db.Model):
             Bug.sprint_id.is_(None)  # 避免重复计算直接关联的
         ).scalar() or 0
         bug_hours = float(direct_bug_hours) + float(indirect_bug_hours)
-        time_spent = float(issue_hours) + float(sprint_hours) + float(bug_hours)
+        time_spent = round(float(issue_hours) + float(sprint_hours) + float(bug_hours), 1)
         
         # Map DB status to UI friendly status/Chinese if needed, or keep simple
         # For this demo, let's keep English internal but maybe add display label
@@ -272,7 +272,7 @@ class Issue(db.Model):
             'status': self.status,
             'priority': self.priority,
             'time_estimate': self.time_estimate,
-            'time_spent': sum(log.hours for log in self.work_logs),
+            'time_spent': round(sum(float(log.hours) for log in self.work_logs), 1),
             'assignee_id': self.assignee_id,
             'assignee_name': self.assignee.username if self.assignee else None,
             'project_id': self.project_id,
@@ -504,7 +504,7 @@ class Bug(db.Model):
             'latest_stack_trace': self.latest_stack_trace,
             'evidence_count': self.evidence_count or 0,
             'time_estimate': self.time_estimate,
-            'time_spent': sum(log.hours for log in self.work_logs),
+            'time_spent': round(sum(float(log.hours) for log in self.work_logs), 1),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,

@@ -44,7 +44,9 @@ export function calculateBoardTotals(swimlanes: Swimlane[]) {
   return {
     items: items.length,
     done,
-    hours: items.reduce((sum, item) => sum + Number(item.time_spent || 0), 0),
+    hours: Number(
+      items.reduce((sum, item) => sum + Number(item.time_spent || 0), 0).toFixed(1),
+    ),
     progress: items.length ? Math.round(done / items.length * 100) : 0,
   }
 }
