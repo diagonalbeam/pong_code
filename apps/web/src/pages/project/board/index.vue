@@ -529,6 +529,7 @@ watch(
                   :hide-items="column.value === 'done' && hideCompleted"
                   @open="openItem"
                   @move="moveItem"
+                  @changed="loadBoard()"
                 />
               </section>
             </div>

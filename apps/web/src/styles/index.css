@@ -596,6 +596,13 @@ button:active:not(:disabled),
   transition: box-shadow 120ms ease, opacity 120ms ease !important;
 }
 
+.board-time-dropdown.el-popover.el-popper {
+  padding: 14px;
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-card);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 12%);
+}
+
 body.is-dragging,
 body.is-dragging * {
   user-select: none !important;

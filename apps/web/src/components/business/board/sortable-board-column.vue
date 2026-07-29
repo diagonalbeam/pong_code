@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { Clock, Document, Edit, MoreFilled, WarningFilled } from '@element-plus/icons-vue'
+import { Document, Edit, MoreFilled, WarningFilled } from '@element-plus/icons-vue'
 import Sortable, { type SortableEvent } from 'sortablejs'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import type { BoardItem } from '@/api/types'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
+import BoardTimeDropdown from './board-time-dropdown.vue'
 
 type BoardStatus = 'todo' | 'doing' | 'done'
 interface BoardLaneOption {
@@ -21,6 +22,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   open: [item: BoardItem]
+  changed: []
   move: [payload: {
     itemId: number
     itemType: 'task' | 'bug'
@@ -215,7 +217,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
           </div>
         </header>
         <h4 class="m-0 min-w-0 text-sm leading-[1.4] font-semibold break-words text-[var(--pc-text)]" style="overflow-wrap: anywhere">{{ item.title }}</h4>
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-[var(--pc-text-secondary)]">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] text-[var(--pc-text-secondary)]">
           <span
             class="inline-flex items-center gap-[3px] font-semibold text-[var(--pc-action)] data-[severity=true]:text-[var(--pc-danger)]"
             :data-severity="item.item_type === 'bug' || undefined"
@@ -224,17 +226,15 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
           </span>
           <span class="inline-flex items-center gap-1">
             <el-avatar
-              :size="18"
-              class="shrink-0 !inline-flex !items-center !justify-center !text-center !text-[9px] !leading-none font-semibold"
+              :size="20"
+              class="shrink-0 !inline-flex !items-center !justify-center !text-center !text-[10px] !leading-none font-semibold"
               :style="getUserAvatarStyle(itemOwnerName(item))"
             >
               {{ itemOwnerName(item).slice(0, 1).toUpperCase() || '?' }}
             </el-avatar>
             {{ itemOwnerName(item) || '未分配' }}
           </span>
-          <span v-if="item.time_spent" class="inline-flex items-center gap-[3px]">
-            <el-icon><Clock /></el-icon>{{ item.time_spent }}h
-          </span>
+          <BoardTimeDropdown :item="item" @changed="emit('changed')" />
         </div>
       </article>
     </template>
