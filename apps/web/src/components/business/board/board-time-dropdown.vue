@@ -138,7 +138,7 @@ async function save() {
         data-card-action
         data-testid="board-time-badge"
         type="button"
-        class="board-time-badge inline-flex cursor-pointer items-center gap-1 rounded-[4px] border-0 px-2 py-0.5 text-[12px] font-medium tabular-nums transition-colors"
+        class="board-time-badge inline-flex cursor-pointer items-center gap-1 rounded-[4px] border-0 bg-transparent p-0 text-[12px] tabular-nums text-[var(--pc-text-secondary)] transition-colors hover:text-[var(--pc-text)]"
         :aria-label="`工时 ${label}，点击修改`"
         :title="`消耗 ${formatHours(spent)}h / 预估 ${formatHours(estimate)}h`"
         @click.stop
@@ -215,14 +215,8 @@ async function save() {
 </template>
 
 <style scoped>
-.board-time-badge {
-  color: var(--pc-action);
-  background: color-mix(in srgb, var(--pc-action) 12%, var(--pc-surface));
-}
-
-.board-time-badge:hover,
 .board-time-badge:focus-visible {
-  background: color-mix(in srgb, var(--pc-action) 18%, var(--pc-surface));
   outline: none;
+  color: var(--pc-text);
 }
 </style>

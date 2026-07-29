@@ -147,7 +147,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
         v-for="item in items"
         :key="`${item.item_type}-${item.id}`"
         data-board-item
-        class="grid cursor-grab gap-2.5 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] p-3 transition-[border-color,box-shadow,opacity] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_45%,var(--pc-border))] active:cursor-grabbing data-[bug=true]:border-l-[3px] data-[bug=true]:border-l-[var(--pc-danger)]"
+        class="grid cursor-grab gap-1 rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-3 py-2 transition-[border-color,opacity] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_45%,var(--pc-border))] active:cursor-grabbing data-[bug=true]:border-l-[3px] data-[bug=true]:border-l-[var(--pc-danger)]"
         :data-bug="item.item_type === 'bug' || undefined"
         data-testid="board-item"
         :data-item-id="item.id"
@@ -158,17 +158,17 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
         @dblclick="emit('open', item)"
         @keydown.enter="emit('open', item)"
       >
-        <header class="flex min-w-0 items-center justify-between gap-2">
-          <span class="inline-flex min-w-0 items-center gap-1 text-[11px] font-semibold text-[var(--pc-text-muted)]">
-            <el-icon v-if="item.item_type === 'bug'"><WarningFilled /></el-icon>
+        <header class="flex min-h-5 min-w-0 items-center justify-between gap-2 leading-none">
+          <span class="inline-flex min-w-0 items-center gap-1 text-[12px] leading-none font-semibold text-[var(--pc-text)]">
+            <el-icon v-if="item.item_type === 'bug'" class="text-[var(--pc-danger)]"><WarningFilled /></el-icon>
             {{ item.item_code || (item.item_type === 'bug' ? `BUG-${item.id}` : `TASK-${item.id}`) }}
           </span>
-          <div class="flex items-center gap-0.5">
+          <div class="flex shrink-0 items-center gap-0.5">
             <button
               v-if="item.item_type === 'bug'"
               data-card-action
               data-testid="board-bug-view-button"
-              class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[color-mix(in_srgb,var(--pc-danger)_12%,var(--pc-surface))] hover:text-[var(--pc-danger)]"
+              class="grid h-5 w-5 cursor-pointer place-items-center rounded-[4px] border-0 bg-transparent p-0 text-[13px] text-[var(--pc-text-muted)] hover:bg-[color-mix(in_srgb,var(--pc-danger)_12%,var(--pc-surface))] hover:text-[var(--pc-danger)]"
               type="button"
               aria-label="查看缺陷"
               title="查看"
@@ -178,7 +178,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
             </button>
             <button
               data-card-action
-              class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
+              class="grid h-5 w-5 cursor-pointer place-items-center rounded-[4px] border-0 bg-transparent p-0 text-[13px] text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
               type="button"
               aria-label="编辑工作项"
               title="编辑工作项"
@@ -190,7 +190,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
               <button
                 data-testid="board-item-move-button"
                 data-card-action
-                class="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
+                class="grid h-5 w-5 cursor-pointer place-items-center rounded-[4px] border-0 bg-transparent p-0 text-[13px] text-[var(--pc-text-muted)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-text)]"
                 type="button"
                 aria-label="移动工作项"
                 @click.stop
@@ -216,15 +216,19 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
             </el-dropdown>
           </div>
         </header>
-        <h4 class="m-0 min-w-0 text-sm leading-[1.4] font-semibold break-words text-[var(--pc-text)]" style="overflow-wrap: anywhere">{{ item.title }}</h4>
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] text-[var(--pc-text-secondary)]">
+
+        <h4 class="m-0 min-w-0 text-[13px] leading-[1.35] font-normal break-words text-[var(--pc-text)]" style="overflow-wrap: anywhere">
+          {{ item.title }}
+        </h4>
+
+        <footer class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 border-t border-[var(--pc-border-soft)] pt-1.5 text-[12px] text-[var(--pc-text-secondary)]">
           <span
-            class="inline-flex items-center gap-[3px] font-semibold text-[var(--pc-action)] data-[severity=true]:text-[var(--pc-danger)]"
+            class="inline-flex shrink-0 items-center font-semibold text-[var(--pc-action)] data-[severity=true]:text-[var(--pc-danger)]"
             :data-severity="item.item_type === 'bug' || undefined"
           >
             {{ item.item_type === 'bug' ? `S${item.severity}` : `P${item.priority}` }}
           </span>
-          <span class="inline-flex items-center gap-1">
+          <span class="inline-flex min-w-0 items-center gap-1.5">
             <el-avatar
               :size="20"
               class="shrink-0 !inline-flex !items-center !justify-center !text-center !text-[10px] !leading-none font-semibold"
@@ -232,10 +236,11 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
             >
               {{ itemOwnerName(item).slice(0, 1).toUpperCase() || '?' }}
             </el-avatar>
-            {{ itemOwnerName(item) || '未分配' }}
+            <span class="truncate">{{ itemOwnerName(item) || '未分配' }}</span>
           </span>
+          <span class="mx-0.5 h-3 w-px shrink-0 bg-[var(--pc-border)]" aria-hidden="true" />
           <BoardTimeDropdown :item="item" @changed="emit('changed')" />
-        </div>
+        </footer>
       </article>
     </template>
 
