@@ -124,6 +124,15 @@
             const renderCard = (i) => {
                 const isBug = i.item_type === 'bug';
                 const severityLabels = { 1: 'S0', 2: 'S1', 3: 'S2', 4: 'S3', 5: 'S4' };
+                const bugStatusLabels = {
+                    open: '待处理',
+                    in_progress: '处理中',
+                    fixed: '已修复',
+                    resolved: '已修复',
+                    closed: '已验证',
+                    rejected: '已拒绝'
+                };
+                const bugStatusLabel = bugStatusLabels[i.status] || '待处理';
                 const assigneeName = i.assignee_name || i.reporter_name || '未分配';
                 
                 return `
@@ -162,6 +171,9 @@
                                 </span>
                                 <span style="font-size:11px" class="inline-flex items-center px-1.5 py-0.5 rounded font-bold ${(i.time_spent || 0) > (i.time_estimate || 0) && i.time_estimate > 0 ? 'bg-red-50 text-red-700' : 'bg-red-50 text-red-700'}">
                                     <i class="fa-regular fa-clock mr-0.5"></i>${i.time_spent || 0}/${i.time_estimate || 0}h
+                                </span>
+                                <span data-testid="bug-status-badge" title="缺陷状态：${bugStatusLabel}" aria-label="缺陷状态：${bugStatusLabel}" style="font-size:11px" class="inline-flex items-center px-1.5 py-0.5 rounded font-bold bg-red-50 text-red-700">
+                                    ${bugStatusLabel}
                                 </span>
                             ` : `
                                 <span style="font-size:11px" class="inline-flex items-center px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border ${
@@ -358,6 +370,10 @@
                                     <span class="relative w-8 h-4 rounded-full transition-colors ${hideCompletedCards ? 'bg-purple-600' : 'bg-gray-300'}">
                                         <span class="absolute w-3 h-3 bg-white rounded-full shadow-sm" style="top: 2px; left: 2px; transform: translateX(${hideCompletedCards ? '16px' : '0'}); transition: transform 150ms;"></span>
                                     </span>
+                                </button>
+                                <button type="button" data-testid="board-bind-requirements-button" onclick="app.modals.bindBoardRequirements(${id}, ${sprintId})" style="height: 38px;" class="inline-flex items-center gap-2 px-3 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                                    <i class="fa-solid fa-link text-xs"></i>
+                                    <span>绑定需求</span>
                                 </button>
                                 <button onclick="app.navigate('board', {id: ${id}${sprintId ? `, sprintId: ${sprintId}` : ''}})" class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
                                     <i class="fa-solid fa-rotate text-xs"></i>

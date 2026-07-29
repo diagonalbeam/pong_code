@@ -29,3 +29,9 @@ test('看板缺陷卡片在登记工时左侧提供查看详情按钮', () => {
     );
     assert.match(board, /<i class="fa-regular fa-file-lines"/);
 });
+
+test('看板缺陷卡片在工时标签右侧显示缺陷状态', () => {
+    assert.match(board, /data-testid="bug-status-badge"/);
+    assert.match(board, /title="缺陷状态：\$\{bugStatusLabel\}"/);
+    assert.match(board, />\s*\$\{bugStatusLabel\}\s*<\/span>/);
+});

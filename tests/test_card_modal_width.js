@@ -14,7 +14,8 @@ const bugModal = fs.readFileSync(
 
 test('任务卡片对话框宽度由 32rem 增加 20% 至 38.4rem', () => {
     assert.match(issueModal, /width:min\(94vw, 38\.4rem\)/);
-    assert.match(issueModal, /modalEditIssue[\s\S]*?CARD_ITEM_MODAL_OPTIONS/);
+    assert.match(issueModal, /modalEditIssue[\s\S]*?taskEditModalOptions\(i, initialTab\)/);
+    assert.match(issueModal, /function taskEditModalOptions\(issue, initialTab = 'details'\)[\s\S]*?\.\.\.CARD_ITEM_MODAL_OPTIONS/);
 });
 
 test('缺陷卡片的详情和编辑工时对话框宽度增加 20%', () => {
@@ -29,6 +30,8 @@ test('缺陷卡片的详情和编辑工时对话框宽度增加 20%', () => {
         bugModal.indexOf('MiniAgile.modals.modalAddBugEvidence')
     );
 
-    assert.match(viewBug, /CARD_ITEM_MODAL_OPTIONS/);
-    assert.match(editBug, /CARD_ITEM_MODAL_OPTIONS/);
+    assert.match(viewBug, /bugViewModalOptions\(\)/);
+    assert.match(bugModal, /function bugViewModalOptions\(\)[\s\S]*?\.\.\.CARD_ITEM_MODAL_OPTIONS/);
+    assert.match(editBug, /bugEditModalOptions\(bug\.id, initialTab\)/);
+    assert.match(bugModal, /function bugEditModalOptions\(bugId, initialTab = 'details'\)[\s\S]*?\.\.\.CARD_ITEM_MODAL_OPTIONS/);
 });
