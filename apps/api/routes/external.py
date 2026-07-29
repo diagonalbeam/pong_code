@@ -325,18 +325,15 @@ def list_sprints(project_id):
     return _paged_response(page_size, page_number, total, result)
 
 
-@bp.route('/external/api/pjm/projects/<int:project_id>/sprints/<int:sprint_id>/bugs', methods=['GET'])
+@bp.route('/external/api/pjm/projects/sprints/<int:sprint_id>/bugs', methods=['GET'])
 @require_external_token
-def list_bugs(project_id, sprint_id):
-    project = Project.query.get(project_id)
-    if project is None:
-        return _error_response(404, 'not_found', 'Project not found')
-    sprint = Sprint.query.filter_by(id=sprint_id, project_id=project_id).first()
+def list_bugs(sprint_id):
+    sprint = Sprint.query.get(sprint_id)
     if sprint is None:
         return _error_response(404, 'not_found', 'Sprint not found')
 
     page_size, page_number, data = _parse_pagination()
-    query = Bug.query.filter_by(project_id=project_id, sprint_id=sprint_id)
+    query = Bug.query.filter_by(sprint_id=sprint_id)
     if data.get('title'):
         query = query.filter(Bug.title.like(f'%{data["title"]}%'))
     if data.get('status'):
