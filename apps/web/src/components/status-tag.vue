@@ -27,7 +27,7 @@ const type = computed(() => getStatusType(props.status))
 </script>
 
 <template>
-  <el-tag :type="type" effect="light" round>
+  <el-tag :type="type" effect="light">
     <span class="inline-flex items-center gap-1.5">
       <span>{{ label || labels[status] || status }}</span>
       <slot name="suffix" />

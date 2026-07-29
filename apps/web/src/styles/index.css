@@ -117,8 +117,30 @@ body {
 
 button,
 a,
-[role='button'] {
+[role='button'],
+.el-button,
+.el-link,
+.el-dropdown-menu__item,
+.el-tabs__item,
+.el-menu-item,
+.el-sub-menu__title,
+.el-dialog__headerbtn,
+.el-message-box__headerbtn,
+.el-pager li,
+.el-pagination button {
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled,
+.el-button.is-disabled,
+.el-button:disabled,
+.el-link.is-disabled,
+.el-tabs__item.is-disabled,
+.el-menu-item.is-disabled,
+.el-pager li.is-disabled,
+.el-pagination button:disabled {
+  cursor: not-allowed;
 }
 
 button:active:not(:disabled),
@@ -514,7 +536,8 @@ button:active:not(:disabled),
   display: none;
 }
 
-.el-tag {
+.el-tag,
+.el-tag.is-round {
   border-radius: var(--pc-radius-sm);
 }
 
