@@ -65,7 +65,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
+  <div class="mx-auto w-full max-w-[1920px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader title="控制台" :description="`你好，${auth.user?.username || ''}。这是你当前的项目概览。`">
       <OrganizationActions ref="actions" @changed="load(true)" />
     </PageHeader>

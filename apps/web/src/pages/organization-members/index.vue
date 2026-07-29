@@ -43,7 +43,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
+  <div class="mx-auto w-full max-w-[1920px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader :title="`${organization?.name || ''} · 组织成员`" :description="`共 ${members.length} 位成员`" />
     <section class="min-h-60">
       <div class="pc-filter-bar max-sm:flex-wrap">

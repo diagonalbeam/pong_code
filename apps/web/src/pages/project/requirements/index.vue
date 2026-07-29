@@ -149,7 +149,7 @@ onMounted(load)
 
 <template>
   <div
-    class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8"
+    class="mx-auto w-full max-w-[1920px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8"
     :class="{ 'pb-28! max-md:pb-32!': multiSelectMode }"
   >
     <PageHeader :title="`${details?.project.name || '项目'} · 需求`" description="从提出、实现到验收，集中追踪每一项产品需求。">

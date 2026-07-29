@@ -45,7 +45,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-[1440px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
+  <div class="mx-auto w-full max-w-[1920px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader :title="`${organization?.name || ''} · 团队`" description="查看组织中的协作团队。">
       <el-button type="primary" data-testid="create-team-button" @click="createOpen = true">
         <el-icon><Plus /></el-icon>创建团队
