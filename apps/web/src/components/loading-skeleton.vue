@@ -253,25 +253,25 @@ withDefaults(defineProps<{
 
 .pc-skeleton__board-columns {
   display: grid;
-  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
   gap: 12px;
   overflow-x: auto;
 }
 
 .pc-skeleton__board-columns > section {
-  padding: 10px;
-  border-radius: var(--pc-radius-card);
+  padding: 12px;
+  border-radius: 12px;
   background: var(--pc-surface-soft);
 }
 
 .pc-skeleton__board-card {
   display: grid;
-  min-height: 112px;
-  gap: 10px;
-  margin-top: 8px;
-  padding: 14px;
+  min-height: 128px;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 16px;
   border: 1px solid var(--pc-border-soft);
-  border-radius: var(--pc-radius-card);
+  border-radius: 12px;
   background: var(--pc-surface);
 }
 

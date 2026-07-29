@@ -135,7 +135,7 @@ onMounted(load)
               <template #default="{ row }">{{ row.start_date || '-' }} 至 {{ row.end_date || '-' }}</template>
             </el-table-column>
             <el-table-column label="工时" width="90">
-              <template #default="{ row }">{{ row.time_spent }}h</template>
+              <template #default="{ row }">{{ Number(row.time_spent || 0).toFixed(1).replace(/\.0$/, '') }}h</template>
             </el-table-column>
             <el-table-column label="操作" width="80" fixed="right" align="center">
               <template #default="{ row }">

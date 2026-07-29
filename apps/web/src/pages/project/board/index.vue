@@ -475,7 +475,7 @@ watch(
                 </span>
                 <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                   <el-icon class="text-[var(--pc-action)]"><Clock /></el-icon>
-                  {{ totals.hours }}h 工时
+                  {{ Number(totals.hours).toFixed(1).replace(/\.0$/, '') }}h 工时
                 </span>
               </div>
             </div>
@@ -561,13 +561,13 @@ watch(
               </el-button>
             </header>
 
-            <div v-if="!collapsed.has(laneId(lane))" class="grid grid-cols-[repeat(3,minmax(260px,1fr))] items-stretch gap-3 overflow-x-auto pt-1 pb-1">
+            <div v-if="!collapsed.has(laneId(lane))" class="grid grid-cols-[repeat(3,minmax(280px,1fr))] items-stretch gap-3 overflow-x-auto pt-1 pb-1">
               <section
                 v-for="column in statusColumns"
                 :key="column.value"
-                class="flex min-h-0 flex-col rounded-[var(--pc-radius-card)] bg-[var(--pc-surface-soft)] p-2.5"
+                class="flex min-h-0 flex-col rounded-[12px] bg-[var(--pc-surface-soft)] p-3"
               >
-                <header class="flex min-h-[30px] shrink-0 items-center gap-[7px] px-1">
+                <header class="flex min-h-[32px] shrink-0 items-center gap-2 px-1 pb-1">
                   <span
                     class="h-2 w-2 rounded-full bg-[var(--pc-text-muted)] data-[status=doing]:bg-[var(--pc-action)] data-[status=done]:bg-[var(--pc-success)]"
                     :data-status="column.value"
