@@ -48,10 +48,12 @@ describe('WorklogList', () => {
     const expected = getUserAvatarStyle('李海斌')
     const avatars = wrapper.findAll('[data-testid="worklog-avatar"]')
     expect(avatars).toHaveLength(2)
-    expect(avatars[0].text()).toBe('李')
-    expect(avatars[0].attributes('style')).toContain(`background-color: ${hexToRgb(expected.backgroundColor)}`)
-    expect(avatars[0].attributes('style')).toContain(`color: ${hexToRgb(expected.color)}`)
-    expect(avatars[1].attributes('style')).toBe(avatars[0].attributes('style'))
+    const firstAvatar = avatars[0]!
+    const secondAvatar = avatars[1]!
+    expect(firstAvatar.text()).toBe('李')
+    expect(firstAvatar.attributes('style')).toContain(`background-color: ${hexToRgb(expected.backgroundColor)}`)
+    expect(firstAvatar.attributes('style')).toContain(`color: ${hexToRgb(expected.color)}`)
+    expect(secondAvatar.attributes('style')).toBe(firstAvatar.attributes('style'))
   })
 
   it('有说明时独立成块展示，无说明时只显示日期', () => {
@@ -91,11 +93,13 @@ describe('WorklogList', () => {
     })
 
     const articles = wrapper.findAll('article')
-    expect(articles[0].text()).toContain('2026-06-30')
-    expect(articles[0].text()).not.toContain('无说明')
-    expect(articles[0].find('[data-testid="worklog-description"]').exists()).toBe(false)
+    const firstArticle = articles[0]!
+    const secondArticle = articles[1]!
+    expect(firstArticle.text()).toContain('2026-06-30')
+    expect(firstArticle.text()).not.toContain('无说明')
+    expect(firstArticle.find('[data-testid="worklog-description"]').exists()).toBe(false)
 
-    const description = articles[1].get('[data-testid="worklog-description"]')
+    const description = secondArticle.get('[data-testid="worklog-description"]')
     expect(description.text()).toBe('这是一段很长的工时说明，需要独立展示')
     expect(description.classes()).toContain('ml-12')
   })
