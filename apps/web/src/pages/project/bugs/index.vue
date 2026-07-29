@@ -111,7 +111,7 @@ onMounted(load)
     </PageHeader>
 
     <section class="mb-4 grid grid-cols-4 gap-3 max-[1100px]:grid-cols-2">
-      <StatCard label="全部缺陷" :value="stats.total" tone="neutral" />
+      <StatCard label="全部缺陷" :value="stats.total" tone="danger" />
       <StatCard label="待处理" :value="stats.open" tone="danger" />
       <StatCard label="处理中" :value="stats.in_progress" tone="warning" />
       <StatCard label="已修复/关闭" :value="stats.fixed + stats.closed" tone="success" />

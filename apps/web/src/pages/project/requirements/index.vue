@@ -79,7 +79,7 @@ onMounted(load)
     </PageHeader>
 
     <section class="mb-4 grid grid-cols-4 gap-3 max-[1000px]:grid-cols-2">
-      <StatCard label="全部需求" :value="stats.total" tone="neutral" />
+      <StatCard label="全部需求" :value="stats.total" tone="warning" />
       <StatCard label="待规划" :value="stats.pending" tone="warning" />
       <StatCard label="进行与测试" :value="stats.in_progress + stats.testing" tone="action" />
       <StatCard label="已完成" :value="stats.completed" tone="success" />

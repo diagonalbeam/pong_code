@@ -122,9 +122,9 @@ onMounted(load)
     </PageHeader>
 
     <section class="mb-4 grid grid-cols-3 gap-3 max-lg:grid-cols-2 max-sm:[&>*:last-child]:col-span-2">
-      <StatCard label="区间总工时" :value="`${data?.total_hours || 0}h`" hint="包含任务、缺陷和迭代工时" />
-      <StatCard label="待办任务" :value="data?.tasks.length || 0" hint="由我负责的待办和进行中任务" />
-      <StatCard label="待办缺陷" :value="data?.bugs.length || 0" hint="由我负责或报告的未终结缺陷" />
+      <StatCard label="区间总工时" :value="`${data?.total_hours || 0}h`" hint="包含任务、缺陷和迭代工时" tone="action" />
+      <StatCard label="待办任务" :value="data?.tasks.length || 0" hint="由我负责的待办和进行中任务" tone="warning" />
+      <StatCard label="待办缺陷" :value="data?.bugs.length || 0" hint="由我负责或报告的未终结缺陷" tone="danger" />
     </section>
 
     <div class="grid grid-cols-[minmax(320px,0.85fr)_minmax(0,1.35fr)] gap-4 max-lg:grid-cols-1">
