@@ -1,5 +1,7 @@
 # 缺陷录入表单优化 Implementation Plan
 
+> **归档说明（2026-07-29）**：历史实现计划，路径指向已删除的 `static/js/...`。勿按本文实施；现行前端在 `apps/web`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 优化独立的缺陷创建与编辑弹窗，让用户用模板化大文本区录入长内容，并能在创建/编辑时直接补充图片证据。

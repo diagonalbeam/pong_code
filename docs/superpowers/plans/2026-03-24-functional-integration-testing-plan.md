@@ -1,5 +1,7 @@
 # Functional Integration Testing Implementation Plan
 
+> **归档说明（2026-07-29）**：历史实现计划，基于原生 JS SPA 与旧目录结构。现行 E2E 见 `tests/e2e/`；勿按本文中的 `static/js` / 根目录 `requirements.txt` 路径实施。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 为当前 PongCode 项目补齐一套可在本地重复执行的完整功能集成测试，覆盖主流程、常见异常分支，以及“成员加入组织后可见项目及下游数据”的协作链路。

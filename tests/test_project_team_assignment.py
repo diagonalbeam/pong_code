@@ -57,6 +57,7 @@ class ProjectTeamAssignmentApiTestCase(unittest.TestCase):
             'password': 'password123',
         })
         self.assertEqual(response.status_code, 200)
+        return response.get_json()['user']['id']
 
     def test_project_requires_team(self):
         response = self.client.post(

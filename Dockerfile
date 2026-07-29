@@ -1,4 +1,22 @@
-FROM python:3.11-slim
+FROM node:24-alpine AS web-builder
+
+WORKDIR /build
+
+RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/api-contract/package.json packages/api-contract/package.json
+
+RUN pnpm install --frozen-lockfile
+
+COPY apps/web apps/web
+COPY packages/api-contract packages/api-contract
+
+RUN pnpm build
+
+
+FROM python:3.11-slim AS runtime
 
 WORKDIR /app
 
@@ -6,10 +24,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-COPY requirements.txt ./
-RUN pip install -r requirements.txt && pip install gunicorn
+COPY apps/api/requirements.txt ./apps/api/requirements.txt
+RUN pip install -r apps/api/requirements.txt && pip install gunicorn
 
-COPY . .
+COPY apps/api ./apps/api
+COPY static ./static
+COPY --from=web-builder /build/apps/web/dist ./apps/api/static/app
 
 EXPOSE 5000
 
@@ -20,4 +40,4 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD python -c "import os,urllib.request; urllib.request.urlopen(f'http://127.0.0.1:{os.getenv(\"PORT\",\"5000\")}/healthz', timeout=3)"
 
-CMD ["sh", "-c", "gunicorn -w ${WEB_CONCURRENCY:-2} -k gthread --threads ${GUNICORN_THREADS:-4} -b 0.0.0.0:${PORT:-5000} --log-level ${LOG_LEVEL:-info} --access-logfile - --error-logfile - app:app"]
+CMD ["sh", "-c", "gunicorn --chdir apps/api -w ${WEB_CONCURRENCY:-2} -k gthread --threads ${GUNICORN_THREADS:-4} -b 0.0.0.0:${PORT:-5000} --log-level ${LOG_LEVEL:-info} --access-logfile - --error-logfile - app:app"]

@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def project_root() -> Path:
-    """仓库根目录（含 app.py）。"""
+    """仓库根目录（后端入口位于 apps/api/app.py）。"""
     return Path(__file__).resolve().parents[3]
 
 

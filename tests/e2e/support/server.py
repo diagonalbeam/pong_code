@@ -52,7 +52,7 @@ class MiniAgileServer:
         env = {**os.environ, **extra}
         try:
             self._process = subprocess.Popen(
-                [sys.executable, "app.py"],
+                [sys.executable, "apps/api/app.py"],
                 cwd=str(self._root),
                 env=env,
                 stdout=subprocess.DEVNULL,

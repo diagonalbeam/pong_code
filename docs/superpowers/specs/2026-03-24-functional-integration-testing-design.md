@@ -1,5 +1,7 @@
 # 完整功能集成测试设计
 
+> **归档说明（2026-07-29）**：历史设计快照，基于旧 Flask + 原生 JS SPA。现行测试为 `pnpm test:api` / `pnpm test` / `pnpm test:e2e`（Vue 生产构建 + Playwright），说明见 `tests/e2e/README.md` 与根目录 README。
+
 ## 背景
 当前仓库已经具备一套可运行的 Flask + 原生 JavaScript 单页应用，业务覆盖认证、组织、团队、项目、迭代、看板、需求、任务和缺陷等模块，但自动化测试仍以局部功能为主，尚未形成一套覆盖核心业务闭环的完整功能测试体系。
 
