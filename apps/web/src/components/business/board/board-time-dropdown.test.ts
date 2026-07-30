@@ -38,6 +38,7 @@ const PopoverStub = defineComponent({
   inheritAttrs: false,
   props: {
     visible: { type: Boolean, default: false },
+    persistent: { type: Boolean, default: true },
   },
   emits: ['update:visible'],
   setup(_, { attrs, slots }) {
@@ -183,6 +184,11 @@ describe('BoardTimeDropdown', () => {
   it('无工时时仍展示 0h / 0h', () => {
     const wrapper = mountBadge(taskItem({ time_estimate: 0, time_spent: 0 }))
     expect(wrapper.get('[data-testid="board-time-badge"]').text()).toContain('0h / 0h')
+  })
+
+  it('关闭时不常驻工时表单', () => {
+    const wrapper = mountBadge()
+    expect(wrapper.getComponent(PopoverStub).props('persistent')).toBe(false)
   })
 
   it('可更新预估工时并登记消耗与评论', async () => {

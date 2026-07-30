@@ -64,7 +64,6 @@ const { projectId, organizationId, details, loadProject } = useProjectContext()
 const loading = ref(true)
 const refreshing = ref(false)
 const board = ref<BoardResponse | null>(null)
-const boardViewKey = ref(0)
 const users = ref<User[]>([])
 const requirements = ref<Requirement[]>([])
 const selectedSprintId = ref<number | null>(null)
@@ -177,7 +176,6 @@ async function refreshBoard() {
     users.value = people
     requirements.value = requirementList
     await loadBoard(selectedSprintId.value || undefined)
-    boardViewKey.value += 1
   }
   catch (error) {
     ElMessage.error(apiErrorMessage(error, '刷新看板失败'))
@@ -421,6 +419,7 @@ watch(
                 </h1>
                 <el-dropdown
                   trigger="click"
+                  :persistent="false"
                   :disabled="sprintStatusUpdating"
                   @command="updateSprintStatus($event as Sprint['status'])"
                 >
@@ -496,6 +495,7 @@ watch(
               <el-dropdown
                 split-button
                 type="primary"
+                :persistent="false"
                 data-testid="create-issue-button"
                 @click="createIssue()"
                 @command="onCreateCommand"
@@ -520,12 +520,12 @@ watch(
           </div>
         </section>
 
-        <div :key="boardViewKey" class="grid gap-4">
+        <div class="grid gap-4">
           <article
             v-for="lane in swimlanes"
             :key="laneId(lane)"
             :data-testid="`board-swimlane-${laneId(lane)}`"
-            class="rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-3 py-1.5"
+            class="board-swimlane rounded-[var(--pc-radius-card)] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-3 py-1.5"
           >
             <header class="flex min-h-8 items-center justify-between gap-3 px-1">
               <button
@@ -655,6 +655,11 @@ watch(
 .board-status-trigger {
   transition:
     transform 120ms ease;
+}
+
+.board-swimlane {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 280px;
 }
 
 .board-status-trigger:hover {

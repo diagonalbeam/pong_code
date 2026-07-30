@@ -696,7 +696,7 @@ async function logout() {
                 <el-icon :size="18"><Bell /></el-icon>
               </button>
             </el-badge>
-            <el-dropdown trigger="click">
+            <el-dropdown trigger="click" :persistent="false">
               <button
                 type="button"
                 data-testid="user-trigger"

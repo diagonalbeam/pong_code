@@ -202,7 +202,11 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
             >
               <el-icon :size="16"><Edit /></el-icon>
             </button>
-            <el-dropdown trigger="click" @command="handleMoveCommand(item, $event)">
+            <el-dropdown
+              trigger="click"
+              :persistent="false"
+              @command="handleMoveCommand(item, $event)"
+            >
               <button
                 data-testid="board-item-move-button"
                 data-card-action

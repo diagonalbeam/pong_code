@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -19,5 +20,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <RouterView />
+  <el-config-provider :locale="zhCn">
+    <RouterView />
+  </el-config-provider>
 </template>

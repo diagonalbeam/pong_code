@@ -104,6 +104,7 @@ function handleMenuWheel(event: WheelEvent) {
   <el-tooltip :content="label" :disabled="label.length <= 12" placement="bottom" :show-after="180">
     <el-dropdown
       trigger="click"
+      :persistent="false"
       :disabled="loading"
       @command="handleCommand"
       @visible-change="handleVisibleChange"
