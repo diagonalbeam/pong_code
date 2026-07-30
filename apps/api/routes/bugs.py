@@ -97,6 +97,24 @@ def _remove_attachment_file(file_path):
         os.remove(absolute_path)
 
 
+def _evidence_display_name(filename, extension):
+    """保留原始展示名（含中文），仅去掉路径；secure_filename 会剥掉非 ASCII。"""
+    basename = os.path.basename((filename or '').replace('\\', '/')).strip()
+    if basename:
+        return basename
+    ascii_name = secure_filename(filename or '')
+    if ascii_name:
+        return ascii_name
+    return f'image.{extension}' if extension else 'image'
+
+
+def _evidence_extension(filename):
+    """从原始文件名取扩展名。须在 secure_filename 之前，否则中文名会变成无扩展名的 'png'。"""
+    basename = os.path.basename((filename or '').replace('\\', '/'))
+    _, ext = os.path.splitext(basename)
+    return ext.lstrip('.').lower()
+
+
 def _save_evidence_attachments(bug, evidence, files):
     upload_root = _get_upload_root()
     bug_folder = os.path.join(upload_root, f'bug-{bug.id}')
@@ -109,10 +127,11 @@ def _save_evidence_attachments(bug, evidence, files):
             if not file_storage or not file_storage.filename:
                 continue
 
-            safe_name = secure_filename(file_storage.filename)
-            extension = safe_name.rsplit('.', 1)[-1].lower() if '.' in safe_name else ''
+            extension = _evidence_extension(file_storage.filename)
             if extension not in ALLOWED_IMAGE_EXTENSIONS:
                 raise ValueError('证据附件只支持图片格式（png/jpg/jpeg/webp）')
+
+            display_name = _evidence_display_name(file_storage.filename, extension)
 
             file_storage.stream.seek(0, os.SEEK_END)
             file_size = file_storage.stream.tell()
@@ -128,7 +147,7 @@ def _save_evidence_attachments(bug, evidence, files):
             relative_path = os.path.relpath(absolute_path, current_app.static_folder)
             attachment = BugEvidenceAttachment(
                 evidence_id=evidence.id,
-                file_name=safe_name,
+                file_name=display_name,
                 file_path=relative_path,
                 mime_type=file_storage.mimetype or f'image/{extension}',
                 file_size=file_size
