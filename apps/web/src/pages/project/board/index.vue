@@ -40,6 +40,9 @@ import {
   boardLaneId,
   calculateBoardTotals,
   calculateSwimlaneProgress,
+  collectCompletedItemKeys,
+  countHiddenCompletedItems,
+  filterHiddenCompletedItems,
   isSwimlaneInactive,
   type BoardStatus,
 } from '@/shared/board'
@@ -68,6 +71,8 @@ const users = ref<User[]>([])
 const requirements = ref<Requirement[]>([])
 const selectedSprintId = ref<number | null>(null)
 const hideCompleted = ref(localStorage.getItem(BOARD_HIDE_COMPLETED_STORAGE_KEY) === 'true')
+/** 「隐藏已完成」打开瞬间的已完成快照；之后新完成的不在此集合，仍可见可拖回。 */
+const hiddenCompletedKeys = ref(new Set<string>())
 const collapsed = ref(new Set<string>())
 let collapsePreferenceKey = ''
 const createIssueOpen = ref(false)
@@ -103,6 +108,29 @@ const sprintDateRange = computed(() => {
 
 function laneId(lane: Swimlane) {
   return boardLaneId(lane)
+}
+
+function snapshotHiddenCompleted() {
+  hiddenCompletedKeys.value = collectCompletedItemKeys(swimlanes.value)
+}
+
+/** 开关已开时刷新快照（进页 / 切迭代 / 手动刷新）；进页时已开等同于打开开关。 */
+function maybeSnapshotHiddenCompleted() {
+  if (hideCompleted.value)
+    snapshotHiddenCompleted()
+}
+
+function columnItems(lane: Swimlane, status: BoardStatus) {
+  const items = lane[status]
+  if (status !== 'done')
+    return items
+  return filterHiddenCompletedItems(items, hideCompleted.value, hiddenCompletedKeys.value)
+}
+
+function columnHiddenCount(lane: Swimlane, status: BoardStatus) {
+  if (status !== 'done')
+    return 0
+  return countHiddenCompletedItems(lane.done, hideCompleted.value, hiddenCompletedKeys.value)
 }
 
 function collapseStorageKey() {
@@ -176,6 +204,7 @@ async function refreshBoard() {
     users.value = people
     requirements.value = requirementList
     await loadBoard(selectedSprintId.value || undefined)
+    maybeSnapshotHiddenCompleted()
   }
   catch (error) {
     ElMessage.error(apiErrorMessage(error, '刷新看板失败'))
@@ -198,6 +227,7 @@ async function load() {
     requirements.value = requirementList
     selectedSprintId.value = requestedSprint || null
     await loadBoard(requestedSprint)
+    maybeSnapshotHiddenCompleted()
   }
   catch (error) {
     ElMessage.error(apiErrorMessage(error, '加载看板失败'))
@@ -244,6 +274,10 @@ async function updateSprintStatus(status: Sprint['status']) {
 function toggleHideCompleted(value: boolean) {
   hideCompleted.value = value
   localStorage.setItem(BOARD_HIDE_COMPLETED_STORAGE_KEY, String(value))
+  if (value)
+    snapshotHiddenCompleted()
+  else
+    hiddenCompletedKeys.value = new Set()
 }
 
 function toggleLane(id: string) {
@@ -384,6 +418,7 @@ watch(
     loading.value = true
     try {
       await loadBoard(nextSprintId)
+      maybeSnapshotHiddenCompleted()
     }
     catch (error) {
       ElMessage.error(apiErrorMessage(error, '切换迭代失败'))
@@ -581,8 +616,8 @@ watch(
                   :status="column.value"
                   :lane-id="laneId(lane)"
                   :lane-options="laneOptions"
-                  :items="lane[column.value]"
-                  :hide-items="column.value === 'done' && hideCompleted"
+                  :items="columnItems(lane, column.value)"
+                  :hidden-count="columnHiddenCount(lane, column.value)"
                   @open="openItem"
                   @view="viewBug"
                   @move="moveItem"
