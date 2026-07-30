@@ -31,6 +31,7 @@ const emit = defineEmits<{
 }>()
 
 const search = ref('')
+const scrollBodyRef = ref<HTMLElement | null>(null)
 const filteredOptions = computed(() => {
   const keyword = search.value.trim().toLocaleLowerCase()
   if (!keyword)
@@ -64,6 +65,39 @@ function handleVisibleChange(visible: boolean) {
   if (!visible)
     search.value = ''
 }
+
+/** 隔离菜单内滚轮：中间原生滚动，头尾与边界处阻止带动页面 */
+function handleMenuWheel(event: WheelEvent) {
+  event.stopPropagation()
+
+  const body = scrollBodyRef.value
+  if (!body) {
+    event.preventDefault()
+    return
+  }
+
+  const deltaY = event.deltaY
+  if (!deltaY)
+    return
+
+  const { scrollTop, scrollHeight, clientHeight } = body
+  const maxScrollTop = Math.max(0, scrollHeight - clientHeight)
+  const onBody = event.composedPath().includes(body)
+
+  if (!onBody) {
+    body.scrollTop = Math.min(maxScrollTop, Math.max(0, scrollTop + deltaY))
+    event.preventDefault()
+    return
+  }
+
+  if (
+    maxScrollTop <= 0
+    || (deltaY < 0 && scrollTop <= 0)
+    || (deltaY > 0 && scrollTop >= maxScrollTop - 1)
+  ) {
+    event.preventDefault()
+  }
+}
 </script>
 
 <template>
@@ -88,8 +122,9 @@ function handleVisibleChange(visible: boolean) {
         <el-dropdown-menu
           :data-testid="`${testId}-menu`"
           class="pc-context-menu min-w-[240px] max-w-[min(86vw,320px)]"
+          @wheel="handleMenuWheel"
         >
-          <div class="px-2 pt-1 pb-2" @click.stop @keydown.stop>
+          <div class="pc-context-menu__header px-2 pt-1 pb-2" @click.stop @keydown.stop>
             <el-input
               v-model="search"
               clearable
@@ -99,33 +134,41 @@ function handleVisibleChange(visible: boolean) {
               @click.stop
             />
           </div>
-          <el-dropdown-item
-            v-for="option in filteredOptions"
-            :key="option.value"
-            :command="option.value"
-            :class="{ 'pc-context-menu__item--selected': option.value === modelValue }"
-            :aria-current="option.value === modelValue ? 'true' : undefined"
-            :data-testid="`${testId}-option-${option.value}`"
-          >
-            <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
-            <small
-              v-if="option.meta"
-              class="ml-3 shrink-0 text-xs"
-              :style="getMetaStyle(option.status)"
-            >
-              {{ option.meta }}
-            </small>
-          </el-dropdown-item>
           <div
-            v-if="!filteredOptions.length"
-            class="px-3 py-2 text-sm text-[var(--pc-text-muted)]"
+            ref="scrollBodyRef"
+            class="pc-context-menu__body"
+            data-testid="context-menu-scroll-body"
           >
-            {{ search ? '没有匹配结果' : emptyLabel }}
+            <el-dropdown-item
+              v-for="option in filteredOptions"
+              :key="option.value"
+              :command="option.value"
+              :class="{ 'pc-context-menu__item--selected': option.value === modelValue }"
+              :aria-current="option.value === modelValue ? 'true' : undefined"
+              :data-testid="`${testId}-option-${option.value}`"
+            >
+              <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
+              <small
+                v-if="option.meta"
+                class="ml-3 shrink-0 text-xs"
+                :style="getMetaStyle(option.status)"
+              >
+                {{ option.meta }}
+              </small>
+            </el-dropdown-item>
+            <div
+              v-if="!filteredOptions.length"
+              class="px-3 py-2 text-sm text-[var(--pc-text-muted)]"
+            >
+              {{ search ? '没有匹配结果' : emptyLabel }}
+            </div>
           </div>
-          <el-dropdown-item divided command="manage">
-            <el-icon><Setting /></el-icon>
-            {{ manageLabel }}
-          </el-dropdown-item>
+          <div class="pc-context-menu__footer">
+            <el-dropdown-item command="manage">
+              <el-icon><Setting /></el-icon>
+              {{ manageLabel }}
+            </el-dropdown-item>
+          </div>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
@@ -133,6 +176,43 @@ function handleVisibleChange(visible: boolean) {
 </template>
 
 <style scoped>
+:global(.pc-context-menu.el-dropdown-menu) {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  overscroll-behavior: contain;
+}
+
+:global(.pc-context-menu .pc-context-menu__header),
+:global(.pc-context-menu .pc-context-menu__footer) {
+  flex-shrink: 0;
+  background: var(--el-bg-color-overlay);
+}
+
+:global(.pc-context-menu .pc-context-menu__footer) {
+  border-top: 1px solid var(--pc-border-soft);
+}
+
+:global(.pc-context-menu .pc-context-menu__body) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-y;
+}
+
+:global(.pc-context-menu .pc-context-menu__body::-webkit-scrollbar) {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 :global(.pc-context-menu .el-dropdown-menu__item:focus-visible) {
   outline-offset: -2px;
 }

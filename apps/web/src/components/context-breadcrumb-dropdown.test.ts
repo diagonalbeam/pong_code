@@ -95,4 +95,37 @@ describe('上下文面包屑下拉', () => {
     expect(wrapper.text()).toContain('项目 9')
     expect(wrapper.text()).not.toContain('项目 8')
   })
+
+  it('搜索与管理入口固定，中间列表区域可滚动', () => {
+    const wrapper = mountDropdown(20)
+    const menu = wrapper.get('[data-testid="project-switcher-menu"]')
+    const body = wrapper.get('[data-testid="context-menu-scroll-body"]')
+
+    expect(menu.classes()).toContain('pc-context-menu')
+    expect(body.find('[data-testid="project-switcher-option-1"]').exists()).toBe(true)
+    expect(wrapper.find('.pc-context-menu__header input[placeholder="搜索项目"]').exists()).toBe(true)
+    expect(wrapper.find('.pc-context-menu__footer').text()).toContain('查看所有项目')
+  })
+
+  it('菜单滚轮在边界处阻止默认行为，避免带动外层滚动', async () => {
+    const wrapper = mountDropdown(20)
+    const menu = wrapper.get('[data-testid="project-switcher-menu"]')
+    const body = wrapper.get('[data-testid="context-menu-scroll-body"]').element as HTMLElement
+
+    Object.defineProperty(body, 'scrollHeight', { configurable: true, get: () => 400 })
+    Object.defineProperty(body, 'clientHeight', { configurable: true, get: () => 200 })
+    Object.defineProperty(body, 'scrollTop', {
+      configurable: true,
+      get: () => 0,
+      set: () => undefined,
+    })
+
+    const event = new WheelEvent('wheel', { deltaY: -40, bubbles: true, cancelable: true })
+    Object.defineProperty(event, 'composedPath', {
+      value: () => [body, menu.element],
+    })
+    const prevented = !menu.element.dispatchEvent(event)
+
+    expect(prevented).toBe(true)
+  })
 })
