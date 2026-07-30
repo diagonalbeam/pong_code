@@ -176,10 +176,10 @@ describe('应用外壳', () => {
     expect(tooltipLabels).toEqual(expect.arrayContaining(['控制台', '工作台', '团队']))
   })
 
-  it('将通知 badge 收进容器，并只在下拉菜单展示用户名和邮箱', () => {
+  it('只在下拉菜单展示用户名和邮箱', () => {
     const wrapper = mountShell()
 
-    expect(wrapper.get('[data-testid="header-notification"]').classes()).toContain('pc-header-notification')
+    expect(wrapper.find('[data-testid="header-notification"]').exists()).toBe(false)
 
     const userTrigger = wrapper.get('[data-testid="user-trigger"]')
     expect(userTrigger.text()).not.toContain(testState.user.username)

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  Bell,
   Briefcase,
   Collection,
   DataBoard,
@@ -686,16 +685,6 @@ async function logout() {
             >
               <el-icon :size="18"><Sunny v-if="theme.isDark" /><Moon v-else /></el-icon>
             </button>
-            <el-badge data-testid="header-notification" class="pc-header-notification" :value="3" :max="99">
-              <button
-                type="button"
-                class="grid h-10 w-10 cursor-pointer place-items-center rounded-[var(--pc-radius-sm)] border-0 bg-transparent p-0 text-[var(--pc-text-secondary)] hover:bg-[var(--pc-surface-soft)] hover:text-[var(--pc-action)]"
-                aria-label="通知"
-                @click="ElMessage.info('通知功能开发中')"
-              >
-                <el-icon :size="18"><Bell /></el-icon>
-              </button>
-            </el-badge>
             <el-dropdown trigger="click" :persistent="false">
               <button
                 type="button"
@@ -814,20 +803,3 @@ async function logout() {
   </div>
 </template>
 
-<style scoped>
-.pc-header-notification :deep(.el-badge__content) {
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-width: 1px;
-  font-size: 10px;
-  line-height: 14px;
-}
-
-.pc-header-notification :deep(.el-badge__content.is-fixed) {
-  top: 1px;
-  right: 1px;
-  transform: none;
-}
-
-</style>
