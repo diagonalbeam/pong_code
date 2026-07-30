@@ -3,10 +3,14 @@ import type { BoardItem, Swimlane } from '@/api/types'
 import {
   boardBugStatus,
   boardCollapsedStorageKey,
+  boardItemKey,
   boardLaneId,
   boardRequirementId,
   calculateBoardTotals,
   calculateSwimlaneProgress,
+  collectCompletedItemKeys,
+  countHiddenCompletedItems,
+  filterHiddenCompletedItems,
   isSwimlaneInactive,
 } from './board'
 
@@ -106,5 +110,47 @@ describe('看板共享规则', () => {
       doing: [task(2)],
       done: [task(3)],
     } as Swimlane)).toBe(false)
+  })
+
+  it('隐藏已完成按开关打开瞬间快照，之后新完成的仍可见', () => {
+    const lanes = [{
+      requirement: null,
+      todo: [],
+      doing: [],
+      done: [task(1), task(2)],
+    }] as Swimlane[]
+    const snapshot = collectCompletedItemKeys(lanes)
+    expect([...snapshot]).toEqual(['task:1', 'task:2'])
+    expect(boardItemKey(task(3))).toBe('task:3')
+
+    const afterMove = [task(1), task(2), task(3)]
+    expect(filterHiddenCompletedItems(afterMove, true, snapshot).map(item => item.id)).toEqual([3])
+    expect(countHiddenCompletedItems(afterMove, true, snapshot)).toBe(2)
+    expect(filterHiddenCompletedItems(afterMove, false, snapshot).map(item => item.id)).toEqual([1, 2, 3])
+    expect(countHiddenCompletedItems(afterMove, false, snapshot)).toBe(0)
+  })
+
+  it('再次打开隐藏时用当前已完成重拍快照，离开后再拖回的不隐藏', () => {
+    const atFirstOpen = collectCompletedItemKeys([{
+      requirement: null,
+      todo: [],
+      doing: [],
+      done: [task(1)],
+    }] as Swimlane[])
+    expect([...atFirstOpen]).toEqual(['task:1'])
+
+    // 关掉隐藏、拖出已完成后再打开：快照应是当时仍在已完成的卡片
+    const atSecondOpen = collectCompletedItemKeys([{
+      requirement: null,
+      todo: [],
+      doing: [task(1)],
+      done: [task(2)],
+    }] as Swimlane[])
+    expect([...atSecondOpen]).toEqual(['task:2'])
+
+    const doneAfterDragBack = [task(2), task(1)]
+    expect(filterHiddenCompletedItems(doneAfterDragBack, true, atSecondOpen).map(item => item.id))
+      .toEqual([1])
+    expect(countHiddenCompletedItems(doneAfterDragBack, true, atSecondOpen)).toBe(1)
   })
 })

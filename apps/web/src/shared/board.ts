@@ -12,6 +12,39 @@ export const boardBugStatus: Record<BoardStatus, BoardBugStatus> = {
   done: 'closed',
 }
 
+export function boardItemKey(item: Pick<BoardItem, 'item_type' | 'id'>) {
+  return `${item.item_type}:${item.id}`
+}
+
+/** 收集「隐藏已完成」打开瞬间已在「已完成」列的工作项键。 */
+export function collectCompletedItemKeys(swimlanes: Swimlane[]) {
+  return new Set(swimlanes.flatMap(lane => lane.done.map(boardItemKey)))
+}
+
+/**
+ * 隐藏已完成时：只藏开关打开瞬间的快照卡片；之后新拖入已完成的仍可见，方便拖回。
+ * 进页时开关已开，视为同一次「打开」。
+ */
+export function filterHiddenCompletedItems(
+  items: BoardItem[],
+  hideCompleted: boolean,
+  hiddenCompletedKeys: ReadonlySet<string>,
+) {
+  if (!hideCompleted)
+    return items
+  return items.filter(item => !hiddenCompletedKeys.has(boardItemKey(item)))
+}
+
+export function countHiddenCompletedItems(
+  items: BoardItem[],
+  hideCompleted: boolean,
+  hiddenCompletedKeys: ReadonlySet<string>,
+) {
+  if (!hideCompleted)
+    return 0
+  return items.filter(item => hiddenCompletedKeys.has(boardItemKey(item))).length
+}
+
 export function boardLaneId(lane: Swimlane) {
   return lane.requirement ? `req-${lane.requirement.id}` : 'unassigned'
 }
