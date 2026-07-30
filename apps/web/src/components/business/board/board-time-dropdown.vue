@@ -131,6 +131,7 @@ async function save() {
     :width="280"
     trigger="click"
     :teleported="true"
+    :persistent="false"
     popper-class="board-time-dropdown"
   >
     <template #reference>

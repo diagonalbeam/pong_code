@@ -162,7 +162,7 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
         v-for="item in items"
         :key="`${item.item_type}-${item.id}`"
         data-board-item
-        class="grid cursor-grab gap-3 rounded-[12px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-5 py-[18px] transition-[border-color,opacity] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_45%,var(--pc-border))] active:cursor-grabbing data-[bug=true]:border-l-[3px] data-[bug=true]:border-l-[var(--pc-danger)]"
+        class="grid cursor-grab gap-3 rounded-[12px] border border-[var(--pc-border-soft)] bg-[var(--pc-surface)] px-5 pt-4 pb-5 transition-[border-color,opacity] duration-[160ms] hover:border-[color-mix(in_srgb,var(--pc-action)_45%,var(--pc-border))] active:cursor-grabbing data-[bug=true]:border-l-[3px] data-[bug=true]:border-l-[var(--pc-danger)]"
         :data-bug="item.item_type === 'bug' || undefined"
         data-testid="board-item"
         :data-item-id="item.id"
@@ -202,7 +202,11 @@ const statusOptions: Array<{ label: string; value: BoardStatus }> = [
             >
               <el-icon :size="16"><Edit /></el-icon>
             </button>
-            <el-dropdown trigger="click" @command="handleMoveCommand(item, $event)">
+            <el-dropdown
+              trigger="click"
+              :persistent="false"
+              @command="handleMoveCommand(item, $event)"
+            >
               <button
                 data-testid="board-item-move-button"
                 data-card-action
