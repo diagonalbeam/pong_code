@@ -67,7 +67,7 @@ function avatarInitial(name: string) {
       <p
         v-if="log.description?.trim()"
         data-testid="worklog-description"
-        class="mt-2 mb-0 ml-12 text-[13px] leading-5 wrap-break-word whitespace-pre-wrap text-[var(--pc-text-secondary)]"
+        class="mt-2 ml-12 whitespace-pre-wrap text-[13px] leading-5 text-[var(--pc-text-secondary)] break-words"
       >
         {{ log.description.trim() }}
       </p>

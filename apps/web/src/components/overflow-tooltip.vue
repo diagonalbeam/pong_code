@@ -1,22 +1,27 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue'
+import { markdownToPlainText } from '@/shared/markdown'
 
 const props = withDefaults(defineProps<{
   content: string
   testid?: string
+  markdown?: boolean
 }>(), {
   testid: undefined,
+  markdown: false,
 })
 
 const trigger = ref<HTMLElement | null>(null)
 const overflowing = ref(false)
 let resizeObserver: ResizeObserver | undefined
+const tooltipContent = computed(() =>
+  props.markdown ? markdownToPlainText(props.content) : props.content)
 
 function measureOverflow() {
   const element = trigger.value
   overflowing.value = Boolean(
     element
-    && props.content
+    && tooltipContent.value
     && element.scrollWidth > element.clientWidth + 1,
   )
 }
@@ -42,7 +47,7 @@ onBeforeUnmount(() => {
 
 <template>
   <el-tooltip
-    :content="content"
+    :content="tooltipContent"
     :disabled="!overflowing"
     placement="top"
     :show-after="300"
@@ -52,10 +57,10 @@ onBeforeUnmount(() => {
       ref="trigger"
       class="block min-w-0 truncate"
       :data-testid="testid"
-      :data-tooltip-content="content"
+      :data-tooltip-content="tooltipContent"
       :data-overflowing="String(overflowing)"
     >
-      {{ content }}
+      {{ tooltipContent || '—' }}
     </span>
   </el-tooltip>
 </template>

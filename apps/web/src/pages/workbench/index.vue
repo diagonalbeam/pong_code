@@ -246,7 +246,7 @@ onMounted(load)
                   <div class="mt-0.5 truncate text-[12px] text-[var(--pc-text-muted)]">{{ row.project_name }}</div>
                 </td>
                 <td class="text-[var(--pc-text-secondary)]">
-                  <div class="line-clamp-2 break-words">{{ row.description || '—' }}</div>
+                  <span class="block truncate">{{ row.description || '—' }}</span>
                 </td>
                 <td class="whitespace-nowrap text-right tabular-nums text-[var(--pc-text)]">
                   {{ Number(row.hours).toFixed(1) }}h
@@ -283,7 +283,9 @@ onMounted(load)
               </div>
               <strong class="block text-[15px] font-semibold tracking-[-0.01em] text-[var(--pc-text)]">{{ log.item_title }}</strong>
               <span class="mt-1 block text-[12px] text-[var(--pc-text-muted)]">{{ log.project_name }}</span>
-              <span v-if="log.description" class="mt-1 block text-[12px] text-[var(--pc-text-secondary)]">{{ log.description }}</span>
+              <p v-if="log.description" class="mt-1 line-clamp-2 whitespace-pre-wrap text-[12px] text-[var(--pc-text-secondary)] break-words">
+                {{ log.description }}
+              </p>
             </div>
             <b class="shrink-0 text-[15px] font-semibold text-[var(--pc-action)]">{{ Number(log.hours).toFixed(1) }}h</b>
           </article>

@@ -43,7 +43,7 @@ function submit() {
         v-model="form.description"
         type="textarea"
         :rows="3"
-        maxlength="200"
+        maxlength="2000"
         show-word-limit
         placeholder="输入说明（可选）"
       />

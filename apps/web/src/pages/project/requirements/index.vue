@@ -18,6 +18,7 @@ import StatusTag from '@/components/status-tag.vue'
 import RequirementDialog from '@/components/business/requirement-dialog.vue'
 import RequirementDetailDialog from '@/components/business/requirement-detail-dialog.vue'
 import RequirementBatchBindDialog from '@/components/business/requirement-batch-bind-dialog.vue'
+import { markdownToPlainText } from '@/shared/markdown'
 import { useProjectContext } from '@/shared/use-project-context'
 
 interface RequirementStats {
@@ -225,6 +226,7 @@ onMounted(load)
                   <OverflowTooltip
                     :content="row.content"
                     testid="requirement-content-overflow"
+                    markdown
                     class="text-[13px] text-[var(--pc-text-secondary)]"
                   />
                 </div>
@@ -284,7 +286,9 @@ onMounted(load)
               <StatusTag :status="item.status" />
             </header>
             <strong class="text-[15px] font-semibold">{{ item.title }}</strong>
-            <p class="m-0 line-clamp-2 text-[13px] text-[var(--pc-text-secondary)]">{{ item.content }}</p>
+            <p class="line-clamp-2 text-[13px] text-[var(--pc-text-secondary)]">
+              {{ markdownToPlainText(item.content) || '—' }}
+            </p>
             <footer class="flex justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
               <span>{{ item.sprint_name || '未规划迭代' }}</span>
               <span>{{ item.expected_delivery_date || '未设置交付日期' }}</span>

@@ -18,6 +18,7 @@ import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
 import BugViewDialog from '@/components/business/bug-view-dialog.vue'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
 import { bugDictLabel, bugPlatformLabels, bugPriorityLabels, bugStatusLabels, bugTypeLabels } from '@/shared/bug'
+import { markdownToPlainText } from '@/shared/markdown'
 import { useProjectContext } from '@/shared/use-project-context'
 
 interface BugStats {
@@ -164,6 +165,7 @@ onMounted(load)
                   <OverflowTooltip
                     :content="row.description"
                     testid="bug-description-overflow"
+                    markdown
                     class="text-[13px] text-[var(--pc-text-secondary)]"
                   />
                 </div>
@@ -238,7 +240,9 @@ onMounted(load)
               <StatusTag :status="item.status" :label="bugStatusLabels[item.status]" />
             </header>
             <strong class="min-w-0 break-words text-[15px] font-semibold" style="overflow-wrap: anywhere">{{ item.title }}</strong>
-            <p class="m-0 line-clamp-2 min-w-0 break-words text-[13px] text-[var(--pc-text-secondary)]" style="overflow-wrap: anywhere; word-break: break-word">{{ item.description }}</p>
+            <p class="line-clamp-2 min-w-0 text-[13px] text-[var(--pc-text-secondary)]">
+              {{ markdownToPlainText(item.description) || '—' }}
+            </p>
             <footer class="flex flex-wrap items-center justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
               <span class="text-xs font-semibold text-[var(--pc-danger)]">S{{ item.severity }}</span>
               <span>{{ bugDictLabel(bugTypeLabels, item.bug_type) }}</span>

@@ -6,6 +6,7 @@ import { getBug } from '@/api/bugs'
 import { apiErrorMessage } from '@/api/client'
 import type { Bug, BugEvidence, WorkLog } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import MarkdownRenderer from '@/components/markdown-renderer.vue'
 import StatusTag from '@/components/status-tag.vue'
 import {
   bugDictLabel,
@@ -187,18 +188,14 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
           <h4 class="bug-view__heading">
             缺陷描述
           </h4>
-          <p class="bug-view__body" style="overflow-wrap: anywhere">
-            {{ bug.description }}
-          </p>
+          <MarkdownRenderer :source="bug.description" document class="bug-view__body" />
         </section>
 
         <section v-if="bug.steps_to_reproduce" class="bug-view__section">
           <h4 class="bug-view__heading">
             复现步骤
           </h4>
-          <p class="bug-view__body">
-            {{ bug.steps_to_reproduce }}
-          </p>
+          <MarkdownRenderer :source="bug.steps_to_reproduce" document class="bug-view__body" />
         </section>
 
         <section
@@ -236,7 +233,7 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
           <h4 class="bug-view__heading">
             最新异常堆栈
           </h4>
-          <pre class="bug-view__code">{{ bug.latest_stack_trace }}</pre>
+          <MarkdownRenderer :source="bug.latest_stack_trace" document />
         </section>
 
         <section class="bug-view__section" data-testid="bug-view-evidence-section">
@@ -258,10 +255,18 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
               <strong class="text-sm font-medium text-[var(--pc-text)]">{{ evidence.creator_name || '未知用户' }}</strong>
               <time class="text-xs text-[var(--pc-text-muted)]">{{ formatDateTime(evidence.created_at) }}</time>
             </header>
-            <p v-if="evidence.comment" class="mb-2 whitespace-pre-wrap text-sm text-[var(--pc-text-secondary)]">
-              {{ evidence.comment }}
-            </p>
-            <pre v-if="evidence.stack_trace" class="bug-view__code mb-2">{{ evidence.stack_trace }}</pre>
+            <MarkdownRenderer
+              v-if="evidence.comment"
+              :source="evidence.comment"
+              compact
+              class="mb-2 text-sm text-[var(--pc-text-secondary)]"
+            />
+            <MarkdownRenderer
+              v-if="evidence.stack_trace"
+              :source="evidence.stack_trace"
+              compact
+              class="mb-2 text-[var(--pc-text-secondary)]"
+            />
             <div v-if="evidence.attachments.length" class="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-2">
               <a
                 v-for="attachment in evidence.attachments"
@@ -361,21 +366,6 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
   font-size: 14px;
   line-height: 1.65;
   color: var(--pc-text);
-  white-space: pre-wrap;
   word-break: break-word;
-}
-
-.bug-view__code {
-  margin: 0;
-  max-height: 240px;
-  overflow: auto;
-  padding: 12px;
-  border-radius: var(--pc-radius-sm);
-  background: var(--pc-surface-soft);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--pc-text-secondary);
-  white-space: pre-wrap;
 }
 </style>

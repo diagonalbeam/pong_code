@@ -207,4 +207,60 @@ describe('详情表格的明确操作入口与溢出提示', () => {
     expect(wrapper.get('[data-testid="bug-view-dialog"]').attributes('data-open')).toBe('false')
     expect(wrapper.get('[data-testid="bug-detail-dialog"]').attributes('data-open')).toBe('true')
   })
+
+  it('缺陷表格把 Markdown 转成可读摘要而不是在单元格中渲染富内容', async () => {
+    apiMocks.getBugs.mockResolvedValue([{
+      id: 21,
+      item_code: 'BUG-21',
+      title: '登录按钮无响应',
+      description: [
+        '![1.00](/static/uploads/markdown/2026/07/demo.png)',
+        '',
+        '## 登录流程',
+        '',
+        '- 点击登录按钮',
+      ].join('\n'),
+      severity: 2,
+      status: 'open',
+      assignee_name: null,
+      sprint_name: null,
+      evidence_count: 0,
+      time_spent: 0,
+    }])
+
+    const wrapper = mountPage(BugsPage)
+    await flushPromises()
+
+    const summary = wrapper.get('[data-testid="bug-description-overflow"]')
+    expect(summary.text()).toBe('图片 登录流程 点击登录按钮')
+    expect(summary.attributes('data-tooltip-content')).toBe('图片 登录流程 点击登录按钮')
+    expect(summary.find('img').exists()).toBe(false)
+  })
+
+  it('需求表格同样把 Markdown 转成可读摘要', async () => {
+    apiMocks.getRequirements.mockResolvedValue([{
+      id: 11,
+      title: '登录流程优化',
+      content: [
+        '![1.00](/static/uploads/markdown/2026/07/demo.png)',
+        '',
+        '# 验收标准',
+        '',
+        '- 可以正常登录',
+      ].join('\n'),
+      status: 'in_progress',
+      priority: 2,
+      sprint_name: null,
+      creator_name: 'tester',
+      expected_delivery_date: null,
+    }])
+
+    const wrapper = mountPage(RequirementsPage)
+    await flushPromises()
+
+    const summary = wrapper.get('[data-testid="requirement-content-overflow"]')
+    expect(summary.text()).toBe('图片 验收标准 可以正常登录')
+    expect(summary.attributes('data-tooltip-content')).toBe('图片 验收标准 可以正常登录')
+    expect(summary.find('img').exists()).toBe(false)
+  })
 })
