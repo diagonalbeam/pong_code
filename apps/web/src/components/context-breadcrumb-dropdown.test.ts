@@ -29,7 +29,7 @@ const InputStub = defineComponent({
 
 function mountDropdown(
   optionCount: number,
-  options?: Array<{ value: number; label: string; meta?: string; status?: string }>,
+  options?: Array<{ value: number; label: string; meta?: string; status?: string; group?: string }>,
 ) {
   return mount(ContextBreadcrumbDropdown, {
     props: {
@@ -94,6 +94,29 @@ describe('上下文面包屑下拉', () => {
 
     expect(wrapper.text()).toContain('项目 9')
     expect(wrapper.text()).not.toContain('项目 8')
+  })
+
+  it('按团队级联筛选选项，并支持继续搜索项目', async () => {
+    const wrapper = mountDropdown(3, [
+      { value: 1, label: '支付平台', group: '核心团队' },
+      { value: 2, label: '订单中心', group: '核心团队' },
+      { value: 3, label: '消息中心', group: '增长团队' },
+    ])
+
+    expect(wrapper.text()).toContain('核心团队')
+    expect(wrapper.text()).toContain('增长团队')
+    expect(wrapper.find('[data-testid="context-menu-team-list"]').exists()).toBe(true)
+
+    await wrapper.get('[data-testid="project-switcher-team-增长团队"]').trigger('click')
+
+    expect(wrapper.text()).toContain('增长团队')
+    expect(wrapper.text()).toContain('消息中心')
+    expect(wrapper.text()).not.toContain('支付平台')
+
+    await wrapper.get('input[placeholder="搜索项目"]').setValue('消息')
+
+    expect(wrapper.text()).toContain('消息中心')
+    expect(wrapper.text()).not.toContain('订单中心')
   })
 
   it('搜索与管理入口固定，中间列表区域可滚动', () => {
