@@ -2,11 +2,39 @@
 import { Crepe } from '@milkdown/crepe'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
+import { imageBlockSchema } from '@milkdown/kit/component/image-block'
+import { editorViewCtx } from '@milkdown/kit/core'
+import { TextSelection } from '@milkdown/kit/prose/state'
 import { replaceAll } from '@milkdown/kit/utils'
+import { MagicStick, Picture } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { uploadMarkdownImages } from '@/api/uploads'
 import { apiErrorMessage } from '@/api/client'
+
+const advancedCommandIcon = (path: string) => `
+  <svg class="markdown-command-advanced-icon" xmlns="http://www.w3.org/2000/svg"
+    width="24" height="24" viewBox="0 0 24 24">
+    <path d="${path}" />
+  </svg>
+`
+const headingCommandIcon = (level: number) => `
+  <svg class="markdown-command-heading-icon" xmlns="http://www.w3.org/2000/svg"
+    width="24" height="24" viewBox="0 0 24 24">
+    <text x="12" y="12" dominant-baseline="central" text-anchor="middle"
+      fill="currentColor" font-family="system-ui, sans-serif" font-size="14"
+      font-weight="500">H${level}</text>
+  </svg>
+`
+const imageCommandIcon = advancedCommandIcon(
+  'M19 5V19H5V5H19ZM19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM14.14 11.86L11.14 15.73L9 13.14L6 17H18L14.14 11.86Z',
+)
+const codeCommandIcon = advancedCommandIcon(
+  'M9.4 16.6L4.8 12L9.4 7.4L8 6L2 12L8 18L9.4 16.6ZM14.6 16.6L19.2 12L14.6 7.4L16 6L22 12L16 18L14.6 16.6Z',
+)
+const tableCommandIcon = advancedCommandIcon(
+  'M20 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H20C21.1 21 22 20.1 22 19V5C22 3.9 21.1 3 20 3ZM20 5V8H5V5H20ZM15 19H10V10H15V19ZM5 10H8V19H5V10ZM17 19V10H20V19H17Z',
+)
 
 const props = withDefaults(defineProps<{
   modelValue: string
@@ -30,7 +58,9 @@ const emit = defineEmits<{
 }>()
 
 const host = ref<HTMLDivElement | null>(null)
+const imageInput = ref<HTMLInputElement | null>(null)
 const ready = ref(false)
+const uploadingImage = ref(false)
 const markdownLength = ref(props.modelValue.length)
 
 let crepe: Crepe | undefined
@@ -55,6 +85,8 @@ function syncEditorAttributes() {
 
   editor.setAttribute('aria-label', props.placeholder)
   editor.setAttribute('aria-required', String(props.required))
+  editor.removeEventListener('keydown', handleEditorKeydown)
+  editor.addEventListener('keydown', handleEditorKeydown)
 }
 
 async function uploadImage(file: File) {
@@ -68,6 +100,104 @@ async function uploadImage(file: File) {
   catch (error) {
     ElMessage.error(apiErrorMessage(error, '图片上传失败'))
     throw error
+  }
+}
+
+function insertCommandTrigger() {
+  if (!crepe || !ready.value)
+    return
+
+  crepe.editor.action((ctx) => {
+    const view = ctx.get(editorViewCtx)
+    const { selection } = view.state
+    const { $from } = selection
+    const currentBlock = $from.parent
+    let transaction = view.state.tr
+
+    if (
+      selection.empty
+      && ['paragraph', 'heading'].includes(currentBlock.type.name)
+      && currentBlock.content.size === 0
+    ) {
+      transaction = transaction.insertText('/')
+    }
+    else {
+      const paragraph = view.state.schema.nodes.paragraph
+      if (!paragraph)
+        return
+
+      const insertPosition = $from.depth >= 1
+        ? $from.after(1)
+        : view.state.doc.content.size
+      transaction = transaction
+        .insert(insertPosition, paragraph.create())
+        .setSelection(TextSelection.create(transaction.doc, insertPosition + 1))
+        .insertText('/')
+    }
+
+    view.focus()
+    view.dispatch(transaction.scrollIntoView())
+  })
+}
+
+function handleEditorKeydown(event: KeyboardEvent) {
+  if (event.key !== '\\' || !crepe || !ready.value)
+    return
+
+  crepe.editor.action((ctx) => {
+    const view = ctx.get(editorViewCtx)
+    const { selection } = view.state
+    const currentBlock = selection.$from.parent
+    const canOpenMenu = selection.empty
+      && ['paragraph', 'heading'].includes(currentBlock.type.name)
+      && currentBlock.content.size === 0
+
+    if (!canOpenMenu)
+      return
+
+    event.preventDefault()
+    view.dispatch(view.state.tr.insertText('/'))
+  })
+}
+
+function chooseImage() {
+  if (ready.value && !uploadingImage.value)
+    imageInput.value?.click()
+}
+
+function insertUploadedImage(url: string) {
+  if (!crepe || !ready.value)
+    return
+
+  crepe.editor.action((ctx) => {
+    const view = ctx.get(editorViewCtx)
+    const image = imageBlockSchema.type(ctx).create({
+      src: url,
+      caption: '',
+      ratio: 1,
+    })
+    view.dispatch(view.state.tr.replaceSelectionWith(image).scrollIntoView())
+    view.focus()
+  })
+}
+
+async function handleImageSelection(event: Event) {
+  const input = event.currentTarget as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file)
+    return
+
+  uploadingImage.value = true
+  try {
+    const url = await uploadImage(file)
+    insertUploadedImage(url)
+  }
+  catch {
+    // uploadImage 已负责给用户显示具体错误。
+  }
+  finally {
+    uploadingImage.value = false
   }
 }
 
@@ -139,12 +269,12 @@ onMounted(async () => {
         textGroup: {
           label: '文本',
           text: { label: '正文' },
-          h1: { label: '一级标题' },
-          h2: { label: '二级标题' },
-          h3: { label: '三级标题' },
-          h4: { label: '四级标题' },
-          h5: { label: '五级标题' },
-          h6: { label: '六级标题' },
+          h1: { label: '一级标题', icon: headingCommandIcon(1) },
+          h2: { label: '二级标题', icon: headingCommandIcon(2) },
+          h3: { label: '三级标题', icon: headingCommandIcon(3) },
+          h4: { label: '四级标题', icon: headingCommandIcon(4) },
+          h5: { label: '五级标题', icon: headingCommandIcon(5) },
+          h6: { label: '六级标题', icon: headingCommandIcon(6) },
           quote: { label: '引用' },
           divider: { label: '分割线' },
         },
@@ -156,9 +286,9 @@ onMounted(async () => {
         },
         advancedGroup: {
           label: '高级',
-          image: { label: '图片' },
-          codeBlock: { label: '代码块' },
-          table: { label: '表格' },
+          image: { label: '图片', icon: imageCommandIcon },
+          codeBlock: { label: '代码块', icon: codeCommandIcon },
+          table: { label: '表格', icon: tableCommandIcon },
           math: null,
         },
       },
@@ -188,6 +318,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   disposed = true
+  editorElement()?.removeEventListener('keydown', handleEditorKeydown)
   if (crepe)
     void crepe.destroy()
 })
@@ -220,6 +351,42 @@ watch(
     :style="{ '--markdown-editor-min-height': `${minHeight}px` }"
     :aria-busy="!ready"
   >
+    <div class="markdown-editor__toolbar" aria-label="编辑器快捷操作">
+      <button
+        type="button"
+        class="markdown-editor__tool"
+        data-testid="markdown-command-button"
+        :disabled="!ready"
+        title="也可以在空白段落输入 / 或 \ 打开"
+        @click="insertCommandTrigger"
+      >
+        <el-icon :size="15" aria-hidden="true"><MagicStick /></el-icon>
+        快捷命令
+        <span class="markdown-editor__shortcut-key" aria-hidden="true">/</span>
+      </button>
+      <span class="markdown-editor__tool-divider" aria-hidden="true" />
+      <button
+        type="button"
+        class="markdown-editor__tool"
+        data-testid="markdown-image-upload-button"
+        :disabled="!ready || uploadingImage"
+        @click="chooseImage"
+      >
+        <el-icon :size="15" aria-hidden="true"><Picture /></el-icon>
+        {{ uploadingImage ? '上传中…' : '上传图片' }}
+      </button>
+      <input
+        ref="imageInput"
+        class="markdown-editor__file-input"
+        type="file"
+        accept="image/png,image/jpeg,image/gif,image/webp"
+        data-testid="markdown-image-input"
+        tabindex="-1"
+        aria-hidden="true"
+        @change="handleImageSelection"
+      >
+    </div>
+
     <div ref="host" class="markdown-editor__host" />
 
     <div v-if="!ready" class="markdown-editor__skeleton" aria-hidden="true">
@@ -229,7 +396,7 @@ watch(
     </div>
 
     <div class="markdown-editor__footer">
-      <span>输入 / 插入内容 · 粘贴 Markdown 自动格式化 · 支持粘贴或拖入图片</span>
+      <span>输入 / 或 \ 插入内容 · 粘贴 Markdown 自动格式化 · 支持粘贴或拖入图片</span>
       <span v-if="maxLength">{{ markdownLength }} / {{ maxLength }}</span>
       <span v-else>保存为 Markdown</span>
     </div>
@@ -252,9 +419,72 @@ watch(
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--pc-action) 16%, transparent);
 }
 
+.markdown-editor__toolbar {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-sm) var(--pc-radius-sm) 0 0;
+  padding: 3px 6px;
+  background: var(--pc-surface);
+}
+
+.markdown-editor__tool {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--pc-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.markdown-editor__tool:hover:not(:disabled) {
+  background: var(--pc-surface-soft);
+  color: var(--pc-action);
+}
+
+.markdown-editor__tool:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--pc-action) 24%, transparent);
+  outline-offset: 0;
+}
+
+.markdown-editor__tool:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.markdown-editor__shortcut-key {
+  color: var(--pc-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+}
+
+.markdown-editor__tool-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--pc-border-soft);
+}
+
+.markdown-editor__file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .markdown-editor__host {
   min-height: var(--markdown-editor-min-height);
-  border-radius: var(--pc-radius-sm) var(--pc-radius-sm) 0 0;
 }
 
 .markdown-editor :deep(.milkdown) {
@@ -344,6 +574,118 @@ watch(
   object-fit: contain;
 }
 
+.markdown-editor :deep(.milkdown .milkdown-slash-menu) {
+  width: 204px;
+  max-width: calc(100vw - 24px);
+  overflow: hidden;
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 14%);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .tab-group),
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group h6),
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group + .menu-group::before) {
+  display: none;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-groups) {
+  display: flex;
+  width: 100%;
+  max-height: 320px;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 6px;
+  background: transparent;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:not(:has(.markdown-command-advanced-icon))),
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:not(:has(.markdown-command-advanced-icon)) ul) {
+  display: contents;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:not(:has(.markdown-command-advanced-icon)) li) {
+  display: inline-flex;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border-radius: 4px;
+  padding: 0;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:not(:has(.markdown-command-advanced-icon)) li svg) {
+  width: 17px;
+  height: 17px;
+  color: var(--pc-text-secondary);
+  fill: currentcolor;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:not(:has(.markdown-command-advanced-icon)) li svg.markdown-command-heading-icon) {
+  width: 22px;
+  height: 22px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:not(:has(.markdown-command-advanced-icon)) li > span:not(.milkdown-icon)) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:has(.markdown-command-advanced-icon)) {
+  width: 100%;
+  flex: 0 0 100%;
+  margin-top: 4px;
+  border-top: 1px solid var(--pc-border-soft);
+  padding-top: 5px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:has(.markdown-command-advanced-icon) ul) {
+  display: grid;
+  gap: 1px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:has(.markdown-command-advanced-icon) li) {
+  display: flex;
+  min-width: 0;
+  min-height: 32px;
+  align-items: center;
+  gap: 9px;
+  border-radius: 4px;
+  padding: 5px 8px;
+  color: var(--pc-text);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:has(.markdown-command-advanced-icon) li svg) {
+  width: 17px;
+  height: 17px;
+  color: var(--pc-text-secondary);
+  fill: currentcolor;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu .menu-group:has(.markdown-command-advanced-icon) li > span:not(.milkdown-icon)) {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu li.hover) {
+  background: var(--pc-surface-soft);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-slash-menu li.active) {
+  background: color-mix(in srgb, var(--pc-action) 10%, var(--pc-surface));
+  color: var(--pc-action);
+}
+
 .markdown-editor--monospace :deep(.milkdown .ProseMirror) {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 13px;
@@ -363,7 +705,7 @@ watch(
 
 .markdown-editor__skeleton {
   position: absolute;
-  inset: 0 0 27px;
+  inset: 37px 0 27px;
   display: grid;
   align-content: start;
   gap: 12px;

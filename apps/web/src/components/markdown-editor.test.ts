@@ -126,6 +126,47 @@ describe('MarkdownEditor', () => {
     expect(url).toBe('/static/uploads/markdown/2026/07/pasted.png')
   })
 
+  it('provides visible shortcuts for commands and local image selection', async () => {
+    const wrapper = mount(MarkdownEditor, {
+      props: { modelValue: '' },
+    })
+    await flushPromises()
+
+    const instance = milkdownMock.instances[0]
+    await wrapper.get('[data-testid="markdown-command-button"]').trigger('click')
+    expect(instance.editor.action).toHaveBeenCalledWith(expect.any(Function))
+    expect(instance.config.featureConfigs['block-edit'].advancedGroup.image.icon)
+      .toContain('markdown-command-advanced-icon')
+    expect(instance.config.featureConfigs['block-edit'].textGroup.h1.icon)
+      .toContain('>H1</text>')
+
+    const imageInput = wrapper.get<HTMLInputElement>('[data-testid="markdown-image-input"]')
+    expect(imageInput.attributes('accept')).toBe('image/png,image/jpeg,image/gif,image/webp')
+    const inputClick = vi.spyOn(imageInput.element, 'click')
+    await wrapper.get('[data-testid="markdown-image-upload-button"]').trigger('click')
+    expect(inputClick).toHaveBeenCalledOnce()
+  })
+
+  it('uploads a locally selected image and inserts it through Milkdown', async () => {
+    uploadMock.mockResolvedValue(['/static/uploads/markdown/2026/07/selected.png'])
+    const wrapper = mount(MarkdownEditor, {
+      props: { modelValue: '' },
+    })
+    await flushPromises()
+
+    const file = new File(['image'], '选择上传.png', { type: 'image/png' })
+    const imageInput = wrapper.get<HTMLInputElement>('[data-testid="markdown-image-input"]')
+    Object.defineProperty(imageInput.element, 'files', {
+      configurable: true,
+      value: [file],
+    })
+    await imageInput.trigger('change')
+    await flushPromises()
+
+    expect(uploadMock).toHaveBeenCalledWith([file])
+    expect(milkdownMock.instances[0].editor.action).toHaveBeenCalledWith(expect.any(Function))
+  })
+
   it('emits Markdown instead of HTML after visual editing', async () => {
     const wrapper = mount(MarkdownEditor, {
       props: {
