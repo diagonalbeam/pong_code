@@ -8,6 +8,7 @@ export interface ContextBreadcrumbOption {
   label: string
   meta?: string
   status?: string
+  group?: string
 }
 
 const props = withDefaults(defineProps<{
@@ -31,15 +32,46 @@ const emit = defineEmits<{
 }>()
 
 const search = ref('')
+const selectedGroup = ref('')
 const scrollBodyRef = ref<HTMLElement | null>(null)
+const availableGroups = computed(() => {
+  const groups: string[] = []
+  const seen = new Set<string>()
+  for (const option of props.options) {
+    if (!option.group || seen.has(option.group))
+      continue
+    seen.add(option.group)
+    groups.push(option.group)
+  }
+  return groups
+})
+const cascadeMode = computed(() => availableGroups.value.length > 1)
 const filteredOptions = computed(() => {
   const keyword = search.value.trim().toLocaleLowerCase()
-  if (!keyword)
-    return props.options
   return props.options.filter(option => (
-    `${option.label} ${option.meta || ''}`.toLocaleLowerCase().includes(keyword)
+    (!cascadeMode.value || !selectedGroup.value || option.group === selectedGroup.value)
+    && (!keyword || `${option.label} ${option.meta || ''} ${option.group || ''}`.toLocaleLowerCase().includes(keyword))
   ))
 })
+const groupedOptions = computed(() => {
+  const groups: Array<{ key: string; label: string; options: ContextBreadcrumbOption[] }> = []
+  const groupIndex = new Map<string, number>()
+
+  for (const option of filteredOptions.value) {
+    const label = option.group || ''
+    const key = label || '__ungrouped__'
+    let index = groupIndex.get(key)
+    if (index === undefined) {
+      index = groups.length
+      groupIndex.set(key, index)
+      groups.push({ key, label, options: [] })
+    }
+    groups[index]!.options.push(option)
+  }
+
+  return groups
+})
+const hasGroups = computed(() => groupedOptions.value.some(group => group.label))
 const statusColors: Record<StatusType, string> = {
   success: 'var(--el-color-success)',
   warning: 'var(--el-color-warning)',
@@ -62,8 +94,15 @@ function handleCommand(command: number | string) {
 }
 
 function handleVisibleChange(visible: boolean) {
-  if (!visible)
+  if (visible && cascadeMode.value) {
+    const currentGroup = props.options.find(option => option.value === props.modelValue)?.group
+    selectedGroup.value = currentGroup || availableGroups.value[0] || ''
+    return
+  }
+  if (!visible) {
     search.value = ''
+    selectedGroup.value = ''
+  }
 }
 
 /** 隔离菜单内滚轮：中间原生滚动，头尾与边界处阻止带动页面 */
@@ -122,7 +161,7 @@ function handleMenuWheel(event: WheelEvent) {
       <template #dropdown>
         <el-dropdown-menu
           :data-testid="`${testId}-menu`"
-          class="pc-context-menu min-w-[240px] max-w-[min(86vw,320px)]"
+          class="pc-context-menu min-w-[240px] max-w-[min(86vw,360px)]"
           @wheel="handleMenuWheel"
         >
           <div class="pc-context-menu__header px-2 pt-1 pb-2" @click.stop @keydown.stop>
@@ -136,27 +175,81 @@ function handleMenuWheel(event: WheelEvent) {
             />
           </div>
           <div
+            v-if="cascadeMode"
+            class="pc-context-menu__body pc-context-menu__cascade"
+            data-testid="context-menu-scroll-body"
+          >
+            <div class="pc-context-menu__teams" data-testid="context-menu-team-list" @click.stop @keydown.stop>
+              <button
+                v-for="group in availableGroups"
+                :key="group"
+                type="button"
+                class="pc-context-menu__team"
+                :class="{ 'pc-context-menu__team--selected': group === selectedGroup }"
+                :data-testid="`${testId}-team-${group}`"
+                @click="selectedGroup = group"
+              >
+                <span class="truncate">{{ group }}</span>
+              </button>
+            </div>
+            <div ref="scrollBodyRef" class="pc-context-menu__projects">
+              <el-dropdown-item
+                v-for="option in filteredOptions"
+                :key="option.value"
+                :command="option.value"
+                :class="{ 'pc-context-menu__item--selected': option.value === modelValue }"
+                :aria-current="option.value === modelValue ? 'true' : undefined"
+                :data-testid="`${testId}-option-${option.value}`"
+              >
+                <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
+                <small
+                  v-if="option.meta"
+                  class="ml-3 shrink-0 text-xs"
+                  :style="getMetaStyle(option.status)"
+                >
+                  {{ option.meta }}
+                </small>
+              </el-dropdown-item>
+              <div
+                v-if="!filteredOptions.length"
+                class="px-3 py-2 text-sm text-[var(--pc-text-muted)]"
+              >
+                {{ search ? '没有匹配结果' : emptyLabel }}
+              </div>
+            </div>
+          </div>
+          <div
+            v-else
             ref="scrollBodyRef"
             class="pc-context-menu__body"
             data-testid="context-menu-scroll-body"
           >
-            <el-dropdown-item
-              v-for="option in filteredOptions"
-              :key="option.value"
-              :command="option.value"
-              :class="{ 'pc-context-menu__item--selected': option.value === modelValue }"
-              :aria-current="option.value === modelValue ? 'true' : undefined"
-              :data-testid="`${testId}-option-${option.value}`"
-            >
-              <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
-              <small
-                v-if="option.meta"
-                class="ml-3 shrink-0 text-xs"
-                :style="getMetaStyle(option.status)"
+            <template v-for="group in groupedOptions" :key="group.key">
+              <div
+                v-if="hasGroups && group.label"
+                class="pc-context-menu__group-title"
+                :data-testid="`${testId}-group-${group.key}`"
               >
-                {{ option.meta }}
-              </small>
-            </el-dropdown-item>
+                {{ group.label }}
+              </div>
+              <el-dropdown-item
+                v-for="option in group.options"
+                :key="option.value"
+                :command="option.value"
+                :class="{ 'pc-context-menu__item--selected': option.value === modelValue }"
+                :aria-current="option.value === modelValue ? 'true' : undefined"
+                :data-testid="`${testId}-option-${option.value}`"
+              >
+                <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
+                <small
+                  v-if="option.meta"
+                  class="ml-3 shrink-0 text-xs"
+                  :style="getMetaStyle(option.status)"
+                >
+                  {{ option.meta }}
+                </small>
+              </el-dropdown-item>
+            </template>
             <div
               v-if="!filteredOptions.length"
               class="px-3 py-2 text-sm text-[var(--pc-text-muted)]"
@@ -208,7 +301,61 @@ function handleMenuWheel(event: WheelEvent) {
   touch-action: pan-y;
 }
 
+:global(.pc-context-menu .pc-context-menu__body.pc-context-menu__cascade) {
+  display: grid;
+  grid-template-columns: minmax(104px, 34%) minmax(0, 1fr);
+  overflow: hidden;
+}
+
+:global(.pc-context-menu .pc-context-menu__teams) {
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-right: 1px solid var(--pc-border-soft);
+  background: color-mix(in srgb, var(--pc-surface-soft) 64%, transparent);
+}
+
+:global(.pc-context-menu .pc-context-menu__team) {
+  display: flex;
+  width: 100%;
+  min-height: 32px;
+  align-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 7px 10px;
+  color: var(--pc-text-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: left;
+}
+
+:global(.pc-context-menu .pc-context-menu__team:hover) {
+  background: var(--pc-surface-soft);
+  color: var(--pc-text-secondary);
+}
+
+:global(.pc-context-menu .pc-context-menu__team.pc-context-menu__team--selected) {
+  background: var(--el-bg-color-overlay);
+  color: var(--pc-action);
+  font-weight: 500;
+}
+
+:global(.pc-context-menu .pc-context-menu__projects) {
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 :global(.pc-context-menu .pc-context-menu__body::-webkit-scrollbar) {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+:global(.pc-context-menu .pc-context-menu__teams::-webkit-scrollbar),
+:global(.pc-context-menu .pc-context-menu__projects::-webkit-scrollbar) {
   display: none;
   width: 0;
   height: 0;
@@ -216,6 +363,14 @@ function handleMenuWheel(event: WheelEvent) {
 
 :global(.pc-context-menu .el-dropdown-menu__item:focus-visible) {
   outline-offset: -2px;
+}
+
+:global(.pc-context-menu .pc-context-menu__group-title) {
+  padding: 8px 12px 4px;
+  color: var(--pc-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
 }
 
 :global(.pc-context-menu .el-dropdown-menu__item.pc-context-menu__item--selected) {
