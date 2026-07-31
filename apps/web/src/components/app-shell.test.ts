@@ -206,8 +206,12 @@ describe('应用外壳', () => {
     apiMocks.getOrganization.mockResolvedValue({
       organization: { id: 1, name: '龙腾团队' },
       projects: [
-        { id: 10, name: '支付平台' },
-        { id: 11, name: '消息中心' },
+        { id: 10, name: '支付平台', team_id: 1, team_name: '核心团队' },
+        { id: 11, name: '消息中心', team_id: 2, team_name: '增长团队' },
+      ],
+      teams: [
+        { id: 1, name: '核心团队' },
+        { id: 2, name: '增长团队' },
       ],
     })
     apiMocks.getProject.mockResolvedValue({
@@ -226,14 +230,25 @@ describe('应用外壳', () => {
 
     expect(wrapper.get('[data-testid="desktop-organization-switcher"]').text()).toContain('龙腾团队')
     expect(wrapper.get('[data-testid="desktop-sprint-switcher"]').text()).toContain('迭代 1')
+    expect(wrapper.get('[data-testid="desktop-project-switcher-menu"]').text()).toContain('核心团队')
+    expect(wrapper.get('[data-testid="desktop-project-switcher-menu"]').text()).toContain('增长团队')
     expect(wrapper.get('[data-testid="desktop-project-switcher-menu"]').text()).toContain('消息中心')
-    expect(wrapper.get('[data-testid="desktop-sprint-switcher-menu"]').text()).toContain('未开始')
+    expect(wrapper.find('[data-testid="desktop-sprint-switcher-status-active"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="desktop-sprint-switcher-status-open"]').exists()).toBe(true)
     expect(
       wrapper
         .get('[data-testid="desktop-sprint-switcher-menu"]')
         .findAll('[data-testid^="desktop-sprint-switcher-option-"]')
         .map(option => option.text()),
-    ).toEqual(['迭代 1进行中', '迭代 2未开始', '迭代 3已完成'])
+    ).toEqual(['迭代 1进行中'])
+
+    await wrapper.get('[data-testid="desktop-sprint-switcher-status-open"]').trigger('click')
+    expect(
+      wrapper
+        .get('[data-testid="desktop-sprint-switcher-menu"]')
+        .findAll('[data-testid^="desktop-sprint-switcher-option-"]')
+        .map(option => option.text()),
+    ).toEqual(['迭代 1进行中', '迭代 2未开始'])
     expect(wrapper.text()).toContain('项目空间')
     expect(wrapper.find('[data-testid="sidebar-project-switcher"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="sidebar-sprint-switcher"]').exists()).toBe(false)

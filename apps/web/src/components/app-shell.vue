@@ -21,7 +21,7 @@ import { isAxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
 import { computed, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { Organization } from '@/api/types'
+import type { Organization, Project } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
 import ContextBreadcrumbDropdown, { type ContextBreadcrumbOption } from '@/components/context-breadcrumb-dropdown.vue'
 import { getUserAvatarColor } from '@/shared/avatar-color'
@@ -111,12 +111,32 @@ const organizationMenuOptions = computed<ContextBreadcrumbOption[]>(() => (
     label: organization.name,
   }))
 ))
-const projectMenuOptions = computed<ContextBreadcrumbOption[]>(() => (
-  projectOptions.value.map(project => ({
-    value: project.id,
-    label: project.name,
-  }))
-))
+const projectMenuOptions = computed<ContextBreadcrumbOption[]>(() => {
+  const details = currentOrganizationDetails.value
+  const teamById = new Map((details?.teams || []).map(team => [team.id, team.name]))
+  const teamSortOrder = new Map((details?.teams || []).map((team, index) => [team.id, index]))
+  const unassignedOrder = teamSortOrder.size + 1
+  const getTeamOrder = (project: Project) => (
+    project.team_id
+      ? teamSortOrder.get(project.team_id) ?? teamSortOrder.size
+      : unassignedOrder
+  )
+  const getTeamName = (project: Project) => (
+    (project.team_id ? teamById.get(project.team_id) || project.team_name : null)
+    || '未分配团队'
+  )
+
+  return [...projectOptions.value]
+    .sort((left, right) => (
+      getTeamOrder(left) - getTeamOrder(right)
+      || left.name.localeCompare(right.name, 'zh-CN')
+    ))
+    .map(project => ({
+      value: project.id,
+      label: project.name,
+      group: getTeamName(project),
+    }))
+})
 const sprintMenuOptions = computed<ContextBreadcrumbOption[]>(() => (
   sprintOptions.value.map(sprint => ({
     value: sprint.id,
@@ -125,6 +145,11 @@ const sprintMenuOptions = computed<ContextBreadcrumbOption[]>(() => (
     status: sprint.status,
   }))
 ))
+const sprintStatusFilterOptions = [
+  { value: 'active', label: '进行中' },
+  { value: 'open', label: '未开始' },
+  { value: 'closed', label: '已完成' },
+]
 const avatarStyle = computed(() => {
   const color = getUserAvatarColor(auth.user?.username ?? '')
 
@@ -639,6 +664,8 @@ async function logout() {
                     :label="selectedSprint?.name || '当前迭代'"
                     :model-value="selectedSprintId"
                     :options="sprintMenuOptions"
+                    :status-filter-options="sprintStatusFilterOptions"
+                    default-status-filter="active"
                     :loading="sprintSwitcherLoading"
                     manage-label="管理迭代"
                     empty-label="暂无迭代"
@@ -763,6 +790,8 @@ async function logout() {
               :label="selectedSprint?.name || '当前迭代'"
               :model-value="selectedSprintId"
               :options="sprintMenuOptions"
+              :status-filter-options="sprintStatusFilterOptions"
+              default-status-filter="active"
               :loading="sprintSwitcherLoading"
               manage-label="管理迭代"
               empty-label="暂无迭代"
@@ -802,4 +831,3 @@ async function logout() {
     </AppDialog>
   </div>
 </template>
-
