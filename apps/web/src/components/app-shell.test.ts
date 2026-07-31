@@ -233,13 +233,22 @@ describe('应用外壳', () => {
     expect(wrapper.get('[data-testid="desktop-project-switcher-menu"]').text()).toContain('核心团队')
     expect(wrapper.get('[data-testid="desktop-project-switcher-menu"]').text()).toContain('增长团队')
     expect(wrapper.get('[data-testid="desktop-project-switcher-menu"]').text()).toContain('消息中心')
-    expect(wrapper.get('[data-testid="desktop-sprint-switcher-menu"]').text()).toContain('未开始')
+    expect(wrapper.find('[data-testid="desktop-sprint-switcher-status-active"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="desktop-sprint-switcher-status-open"]').exists()).toBe(true)
     expect(
       wrapper
         .get('[data-testid="desktop-sprint-switcher-menu"]')
         .findAll('[data-testid^="desktop-sprint-switcher-option-"]')
         .map(option => option.text()),
-    ).toEqual(['迭代 1进行中', '迭代 2未开始', '迭代 3已完成'])
+    ).toEqual(['迭代 1进行中'])
+
+    await wrapper.get('[data-testid="desktop-sprint-switcher-status-open"]').trigger('click')
+    expect(
+      wrapper
+        .get('[data-testid="desktop-sprint-switcher-menu"]')
+        .findAll('[data-testid^="desktop-sprint-switcher-option-"]')
+        .map(option => option.text()),
+    ).toEqual(['迭代 1进行中', '迭代 2未开始'])
     expect(wrapper.text()).toContain('项目空间')
     expect(wrapper.find('[data-testid="sidebar-project-switcher"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="sidebar-sprint-switcher"]').exists()).toBe(false)
