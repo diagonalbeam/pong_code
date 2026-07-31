@@ -168,6 +168,22 @@ class BugEvidenceApiTestCase(unittest.TestCase):
         self.assertNotIn('attachments', payload['work_logs'][0])
         self.assertEqual(len(payload['evidences']), 1)
 
+    def test_bug_evidence_accepts_chinese_filename_png(self):
+        """中文文件名经 secure_filename 会丢掉扩展名，不应因此拒绝合法 PNG。"""
+        evidence_response = self.client.post(
+            f'/api/bugs/{self.bug_id}/evidences',
+            data={
+                'comment': '中文文件名截图',
+                'screenshots': self._png_upload('抓包.png'),
+            },
+            content_type='multipart/form-data',
+        )
+        self.assertEqual(evidence_response.status_code, 201, evidence_response.get_json())
+        attachments = evidence_response.get_json()['evidence']['attachments']
+        self.assertEqual(len(attachments), 1)
+        self.assertEqual(attachments[0]['file_name'], '抓包.png')
+        self.assertTrue(attachments[0]['url'].endswith('.png'))
+
     def test_bug_evidence_rejects_non_image_attachments(self):
         evidence_response = self.client.post(
             f'/api/bugs/{self.bug_id}/evidences',
