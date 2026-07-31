@@ -359,11 +359,13 @@ async function removeWorklog(log: WorkLog) {
                 <MarkdownRenderer
                   v-if="evidence.comment"
                   :source="evidence.comment"
+                  compact
                   class="mt-3 text-sm text-[var(--pc-text-secondary)]"
                 />
                 <MarkdownRenderer
                   v-if="evidence.stack_trace"
                   :source="evidence.stack_trace"
+                  compact
                   class="mt-3 text-xs text-[var(--pc-text-secondary)]"
                 />
                 <div v-if="evidence.attachments.length" class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">

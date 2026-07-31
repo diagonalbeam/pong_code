@@ -9,7 +9,6 @@ import { apiErrorMessage } from '@/api/client'
 import type { Bug, Requirement, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
 import LoadingSkeleton from '@/components/loading-skeleton.vue'
-import MarkdownRenderer from '@/components/markdown-renderer.vue'
 import OverflowTooltip from '@/components/overflow-tooltip.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
@@ -19,6 +18,7 @@ import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
 import BugViewDialog from '@/components/business/bug-view-dialog.vue'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
 import { bugDictLabel, bugPlatformLabels, bugPriorityLabels, bugStatusLabels, bugTypeLabels } from '@/shared/bug'
+import { markdownToPlainText } from '@/shared/markdown'
 import { useProjectContext } from '@/shared/use-project-context'
 
 interface BugStats {
@@ -240,11 +240,9 @@ onMounted(load)
               <StatusTag :status="item.status" :label="bugStatusLabels[item.status]" />
             </header>
             <strong class="min-w-0 break-words text-[15px] font-semibold" style="overflow-wrap: anywhere">{{ item.title }}</strong>
-            <MarkdownRenderer
-              :source="item.description"
-              compact
-              class="line-clamp-2 min-w-0 text-[13px] text-[var(--pc-text-secondary)]"
-            />
+            <p class="line-clamp-2 min-w-0 text-[13px] text-[var(--pc-text-secondary)]">
+              {{ markdownToPlainText(item.description) || '—' }}
+            </p>
             <footer class="flex flex-wrap items-center justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
               <span class="text-xs font-semibold text-[var(--pc-danger)]">S{{ item.severity }}</span>
               <span>{{ bugDictLabel(bugTypeLabels, item.bug_type) }}</span>

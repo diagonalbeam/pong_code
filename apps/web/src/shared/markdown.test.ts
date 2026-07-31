@@ -48,4 +48,14 @@ describe('Markdown rendering', () => {
     expect(markdownToPlainText('## **重点**<br />\n- [文档](https://example.com)'))
       .toBe('重点 文档')
   })
+
+  it('keeps image-only Milkdown content visible in list summaries', () => {
+    expect(markdownToPlainText([
+      '![1.00](/static/uploads/markdown/2026/07/demo.png)',
+      '',
+      '## 登录按钮无响应',
+      '',
+      '- 点击登录',
+    ].join('\n'))).toBe('图片 登录按钮无响应 点击登录')
+  })
 })

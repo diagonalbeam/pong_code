@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import MarkdownEditor from '@/components/markdown-editor.vue'
 
 const props = withDefaults(defineProps<{
   submitLabel?: string
@@ -40,11 +39,13 @@ function submit() {
       </el-form-item>
     </div>
     <el-form-item label="说明">
-      <MarkdownEditor
+      <el-input
         v-model="form.description"
-        :min-height="110"
-        :max-length="2000"
-        placeholder="输入说明（可选），支持 Markdown 和粘贴图片"
+        type="textarea"
+        :rows="3"
+        maxlength="2000"
+        show-word-limit
+        placeholder="输入说明（可选）"
       />
     </el-form-item>
     <el-button type="primary" native-type="button" :loading="submitting" @click="submit">

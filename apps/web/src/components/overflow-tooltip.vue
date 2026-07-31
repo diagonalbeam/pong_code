@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue'
-import MarkdownRenderer from '@/components/markdown-renderer.vue'
 import { markdownToPlainText } from '@/shared/markdown'
 
 const props = withDefaults(defineProps<{
@@ -22,7 +21,7 @@ function measureOverflow() {
   const element = trigger.value
   overflowing.value = Boolean(
     element
-    && props.content
+    && tooltipContent.value
     && element.scrollWidth > element.clientWidth + 1,
   )
 }
@@ -58,13 +57,10 @@ onBeforeUnmount(() => {
       ref="trigger"
       class="block min-w-0 truncate"
       :data-testid="testid"
-      :data-tooltip-content="content"
+      :data-tooltip-content="tooltipContent"
       :data-overflowing="String(overflowing)"
     >
-      <MarkdownRenderer v-if="markdown" :source="content" inline compact />
-      <template v-else>
-        {{ content }}
-      </template>
+      {{ tooltipContent || '—' }}
     </span>
   </el-tooltip>
 </template>

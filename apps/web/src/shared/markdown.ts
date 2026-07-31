@@ -209,8 +209,15 @@ export function markdownToPlainText(source: string): string {
   return source
     .replace(/```[\w-]*\n([\s\S]*?)```/g, '$1')
     .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, (_, alt: string) => {
+      const normalizedAlt = alt.trim()
+      return normalizedAlt && !/^\d+(?:\.\d+)?$/.test(normalizedAlt)
+        ? normalizedAlt
+        : '图片'
+    })
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^\s*\|?\s*:?-{3,}:?(?:\s*\|\s*:?-{3,}:?)+\s*\|?\s*$/gm, ' ')
+    .replaceAll('|', ' ')
     .replace(/^\s{0,3}#{1,6}\s+/gm, '')
     .replace(/^\s*>\s?/gm, '')
     .replace(/^\s*(?:[-+*]|\d+\.)\s+/gm, '')

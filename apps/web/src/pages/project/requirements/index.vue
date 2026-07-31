@@ -11,7 +11,6 @@ import { apiErrorMessage } from '@/api/client'
 import type { Requirement } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
 import LoadingSkeleton from '@/components/loading-skeleton.vue'
-import MarkdownRenderer from '@/components/markdown-renderer.vue'
 import OverflowTooltip from '@/components/overflow-tooltip.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
@@ -19,6 +18,7 @@ import StatusTag from '@/components/status-tag.vue'
 import RequirementDialog from '@/components/business/requirement-dialog.vue'
 import RequirementDetailDialog from '@/components/business/requirement-detail-dialog.vue'
 import RequirementBatchBindDialog from '@/components/business/requirement-batch-bind-dialog.vue'
+import { markdownToPlainText } from '@/shared/markdown'
 import { useProjectContext } from '@/shared/use-project-context'
 
 interface RequirementStats {
@@ -286,11 +286,9 @@ onMounted(load)
               <StatusTag :status="item.status" />
             </header>
             <strong class="text-[15px] font-semibold">{{ item.title }}</strong>
-            <MarkdownRenderer
-              :source="item.content"
-              compact
-              class="line-clamp-2 text-[13px] text-[var(--pc-text-secondary)]"
-            />
+            <p class="line-clamp-2 text-[13px] text-[var(--pc-text-secondary)]">
+              {{ markdownToPlainText(item.content) || '—' }}
+            </p>
             <footer class="flex justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
               <span>{{ item.sprint_name || '未规划迭代' }}</span>
               <span>{{ item.expected_delivery_date || '未设置交付日期' }}</span>

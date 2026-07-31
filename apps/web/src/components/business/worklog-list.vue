@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Delete } from '@element-plus/icons-vue'
 import type { WorkLog } from '@/api/types'
-import MarkdownRenderer from '@/components/markdown-renderer.vue'
 import { getUserAvatarStyle } from '@/shared/avatar-color'
 
 withDefaults(defineProps<{
@@ -65,12 +64,13 @@ function avatarInitial(name: string) {
         </div>
       </div>
 
-      <MarkdownRenderer
+      <p
         v-if="log.description?.trim()"
-        :source="log.description.trim()"
         data-testid="worklog-description"
-        class="mt-2 ml-12 text-[13px] leading-5 text-[var(--pc-text-secondary)]"
-      />
+        class="mt-2 ml-12 whitespace-pre-wrap text-[13px] leading-5 text-[var(--pc-text-secondary)] break-words"
+      >
+        {{ log.description.trim() }}
+      </p>
     </article>
     <el-empty v-if="!logs.length" :description="emptyDescription" :image-size="64" />
   </div>

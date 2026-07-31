@@ -6,11 +6,13 @@ const props = withDefaults(defineProps<{
   source?: string | null
   inline?: boolean
   compact?: boolean
+  document?: boolean
   emptyText?: string
 }>(), {
   source: '',
   inline: false,
   compact: false,
+  document: false,
   emptyText: '',
 })
 
@@ -23,6 +25,7 @@ const html = computed(() => renderMarkdown(props.source?.trim() || props.emptyTe
     :class="{
       'markdown-renderer--inline': inline,
       'markdown-renderer--compact': compact,
+      'markdown-renderer--document': document,
     }"
     v-html="html"
   />
@@ -196,6 +199,104 @@ const html = computed(() => renderMarkdown(props.source?.trim() || props.emptyTe
 .markdown-renderer--compact pre,
 .markdown-renderer--compact .markdown-table-wrap {
   margin-bottom: 6px;
+}
+
+.markdown-renderer--compact h1,
+.markdown-renderer--compact h2,
+.markdown-renderer--compact h3,
+.markdown-renderer--compact h4,
+.markdown-renderer--compact h5,
+.markdown-renderer--compact h6 {
+  margin: 8px 0 5px;
+  padding-bottom: 0;
+  border-bottom: 0;
+  font-size: 1em;
+  line-height: 1.45;
+}
+
+.markdown-renderer--compact h1,
+.markdown-renderer--compact h2 {
+  font-size: 1.08em;
+}
+
+.markdown-renderer--compact img {
+  max-width: min(100%, 360px);
+  max-height: 240px;
+  margin: 6px 0;
+}
+
+.markdown-renderer--compact pre {
+  max-height: 240px;
+  padding: 10px;
+}
+
+.markdown-renderer--compact hr {
+  margin: 10px 0;
+}
+
+.markdown-renderer--document {
+  min-height: 44px;
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-sm);
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--pc-surface-soft) 58%, var(--pc-surface));
+  color: var(--pc-text);
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+.markdown-renderer--document p,
+.markdown-renderer--document ul,
+.markdown-renderer--document ol,
+.markdown-renderer--document blockquote,
+.markdown-renderer--document pre,
+.markdown-renderer--document .markdown-table-wrap {
+  margin-bottom: 10px;
+}
+
+.markdown-renderer--document h1,
+.markdown-renderer--document h2,
+.markdown-renderer--document h3,
+.markdown-renderer--document h4,
+.markdown-renderer--document h5,
+.markdown-renderer--document h6 {
+  margin: 14px 0 8px;
+  padding-bottom: 0;
+  border-bottom: 0;
+  letter-spacing: -0.01em;
+}
+
+.markdown-renderer--document h1 {
+  font-size: 20px;
+}
+
+.markdown-renderer--document h2 {
+  font-size: 17px;
+}
+
+.markdown-renderer--document h3 {
+  font-size: 15px;
+}
+
+.markdown-renderer--document h4,
+.markdown-renderer--document h5,
+.markdown-renderer--document h6 {
+  font-size: 14px;
+}
+
+.markdown-renderer--document img {
+  max-width: 100%;
+  max-height: min(360px, 52vh);
+  margin: 12px 0;
+  background: var(--pc-surface);
+}
+
+.markdown-renderer--document pre {
+  max-height: 320px;
+}
+
+.markdown-renderer--document hr {
+  margin: 14px 0;
 }
 
 .markdown-renderer--inline {

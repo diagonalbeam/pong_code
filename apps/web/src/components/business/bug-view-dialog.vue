@@ -188,14 +188,14 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
           <h4 class="bug-view__heading">
             缺陷描述
           </h4>
-          <MarkdownRenderer :source="bug.description" class="bug-view__body" />
+          <MarkdownRenderer :source="bug.description" document class="bug-view__body" />
         </section>
 
         <section v-if="bug.steps_to_reproduce" class="bug-view__section">
           <h4 class="bug-view__heading">
             复现步骤
           </h4>
-          <MarkdownRenderer :source="bug.steps_to_reproduce" class="bug-view__body" />
+          <MarkdownRenderer :source="bug.steps_to_reproduce" document class="bug-view__body" />
         </section>
 
         <section
@@ -233,7 +233,7 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
           <h4 class="bug-view__heading">
             最新异常堆栈
           </h4>
-          <MarkdownRenderer :source="bug.latest_stack_trace" class="bug-view__code" />
+          <MarkdownRenderer :source="bug.latest_stack_trace" document />
         </section>
 
         <section class="bug-view__section" data-testid="bug-view-evidence-section">
@@ -258,12 +258,14 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
             <MarkdownRenderer
               v-if="evidence.comment"
               :source="evidence.comment"
+              compact
               class="mb-2 text-sm text-[var(--pc-text-secondary)]"
             />
             <MarkdownRenderer
               v-if="evidence.stack_trace"
               :source="evidence.stack_trace"
-              class="bug-view__code mb-2"
+              compact
+              class="mb-2 text-[var(--pc-text-secondary)]"
             />
             <div v-if="evidence.attachments.length" class="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-2">
               <a
@@ -364,21 +366,6 @@ function openEdit(tab: 'detail' | 'evidence' | 'time' = 'detail') {
   font-size: 14px;
   line-height: 1.65;
   color: var(--pc-text);
-  white-space: pre-wrap;
   word-break: break-word;
-}
-
-.bug-view__code {
-  margin: 0;
-  max-height: 240px;
-  overflow: auto;
-  padding: 12px;
-  border-radius: var(--pc-radius-sm);
-  background: var(--pc-surface-soft);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--pc-text-secondary);
-  white-space: pre-wrap;
 }
 </style>

@@ -11,7 +11,6 @@ import { apiErrorMessage } from '@/api/client'
 import type { Bug, Issue, Requirement, Sprint, User, WorkbenchLog, WorkbenchResponse } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
 import LoadingSkeleton from '@/components/loading-skeleton.vue'
-import MarkdownRenderer from '@/components/markdown-renderer.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatusTag from '@/components/status-tag.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
@@ -247,12 +246,7 @@ onMounted(load)
                   <div class="mt-0.5 truncate text-[12px] text-[var(--pc-text-muted)]">{{ row.project_name }}</div>
                 </td>
                 <td class="text-[var(--pc-text-secondary)]">
-                  <MarkdownRenderer
-                    :source="row.description"
-                    empty-text="—"
-                    inline
-                    compact
-                  />
+                  <span class="block truncate">{{ row.description || '—' }}</span>
                 </td>
                 <td class="whitespace-nowrap text-right tabular-nums text-[var(--pc-text)]">
                   {{ Number(row.hours).toFixed(1) }}h
@@ -289,12 +283,9 @@ onMounted(load)
               </div>
               <strong class="block text-[15px] font-semibold tracking-[-0.01em] text-[var(--pc-text)]">{{ log.item_title }}</strong>
               <span class="mt-1 block text-[12px] text-[var(--pc-text-muted)]">{{ log.project_name }}</span>
-              <MarkdownRenderer
-                v-if="log.description"
-                :source="log.description"
-                compact
-                class="mt-1 text-[12px] text-[var(--pc-text-secondary)]"
-              />
+              <p v-if="log.description" class="mt-1 line-clamp-2 whitespace-pre-wrap text-[12px] text-[var(--pc-text-secondary)] break-words">
+                {{ log.description }}
+              </p>
             </div>
             <b class="shrink-0 text-[15px] font-semibold text-[var(--pc-action)]">{{ Number(log.hours).toFixed(1) }}h</b>
           </article>
