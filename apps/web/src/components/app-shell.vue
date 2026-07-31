@@ -145,6 +145,11 @@ const sprintMenuOptions = computed<ContextBreadcrumbOption[]>(() => (
     status: sprint.status,
   }))
 ))
+const sprintStatusFilterOptions = [
+  { value: 'active', label: '进行中' },
+  { value: 'open', label: '未开始' },
+  { value: 'closed', label: '已完成' },
+]
 const avatarStyle = computed(() => {
   const color = getUserAvatarColor(auth.user?.username ?? '')
 
@@ -659,6 +664,8 @@ async function logout() {
                     :label="selectedSprint?.name || '当前迭代'"
                     :model-value="selectedSprintId"
                     :options="sprintMenuOptions"
+                    :status-filter-options="sprintStatusFilterOptions"
+                    default-status-filter="active"
                     :loading="sprintSwitcherLoading"
                     manage-label="管理迭代"
                     empty-label="暂无迭代"
@@ -783,6 +790,8 @@ async function logout() {
               :label="selectedSprint?.name || '当前迭代'"
               :model-value="selectedSprintId"
               :options="sprintMenuOptions"
+              :status-filter-options="sprintStatusFilterOptions"
+              default-status-filter="active"
               :loading="sprintSwitcherLoading"
               manage-label="管理迭代"
               empty-label="暂无迭代"

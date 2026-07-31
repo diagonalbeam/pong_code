@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ArrowDown, Search, Setting } from '@element-plus/icons-vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getStatusType, type StatusType } from '@/shared/status'
 
 export interface ContextBreadcrumbOption {
@@ -11,17 +11,25 @@ export interface ContextBreadcrumbOption {
   group?: string
 }
 
+export interface ContextBreadcrumbFilterOption {
+  value: string
+  label: string
+}
+
 const props = withDefaults(defineProps<{
   contextName: string
   label: string
   modelValue: number | null
   options: ContextBreadcrumbOption[]
+  statusFilterOptions?: ContextBreadcrumbFilterOption[]
+  defaultStatusFilter?: string
   loading?: boolean
   manageLabel: string
   emptyLabel: string
   testId: string
   maxWidth?: number
 }>(), {
+  defaultStatusFilter: '',
   loading: false,
   maxWidth: 176,
 })
@@ -31,8 +39,38 @@ const emit = defineEmits<{
   manage: []
 }>()
 
+const statusFilterStorageKey = `pongcode:context-dropdown:${props.testId}:status-filters`
+
+function defaultStatusFilters() {
+  return props.defaultStatusFilter ? [props.defaultStatusFilter] : []
+}
+
+function normalizeStatusFilters(filters: unknown) {
+  if (!Array.isArray(filters))
+    return defaultStatusFilters()
+  const available = new Set((props.statusFilterOptions || []).map(option => option.value))
+  return filters.filter((item): item is string => (
+    typeof item === 'string' && available.has(item)
+  ))
+}
+
+function loadStatusFilters() {
+  if (!props.statusFilterOptions?.length || typeof window === 'undefined')
+    return defaultStatusFilters()
+  const cached = window.localStorage.getItem(statusFilterStorageKey)
+  if (cached === null)
+    return defaultStatusFilters()
+  try {
+    return normalizeStatusFilters(JSON.parse(cached))
+  }
+  catch {
+    return defaultStatusFilters()
+  }
+}
+
 const search = ref('')
 const selectedGroup = ref('')
+const selectedStatusFilters = ref(loadStatusFilters())
 const scrollBodyRef = ref<HTMLElement | null>(null)
 const availableGroups = computed(() => {
   const groups: string[] = []
@@ -46,10 +84,12 @@ const availableGroups = computed(() => {
   return groups
 })
 const cascadeMode = computed(() => availableGroups.value.length > 1)
+const hasStatusFilter = computed(() => Boolean(props.statusFilterOptions?.length))
 const filteredOptions = computed(() => {
   const keyword = search.value.trim().toLocaleLowerCase()
   return props.options.filter(option => (
     (!cascadeMode.value || !selectedGroup.value || option.group === selectedGroup.value)
+    && (!hasStatusFilter.value || !selectedStatusFilters.value.length || selectedStatusFilters.value.includes(option.status || ''))
     && (!keyword || `${option.label} ${option.meta || ''} ${option.group || ''}`.toLocaleLowerCase().includes(keyword))
   ))
 })
@@ -93,6 +133,12 @@ function handleCommand(command: number | string) {
   emit('select', Number(command))
 }
 
+function toggleStatusFilter(status: string) {
+  selectedStatusFilters.value = selectedStatusFilters.value.includes(status)
+    ? selectedStatusFilters.value.filter(item => item !== status)
+    : [...selectedStatusFilters.value, status]
+}
+
 function handleVisibleChange(visible: boolean) {
   if (visible && cascadeMode.value) {
     const currentGroup = props.options.find(option => option.value === props.modelValue)?.group
@@ -104,6 +150,12 @@ function handleVisibleChange(visible: boolean) {
     selectedGroup.value = ''
   }
 }
+
+watch(selectedStatusFilters, (filters) => {
+  if (!hasStatusFilter.value || typeof window === 'undefined')
+    return
+  window.localStorage.setItem(statusFilterStorageKey, JSON.stringify(filters))
+}, { deep: true })
 
 /** 隔离菜单内滚轮：中间原生滚动，头尾与边界处阻止带动页面 */
 function handleMenuWheel(event: WheelEvent) {
@@ -173,6 +225,26 @@ function handleMenuWheel(event: WheelEvent) {
               :placeholder="`搜索${contextName}`"
               @click.stop
             />
+            <div
+              v-if="hasStatusFilter"
+              class="pc-context-menu__status-group"
+              data-testid="context-menu-status-filter"
+              @click.stop
+              @keydown.stop
+            >
+              <button
+                v-for="filter in statusFilterOptions"
+                :key="filter.value"
+                type="button"
+                class="pc-context-menu__status-option"
+                :class="{ 'pc-context-menu__status-option--selected': selectedStatusFilters.includes(filter.value) }"
+                :aria-pressed="selectedStatusFilters.includes(filter.value)"
+                :data-testid="`${testId}-status-${filter.value}`"
+                @click="toggleStatusFilter(filter.value)"
+              >
+                {{ filter.label }}
+              </button>
+            </div>
           </div>
           <div
             v-if="cascadeMode"
@@ -288,6 +360,42 @@ function handleMenuWheel(event: WheelEvent) {
 
 :global(.pc-context-menu .pc-context-menu__footer) {
   border-top: 1px solid var(--pc-border-soft);
+}
+
+:global(.pc-context-menu .pc-context-menu__status-group) {
+  display: flex;
+  gap: 3px;
+  margin-top: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface);
+  padding: 2px;
+}
+
+:global(.pc-context-menu .pc-context-menu__status-option) {
+  min-height: 24px;
+  flex: 1 0 auto;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  padding: 0 8px;
+  color: var(--pc-text-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+:global(.pc-context-menu .pc-context-menu__status-option:hover) {
+  background: var(--pc-surface-soft);
+  color: var(--pc-text-secondary);
+}
+
+:global(.pc-context-menu .pc-context-menu__status-option.pc-context-menu__status-option--selected) {
+  background: color-mix(in srgb, var(--pc-action) 10%, transparent);
+  color: var(--pc-action);
+  font-weight: 500;
 }
 
 :global(.pc-context-menu .pc-context-menu__body) {
