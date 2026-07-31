@@ -5,6 +5,7 @@ import { createRequirement } from '@/api/requirements'
 import { apiErrorMessage } from '@/api/client'
 import type { Sprint } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import MarkdownEditor from '@/components/markdown-editor.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -80,7 +81,13 @@ async function submit() {
         <el-input v-model="form.title" data-testid="create-requirement-title-input" maxlength="200" placeholder="用一句话描述用户目标" />
       </el-form-item>
       <el-form-item label="需求内容" required>
-        <el-input v-model="form.content" data-testid="create-requirement-content-input" type="textarea" :rows="7" resize="vertical" placeholder="补充范围、验收标准和背景信息" />
+        <MarkdownEditor
+          v-model="form.content"
+          test-id="create-requirement-content-input"
+          :min-height="220"
+          required
+          placeholder="补充范围、验收标准和背景信息；支持 Markdown，可直接粘贴图片"
+        />
       </el-form-item>
       <div class="pc-form-grid grid grid-cols-2 max-[600px]:grid-cols-1">
         <el-form-item label="状态">

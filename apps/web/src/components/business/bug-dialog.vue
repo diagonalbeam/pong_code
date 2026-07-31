@@ -5,6 +5,7 @@ import { addBugEvidence, createBug } from '@/api/bugs'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint, User } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import MarkdownEditor from '@/components/markdown-editor.vue'
 import ScreenshotUpload from '@/components/screenshot-upload.vue'
 import {
   bugDiscoveryChannelLabels,
@@ -143,10 +144,20 @@ async function submit() {
         <el-input v-model="form.title" data-testid="create-bug-title-input" maxlength="200" placeholder="简要说明发现的问题" />
       </el-form-item>
       <el-form-item label="缺陷描述" required>
-        <el-input v-model="form.description" data-testid="create-bug-description-input" type="textarea" :rows="4" placeholder="说明实际发生了什么" />
+        <MarkdownEditor
+          v-model="form.description"
+          test-id="create-bug-description-input"
+          :min-height="150"
+          required
+          placeholder="说明实际发生了什么；支持 Markdown，可直接粘贴图片"
+        />
       </el-form-item>
       <el-form-item label="复现步骤">
-        <el-input v-model="form.steps_to_reproduce" type="textarea" :rows="7" resize="vertical" />
+        <MarkdownEditor
+          v-model="form.steps_to_reproduce"
+          :min-height="210"
+          placeholder="使用 Markdown 编写复现步骤，可直接粘贴图片"
+        />
       </el-form-item>
       <div class="pc-form-grid grid grid-cols-2 max-sm:grid-cols-1">
         <el-form-item label="缺陷类型" required>
@@ -199,10 +210,19 @@ async function submit() {
         首次证据（可选）
       </el-divider>
       <el-form-item label="补充说明">
-        <el-input v-model="form.evidence_comment" type="textarea" :rows="2" />
+        <MarkdownEditor
+          v-model="form.evidence_comment"
+          :min-height="110"
+          placeholder="补充证据说明；支持 Markdown，可直接粘贴图片"
+        />
       </el-form-item>
       <el-form-item label="异常堆栈">
-        <el-input v-model="form.evidence_stack_trace" data-stack-input type="textarea" :rows="5" />
+        <MarkdownEditor
+          v-model="form.evidence_stack_trace"
+          :min-height="180"
+          monospace
+          placeholder="粘贴异常堆栈；可使用代码块，也可直接粘贴图片"
+        />
       </el-form-item>
       <el-form-item label="截图">
         <ScreenshotUpload v-model="files" />
@@ -218,9 +238,3 @@ async function submit() {
     </template>
   </AppDialog>
 </template>
-
-<style scoped>
-[data-stack-input] :deep(textarea) {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-</style>

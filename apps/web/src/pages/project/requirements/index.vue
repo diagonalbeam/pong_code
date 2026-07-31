@@ -11,6 +11,7 @@ import { apiErrorMessage } from '@/api/client'
 import type { Requirement } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
 import LoadingSkeleton from '@/components/loading-skeleton.vue'
+import MarkdownRenderer from '@/components/markdown-renderer.vue'
 import OverflowTooltip from '@/components/overflow-tooltip.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatCard from '@/components/stat-card.vue'
@@ -225,6 +226,7 @@ onMounted(load)
                   <OverflowTooltip
                     :content="row.content"
                     testid="requirement-content-overflow"
+                    markdown
                     class="text-[13px] text-[var(--pc-text-secondary)]"
                   />
                 </div>
@@ -284,7 +286,11 @@ onMounted(load)
               <StatusTag :status="item.status" />
             </header>
             <strong class="text-[15px] font-semibold">{{ item.title }}</strong>
-            <p class="m-0 line-clamp-2 text-[13px] text-[var(--pc-text-secondary)]">{{ item.content }}</p>
+            <MarkdownRenderer
+              :source="item.content"
+              compact
+              class="line-clamp-2 text-[13px] text-[var(--pc-text-secondary)]"
+            />
             <footer class="flex justify-between gap-3 text-[13px] text-[var(--pc-text-secondary)]">
               <span>{{ item.sprint_name || '未规划迭代' }}</span>
               <span>{{ item.expected_delivery_date || '未设置交付日期' }}</span>

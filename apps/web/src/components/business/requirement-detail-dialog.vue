@@ -6,6 +6,7 @@ import { deleteRequirement, getRequirement, updateRequirement } from '@/api/requ
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import MarkdownEditor from '@/components/markdown-editor.vue'
 import StatusTag from '@/components/status-tag.vue'
 
 const props = defineProps<{
@@ -128,7 +129,12 @@ async function remove() {
         <el-input v-model="form.title" maxlength="200" />
       </el-form-item>
       <el-form-item label="需求内容" required>
-        <el-input v-model="form.content" type="textarea" :rows="9" resize="vertical" />
+        <MarkdownEditor
+          v-model="form.content"
+          :min-height="260"
+          required
+          placeholder="使用 Markdown 编写需求内容，可直接粘贴图片"
+        />
       </el-form-item>
       <div class="pc-form-grid grid grid-cols-2 max-[600px]:grid-cols-1">
         <el-form-item label="状态">

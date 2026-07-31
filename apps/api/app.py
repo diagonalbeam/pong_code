@@ -18,6 +18,7 @@ STATIC_DIR = os.path.join(REPOSITORY_ROOT, 'static')
 PACKAGED_WEB_DIST_DIR = os.path.join(API_DIR, 'static', 'app')
 LOCAL_WEB_DIST_DIR = os.path.join(REPOSITORY_ROOT, 'apps', 'web', 'dist')
 BUG_EVIDENCE_UPLOAD_DIR = os.path.join(STATIC_DIR, 'uploads', 'bug-evidence')
+MARKDOWN_IMAGE_UPLOAD_DIR = os.path.join(STATIC_DIR, 'uploads', 'markdown')
 
 
 def get_web_dist_dir():
@@ -119,6 +120,10 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True}
     app.config['BUG_EVIDENCE_UPLOAD_DIR'] = os.getenv('BUG_EVIDENCE_UPLOAD_DIR', BUG_EVIDENCE_UPLOAD_DIR)
+    app.config['MARKDOWN_IMAGE_UPLOAD_DIR'] = os.getenv(
+        'MARKDOWN_IMAGE_UPLOAD_DIR',
+        MARKDOWN_IMAGE_UPLOAD_DIR
+    )
 
     app.config['MAIL_SERVER']         = os.getenv('MAIL_SERVER', 'localhost')
     app.config['MAIL_PORT']           = int(os.getenv('MAIL_PORT', '25'))
@@ -197,6 +202,7 @@ def create_app():
 
     with app.app_context():
         os.makedirs(app.config['BUG_EVIDENCE_UPLOAD_DIR'], exist_ok=True)
+        os.makedirs(app.config['MARKDOWN_IMAGE_UPLOAD_DIR'], exist_ok=True)
         db.create_all()
         ensure_bug_evidence_schema()
         ensure_project_team_schema()

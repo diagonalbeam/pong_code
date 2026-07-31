@@ -9,6 +9,7 @@ from .sprints import bp as sprints_bp
 from .issues import bp as issues_bp
 from .requirements import bp as requirements_bp
 from .bugs import bp as bugs_bp
+from .uploads import bp as uploads_bp
 from .workbench import bp as workbench_bp
 from .external import bp as external_bp
 
@@ -23,5 +24,6 @@ def register_blueprints(app):
     app.register_blueprint(issues_bp)
     app.register_blueprint(requirements_bp)
     app.register_blueprint(bugs_bp)
+    app.register_blueprint(uploads_bp)
     app.register_blueprint(workbench_bp)
     app.register_blueprint(external_bp)

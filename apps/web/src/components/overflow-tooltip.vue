@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue'
+import MarkdownRenderer from '@/components/markdown-renderer.vue'
+import { markdownToPlainText } from '@/shared/markdown'
 
 const props = withDefaults(defineProps<{
   content: string
   testid?: string
+  markdown?: boolean
 }>(), {
   testid: undefined,
+  markdown: false,
 })
 
 const trigger = ref<HTMLElement | null>(null)
 const overflowing = ref(false)
 let resizeObserver: ResizeObserver | undefined
+const tooltipContent = computed(() =>
+  props.markdown ? markdownToPlainText(props.content) : props.content)
 
 function measureOverflow() {
   const element = trigger.value
@@ -42,7 +48,7 @@ onBeforeUnmount(() => {
 
 <template>
   <el-tooltip
-    :content="content"
+    :content="tooltipContent"
     :disabled="!overflowing"
     placement="top"
     :show-after="300"
@@ -55,7 +61,10 @@ onBeforeUnmount(() => {
       :data-tooltip-content="content"
       :data-overflowing="String(overflowing)"
     >
-      {{ content }}
+      <MarkdownRenderer v-if="markdown" :source="content" inline compact />
+      <template v-else>
+        {{ content }}
+      </template>
     </span>
   </el-tooltip>
 </template>

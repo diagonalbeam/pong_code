@@ -13,6 +13,8 @@ import {
 import { apiErrorMessage } from '@/api/client'
 import type { Bug, BugEvidence, Requirement, Sprint, User, WorkLog } from '@/api/types'
 import AppDialog from '@/components/app-dialog.vue'
+import MarkdownEditor from '@/components/markdown-editor.vue'
+import MarkdownRenderer from '@/components/markdown-renderer.vue'
 import ScreenshotUpload from '@/components/screenshot-upload.vue'
 import StatusTag from '@/components/status-tag.vue'
 import {
@@ -247,10 +249,19 @@ async function removeWorklog(log: WorkLog) {
               <el-input v-model="form.title" maxlength="200" />
             </el-form-item>
             <el-form-item label="描述" required>
-              <el-input v-model="form.description" type="textarea" :rows="4" />
+              <MarkdownEditor
+                v-model="form.description"
+                :min-height="150"
+                required
+                placeholder="使用 Markdown 编写缺陷描述，可直接粘贴图片"
+              />
             </el-form-item>
             <el-form-item label="复现步骤">
-              <el-input v-model="form.steps_to_reproduce" type="textarea" :rows="7" resize="vertical" />
+              <MarkdownEditor
+                v-model="form.steps_to_reproduce"
+                :min-height="210"
+                placeholder="使用 Markdown 编写复现步骤，可直接粘贴图片"
+              />
             </el-form-item>
             <div class="pc-form-grid grid grid-cols-2 max-sm:grid-cols-1">
               <el-form-item label="状态">
@@ -318,10 +329,21 @@ async function removeWorklog(log: WorkLog) {
           <section data-testid="bug-detail-evidence-section">
             <el-form data-testid="add-bug-evidence-form" label-position="top" class="pc-compact-form-surface" @submit.prevent="addEvidence">
               <el-form-item label="补充说明">
-                <el-input v-model="evidenceForm.comment" data-testid="add-bug-evidence-comment-input" type="textarea" :rows="3" />
+                <MarkdownEditor
+                  v-model="evidenceForm.comment"
+                  test-id="add-bug-evidence-comment-input"
+                  :min-height="120"
+                  placeholder="补充证据说明；支持 Markdown，可直接粘贴图片"
+                />
               </el-form-item>
               <el-form-item label="异常堆栈">
-                <el-input v-model="evidenceForm.stack_trace" data-testid="add-bug-evidence-stack-input" data-stack-input type="textarea" :rows="7" />
+                <MarkdownEditor
+                  v-model="evidenceForm.stack_trace"
+                  test-id="add-bug-evidence-stack-input"
+                  :min-height="210"
+                  monospace
+                  placeholder="粘贴异常堆栈；可使用代码块，也可直接粘贴图片"
+                />
               </el-form-item>
               <el-form-item label="截图">
                 <ScreenshotUpload v-model="evidenceFiles" test-id="add-bug-evidence-file-input" />
@@ -334,10 +356,16 @@ async function removeWorklog(log: WorkLog) {
                   <strong class="text-sm text-[var(--pc-text)]">{{ evidence.creator_name || '未知用户' }}</strong>
                   <time class="text-xs text-[var(--pc-text-muted)]">{{ evidence.created_at?.replace('T', ' ').slice(0, 16) }}</time>
                 </header>
-                <p v-if="evidence.comment" class="mt-3 mb-0 whitespace-pre-wrap">
-                  {{ evidence.comment }}
-                </p>
-                <pre v-if="evidence.stack_trace" class="mt-3 mb-0 max-h-[260px] overflow-auto rounded-[var(--pc-radius-card)] bg-[#171719] p-3 font-mono text-xs whitespace-pre-wrap text-[#f5f5f7]">{{ evidence.stack_trace }}</pre>
+                <MarkdownRenderer
+                  v-if="evidence.comment"
+                  :source="evidence.comment"
+                  class="mt-3 text-sm text-[var(--pc-text-secondary)]"
+                />
+                <MarkdownRenderer
+                  v-if="evidence.stack_trace"
+                  :source="evidence.stack_trace"
+                  class="mt-3 text-xs text-[var(--pc-text-secondary)]"
+                />
                 <div v-if="evidence.attachments.length" class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
                   <a
                     v-for="attachment in evidence.attachments"
@@ -398,9 +426,3 @@ async function removeWorklog(log: WorkLog) {
     </template>
   </AppDialog>
 </template>
-
-<style scoped>
-[data-stack-input] :deep(textarea) {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-</style>

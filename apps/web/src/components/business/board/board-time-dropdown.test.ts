@@ -194,9 +194,13 @@ describe('BoardTimeDropdown', () => {
   it('可更新预估工时并登记消耗与评论', async () => {
     const wrapper = mountBadge()
 
+    const commentInput = wrapper.get('[data-testid="board-time-comment-input"]')
+    expect(commentInput.element.tagName).toBe('TEXTAREA')
+    expect(commentInput.attributes('maxlength')).toBe('200')
+
     await wrapper.get('[data-testid="board-time-estimate-input"]').setValue('6')
     await wrapper.get('[data-testid="board-time-hours-input"]').setValue('2')
-    await wrapper.get('[data-testid="board-time-comment-input"]').setValue('完成联调')
+    await commentInput.setValue('完成联调')
     await wrapper.get('[data-testid="board-time-save-button"]').trigger('click')
     await flushPromises()
 
