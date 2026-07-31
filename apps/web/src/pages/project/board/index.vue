@@ -578,15 +578,17 @@ watch(
                 <strong class="overflow-hidden text-sm font-semibold text-ellipsis whitespace-nowrap">{{ lane.requirement?.title || '未分类' }}</strong>
                 <small class="text-xs whitespace-nowrap text-[var(--pc-text-muted)]">{{ lane.todo.length + lane.doing.length + lane.done.length }} 个任务</small>
                 <span
-                  class="flex items-center gap-1.5"
+                  class="flex shrink-0 items-center gap-1.5"
                   :data-testid="`board-swimlane-progress-${laneId(lane)}`"
                 >
-                  <span class="h-1.5 w-20 overflow-hidden rounded-full bg-[var(--pc-border-soft)]">
-                    <span
-                      class="block h-full rounded-full bg-[var(--pc-action)] transition-[width] duration-300"
-                      :style="{ width: `${calculateSwimlaneProgress(lane)}%` }"
-                    />
-                  </span>
+                  <el-progress
+                    type="circle"
+                    :percentage="calculateSwimlaneProgress(lane)"
+                    :width="20"
+                    :stroke-width="3"
+                    :show-text="false"
+                    color="var(--pc-action)"
+                  />
                   <small class="min-w-8 text-xs font-medium text-[var(--pc-text-secondary)]">
                     {{ calculateSwimlaneProgress(lane) }}%
                   </small>
