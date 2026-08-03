@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { markdownToPlainText, renderMarkdown } from './markdown'
+import {
+  markdownToPlainText,
+  normalizeEscapedMarkdownLinks,
+  renderMarkdown,
+} from './markdown'
 
 describe('Markdown rendering', () => {
   it('renders common GitHub-style blocks and uploaded images', () => {
@@ -46,11 +50,15 @@ describe('Markdown rendering', () => {
 
   it('renders link syntax escaped by whole-text visual input', () => {
     const source = '\\[pica]\\(https\\://nodeca.github.io/pica/demo/)'
+    const specialSource = '\\[pica]\\(https\\://example.com/docs/part_\\(draft\\))'
 
     expect(renderMarkdown(source)).toContain(
       '<a href="https://nodeca.github.io/pica/demo/" target="_blank" rel="noreferrer noopener">pica</a>',
     )
     expect(markdownToPlainText(source)).toBe('pica')
+    expect(normalizeEscapedMarkdownLinks(specialSource)).toBe(
+      '[pica](https://example.com/docs/part_(draft))',
+    )
   })
 
   it('creates readable plain text for compact tooltips', () => {

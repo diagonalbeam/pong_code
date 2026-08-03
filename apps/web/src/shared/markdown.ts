@@ -37,7 +37,7 @@ function linkAttributes(url: string): string {
 
 export function normalizeEscapedMarkdownLinks(markdown: string): string {
   return markdown.replace(
-    /\\\[([^\]\n]+)\\?\]\\\(([^)\n]+)\\?\)/g,
+    /\\\[((?:\\.|[^\]\n])+)\\?\]\\\(((?:\\.|[^)\n])+)\\?\)/g,
     (_match, label: string, href: string) => {
       const unescapePunctuation = (value: string) => value.replace(/\\([^\w\s])/g, '$1')
       return `[${unescapePunctuation(label)}](${unescapePunctuation(href)})`

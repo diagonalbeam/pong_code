@@ -62,13 +62,82 @@ const host = ref<HTMLDivElement | null>(null)
 const imageInput = ref<HTMLInputElement | null>(null)
 const ready = ref(false)
 const uploadingImage = ref(false)
-const markdownLength = ref(props.modelValue.length)
+const markdownLength = ref(normalizeEscapedMarkdownLinks(props.modelValue).length)
 
 let crepe: Crepe | undefined
 let acceptedMarkdown = props.modelValue
 let applyingExternalValue = false
 let disposed = false
 let revertingLengthOverflow = false
+
+interface PendingMarkdownLink {
+  start: number
+  end: number
+  label: string
+  href: string
+}
+
+function isEscapedCharacter(value: string, index: number) {
+  let slashCount = 0
+  for (let current = index - 1; current >= 0 && value[current] === '\\'; current--)
+    slashCount++
+  return slashCount % 2 === 1
+}
+
+function unescapeMarkdownPunctuation(value: string) {
+  return value.replace(/\\([^\w\s])/g, '$1')
+}
+
+function findPendingMarkdownLinks(value: string): PendingMarkdownLink[] {
+  const links: PendingMarkdownLink[] = []
+
+  for (let start = 0; start < value.length; start++) {
+    if (
+      value[start] !== '['
+      || isEscapedCharacter(value, start)
+      || value[start - 1] === '!'
+    ) {
+      continue
+    }
+
+    let labelEnd = start + 1
+    while (
+      labelEnd < value.length
+      && (value[labelEnd] !== ']' || isEscapedCharacter(value, labelEnd))
+    ) {
+      labelEnd++
+    }
+
+    if (value[labelEnd] !== ']' || value[labelEnd + 1] !== '(')
+      continue
+
+    let depth = 1
+    let hrefEnd = labelEnd + 2
+    for (; hrefEnd < value.length; hrefEnd++) {
+      if (isEscapedCharacter(value, hrefEnd))
+        continue
+      if (value[hrefEnd] === '(')
+        depth++
+      else if (value[hrefEnd] === ')')
+        depth--
+      if (depth === 0)
+        break
+    }
+
+    if (depth !== 0)
+      continue
+
+    const label = unescapeMarkdownPunctuation(value.slice(start + 1, labelEnd))
+    const href = unescapeMarkdownPunctuation(value.slice(labelEnd + 2, hrefEnd))
+    if (!label || !href)
+      continue
+
+    links.push({ start, end: hrefEnd + 1, label, href })
+    start = hrefEnd
+  }
+
+  return links
+}
 
 function editorElement() {
   return host.value?.querySelector<HTMLElement>('.ProseMirror')
@@ -86,8 +155,10 @@ function syncEditorAttributes() {
 
   editor.setAttribute('aria-label', props.placeholder)
   editor.setAttribute('aria-required', String(props.required))
-  editor.removeEventListener('keydown', handleEditorKeydown)
-  editor.addEventListener('keydown', handleEditorKeydown)
+  editor.removeEventListener('keydown', handleEditorKeydown, true)
+  editor.addEventListener('keydown', handleEditorKeydown, true)
+  editor.removeEventListener('focusout', commitPendingMarkdownLinks)
+  editor.addEventListener('focusout', commitPendingMarkdownLinks)
 }
 
 async function uploadImage(file: File) {
@@ -142,13 +213,39 @@ function insertCommandTrigger() {
 }
 
 function handleEditorKeydown(event: KeyboardEvent) {
-  if (event.key !== '\\' || !crepe || !ready.value)
+  if (!crepe || !ready.value || event.isComposing)
     return
+
+  if (event.key === 'Enter') {
+    commitPendingMarkdownLinks()
+    return
+  }
 
   crepe.editor.action((ctx) => {
     const view = ctx.get(editorViewCtx)
     const { selection } = view.state
     const currentBlock = selection.$from.parent
+
+    if (event.key === ')') {
+      const textBeforeCursor = currentBlock.textContent.slice(
+        0,
+        selection.$from.parentOffset,
+      )
+      const isTypingMarkdownLink = selection.empty
+        && ['paragraph', 'heading'].includes(currentBlock.type.name)
+        && /\[[^\]\n]+\]\([^\n]*$/.test(textBeforeCursor)
+
+      if (!isTypingMarkdownLink)
+        return
+
+      event.preventDefault()
+      view.dispatch(view.state.tr.insertText(')').scrollIntoView())
+      return
+    }
+
+    if (event.key !== '\\')
+      return
+
     const canOpenMenu = selection.empty
       && ['paragraph', 'heading'].includes(currentBlock.type.name)
       && currentBlock.content.size === 0
@@ -209,16 +306,60 @@ function restoreAcceptedMarkdown() {
   applyingExternalValue = true
   crepe.editor.action(replaceAll(acceptedMarkdown))
   applyingExternalValue = false
-  markdownLength.value = acceptedMarkdown.length
+  markdownLength.value = normalizeEscapedMarkdownLinks(acceptedMarkdown).length
+}
+
+function commitPendingMarkdownLinks() {
+  if (!crepe || !ready.value)
+    return
+
+  crepe.editor.action((ctx) => {
+    const view = ctx.get(editorViewCtx)
+    const linkMark = view.state.schema.marks.link
+    if (!linkMark)
+      return
+
+    const replacements: Array<PendingMarkdownLink & { from: number, to: number }> = []
+    view.state.doc.descendants((node, position) => {
+      if (!node.isTextblock)
+        return true
+
+      for (const link of findPendingMarkdownLinks(node.textContent)) {
+        replacements.push({
+          ...link,
+          from: position + 1 + link.start,
+          to: position + 1 + link.end,
+        })
+      }
+      return false
+    })
+
+    if (replacements.length === 0)
+      return
+
+    let transaction = view.state.tr
+    for (const replacement of replacements.reverse()) {
+      const linkText = view.state.schema.text(
+        replacement.label,
+        [linkMark.create({ href: replacement.href })],
+      )
+      transaction = transaction.replaceWith(
+        replacement.from,
+        replacement.to,
+        linkText,
+      )
+    }
+    view.dispatch(transaction.scrollIntoView())
+  })
 }
 
 function handleMarkdownUpdate(markdown: string) {
   if (applyingExternalValue)
     return
 
-  const normalizedMarkdown = normalizeEscapedMarkdownLinks(markdown)
+  const normalizedLength = normalizeEscapedMarkdownLinks(markdown).length
 
-  if (props.maxLength && normalizedMarkdown.length > props.maxLength) {
+  if (props.maxLength && normalizedLength > props.maxLength) {
     if (!revertingLengthOverflow) {
       revertingLengthOverflow = true
       ElMessage.warning(`最多输入 ${props.maxLength} 个字符`)
@@ -230,15 +371,9 @@ function handleMarkdownUpdate(markdown: string) {
     return
   }
 
-  if (normalizedMarkdown !== markdown && crepe && ready.value) {
-    applyingExternalValue = true
-    crepe.editor.action(replaceAll(normalizedMarkdown))
-    applyingExternalValue = false
-  }
-
-  acceptedMarkdown = normalizedMarkdown
-  markdownLength.value = normalizedMarkdown.length
-  emit('update:modelValue', normalizedMarkdown)
+  acceptedMarkdown = markdown
+  markdownLength.value = normalizedLength
+  emit('update:modelValue', markdown)
 }
 
 onMounted(async () => {
@@ -326,14 +461,15 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   disposed = true
-  editorElement()?.removeEventListener('keydown', handleEditorKeydown)
+  editorElement()?.removeEventListener('keydown', handleEditorKeydown, true)
+  editorElement()?.removeEventListener('focusout', commitPendingMarkdownLinks)
   if (crepe)
     void crepe.destroy()
 })
 
 watch(() => props.modelValue, (next) => {
   acceptedMarkdown = next
-  markdownLength.value = next.length
+  markdownLength.value = normalizeEscapedMarkdownLinks(next).length
 
   if (!crepe || !ready.value || crepe.getMarkdown() === next)
     return
