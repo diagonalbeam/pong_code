@@ -538,6 +538,45 @@ watch(
   line-height: 1.65;
 }
 
+.markdown-editor :deep(.milkdown .ProseMirror a) {
+  color: var(--pc-action);
+  text-decoration: none;
+}
+
+.markdown-editor :deep(.milkdown .ProseMirror a:hover) {
+  text-decoration: underline;
+}
+
+.markdown-editor :deep(.milkdown .ProseMirror blockquote) {
+  margin: 8px 0;
+  border-left: 3px solid var(--pc-border);
+  padding: 3px 0 3px 12px;
+  color: var(--pc-text-secondary);
+}
+
+.markdown-editor :deep(.milkdown .ProseMirror blockquote p) {
+  margin: 0;
+}
+
+.markdown-editor :deep(.milkdown .ProseMirror :not(pre) > code) {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--pc-text) 8%, transparent);
+  padding: 0.15em 0.35em;
+  color: var(--pc-danger);
+  font-size: 0.9em;
+}
+
+.markdown-editor :deep(.milkdown .ProseMirror hr) {
+  margin: 14px 0;
+  border: 0;
+  border-top: 1px solid var(--pc-border);
+}
+
+.markdown-editor :deep(.milkdown .ProseMirror ul),
+.markdown-editor :deep(.milkdown .ProseMirror ol) {
+  padding-left: 1.6em;
+}
+
 .markdown-editor :deep(.milkdown .ProseMirror h1),
 .markdown-editor :deep(.milkdown .ProseMirror h2),
 .markdown-editor :deep(.milkdown .ProseMirror h3),
@@ -573,8 +612,8 @@ watch(
 
 .markdown-editor :deep(.milkdown .ProseMirror pre) {
   overflow: auto;
-  background: #171719;
-  color: #f5f5f7;
+  background: transparent;
+  color: var(--pc-text);
 }
 
 .markdown-editor :deep(.milkdown .ProseMirror img) {
@@ -922,6 +961,113 @@ watch(
 .markdown-editor :deep(.milkdown .milkdown-code-block .language-list-item:focus-visible) {
   background: var(--pc-surface-soft);
   color: var(--pc-text);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-image-inline .empty-image-inline) {
+  min-height: 36px;
+  gap: 6px;
+  padding: 5px 7px;
+  font-size: 12px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-image-block) {
+  margin: 8px 0;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-image-block .image-edit) {
+  min-height: 44px;
+  height: auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-sm);
+  padding: 7px 9px;
+  background: var(--pc-surface-soft);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-image-block .image-edit .confirm) {
+  min-height: 28px;
+  border-radius: 4px;
+  padding: 5px 9px;
+  background: var(--pc-action);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-image-block .image-wrapper .operation) {
+  top: 8px;
+  right: 8px;
+  gap: 4px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-image-block .image-wrapper .operation-item) {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--pc-border-soft);
+  border-radius: 4px;
+  padding: 5px;
+  background: var(--pc-surface);
+  color: var(--pc-text-secondary);
+  opacity: 1;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-image-block .image-wrapper .operation-item:hover) {
+  color: var(--pc-action);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-image-block .image-wrapper .operation-item svg) {
+  width: 17px;
+  height: 17px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-table-block th),
+.markdown-editor :deep(.milkdown .milkdown-table-block td) {
+  border-color: var(--pc-border);
+  padding: 7px 10px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-table-block th) {
+  background: var(--pc-surface-soft);
+  color: var(--pc-text);
+  font-weight: 600;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-table-block .cell-handle),
+.markdown-editor :deep(.milkdown .milkdown-table-block .line-handle .add-button),
+.markdown-editor :deep(.milkdown .milkdown-table-block .cell-handle .button-group) {
+  border: 1px solid var(--pc-border-soft);
+  background: var(--pc-surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 14%);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-table-block .cell-handle),
+.markdown-editor :deep(.milkdown .milkdown-table-block .line-handle .add-button) {
+  border-radius: 4px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-table-block .cell-handle .button-group) {
+  border-radius: var(--pc-radius-sm);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-block-handle .operation-item) {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-block-handle .operation-item svg) {
+  width: 18px;
+  height: 18px;
+  color: var(--pc-text-secondary);
+  fill: currentcolor;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-block-handle .operation-item:hover) {
+  background: var(--pc-surface-soft);
 }
 
 .markdown-editor--monospace :deep(.milkdown .ProseMirror) {
