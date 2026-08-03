@@ -260,7 +260,6 @@ onMounted(async () => {
       },
       [Crepe.Feature.ImageBlock]: {
         onUpload: uploadImage,
-        inlineConfirmButton: '确认',
         inlineUploadButton: '上传图片',
         inlineUploadPlaceholderText: '或粘贴图片地址',
         blockConfirmButton: '确认',
@@ -269,9 +268,6 @@ onMounted(async () => {
         blockUploadPlaceholderText: '或粘贴图片地址',
       },
       [Crepe.Feature.LinkTooltip]: {
-        editButton: '编辑链接',
-        removeButton: '移除链接',
-        confirmButton: '确认',
         inputPlaceholder: '粘贴链接地址',
       },
       [Crepe.Feature.BlockEdit]: {
@@ -302,7 +298,10 @@ onMounted(async () => {
         },
       },
       [Crepe.Feature.CodeMirror]: {
+        copyText: '复制',
+        noResultText: '未找到语言',
         previewToggleText: previewOnly => previewOnly ? '编辑代码' : '预览代码',
+        searchPlaceholder: '搜索语言',
       },
     },
   })
@@ -499,8 +498,8 @@ watch(
 .markdown-editor :deep(.milkdown) {
   --crepe-color-background: var(--pc-surface);
   --crepe-color-on-background: var(--pc-text);
-  --crepe-color-surface: var(--pc-surface-soft);
-  --crepe-color-surface-low: var(--pc-border-soft);
+  --crepe-color-surface: var(--pc-surface);
+  --crepe-color-surface-low: var(--pc-surface-soft);
   --crepe-color-on-surface: var(--pc-text);
   --crepe-color-on-surface-variant: var(--pc-text-secondary);
   --crepe-color-outline: var(--pc-border);
@@ -517,6 +516,8 @@ watch(
   --crepe-font-title: inherit;
   --crepe-font-default: inherit;
   --crepe-font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --crepe-shadow-1: 0 2px 8px rgb(0 0 0 / 14%);
+  --crepe-shadow-2: 0 4px 14px rgb(0 0 0 / 16%);
   min-height: var(--markdown-editor-min-height);
   border-radius: inherit;
 }
@@ -693,6 +694,234 @@ watch(
 .markdown-editor :deep(.milkdown .milkdown-slash-menu li.active) {
   background: color-mix(in srgb, var(--pc-action) 10%, var(--pc-surface));
   color: var(--pc-action);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-toolbar),
+.markdown-editor :deep(.milkdown .milkdown-link-preview > .link-preview),
+.markdown-editor :deep(.milkdown .milkdown-link-edit > .link-edit),
+.markdown-editor :deep(.milkdown .milkdown-code-block .list-wrapper),
+.markdown-editor :deep(.milkdown .milkdown-image-inline .empty-image-inline) {
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 14%);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-toolbar) {
+  gap: 2px;
+  padding: 4px;
+  overflow: visible;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-toolbar .toolbar-item) {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-toolbar .toolbar-item svg) {
+  width: 18px;
+  height: 18px;
+  color: var(--pc-text-secondary);
+  fill: currentcolor;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-toolbar .toolbar-item:hover) {
+  background: var(--pc-surface-soft);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-toolbar .toolbar-item:hover svg),
+.markdown-editor :deep(.milkdown .milkdown-toolbar .toolbar-item.active svg) {
+  color: var(--pc-action);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-toolbar .toolbar-item.active) {
+  background: color-mix(in srgb, var(--pc-action) 10%, var(--pc-surface));
+}
+
+.markdown-editor :deep(.milkdown .milkdown-toolbar .divider) {
+  width: 1px;
+  height: 16px;
+  margin: 6px 3px;
+  background: var(--pc-border-soft);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-link-preview > .link-preview),
+.markdown-editor :deep(.milkdown .milkdown-link-edit > .link-edit) {
+  min-height: 36px;
+  height: auto;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-link-preview .link-display) {
+  width: min(240px, 56vw);
+  padding: 0 6px;
+  color: var(--pc-text-secondary);
+  font-size: 12px;
+  line-height: 26px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-link-preview .link-icon),
+.markdown-editor :deep(.milkdown .milkdown-link-preview .button),
+.markdown-editor :deep(.milkdown .milkdown-link-edit .button) {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 4px;
+  padding: 5px;
+  line-height: 1;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-link-preview .link-icon:hover),
+.markdown-editor :deep(.milkdown .milkdown-link-preview .button:hover),
+.markdown-editor :deep(.milkdown .milkdown-link-edit .button:hover) {
+  background: var(--pc-surface-soft);
+  color: var(--pc-action);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-link-preview .link-icon svg),
+.markdown-editor :deep(.milkdown .milkdown-link-preview .button svg),
+.markdown-editor :deep(.milkdown .milkdown-link-edit .button svg) {
+  width: 17px;
+  height: 17px;
+  color: currentcolor;
+  fill: currentcolor;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-link-edit .input-area) {
+  width: min(240px, 56vw);
+  height: 28px;
+  border: 1px solid var(--pc-border);
+  border-radius: 4px;
+  padding: 0 8px;
+  background: var(--pc-surface);
+  color: var(--pc-text);
+  font-size: 12px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-link-edit .input-area:focus) {
+  border-color: var(--pc-action);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pc-action) 14%, transparent);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block) {
+  margin: 8px 0;
+  border: 1px solid var(--pc-border-soft);
+  border-radius: var(--pc-radius-sm);
+  padding: 8px 12px 12px;
+  background: var(--pc-surface-soft);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block.selected) {
+  outline: 0;
+  border-color: color-mix(in srgb, var(--pc-action) 55%, var(--pc-border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pc-action) 12%, transparent);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .cm-editor),
+.markdown-editor :deep(.milkdown .milkdown-code-block .cm-gutters) {
+  background: transparent;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .tools) {
+  min-height: 28px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .language-button),
+.markdown-editor :deep(.milkdown .milkdown-code-block .tools-button-group button) {
+  min-height: 28px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--pc-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 1;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .language-button) {
+  margin-bottom: 4px;
+  padding: 4px 4px 4px 7px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .language-button:hover),
+.markdown-editor :deep(.milkdown .milkdown-code-block .tools-button-group button:hover) {
+  background: var(--pc-surface);
+  color: var(--pc-action);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .tools-button-group) {
+  gap: 2px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .tools-button-group button) {
+  padding: 5px 7px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .tools-button-group button:first-child),
+.markdown-editor :deep(.milkdown .milkdown-code-block .tools-button-group button:last-child) {
+  border-radius: 4px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .tools-button-group button svg) {
+  fill: currentcolor;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .language-picker) {
+  max-width: calc(100vw - 36px);
+  padding-top: 4px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .list-wrapper) {
+  width: 220px;
+  max-width: calc(100vw - 36px);
+  padding: 5px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .search-box) {
+  min-height: 32px;
+  margin: 0 0 5px;
+  border: 1px solid var(--pc-border);
+  border-radius: 4px;
+  outline: 0;
+  padding: 5px 8px;
+  background: var(--pc-surface);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .search-box:has(input:focus)) {
+  border-color: var(--pc-action);
+  outline: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pc-action) 14%, transparent);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .search-box input) {
+  color: var(--pc-text);
+  font-size: 12px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .language-list) {
+  height: min(280px, 45vh);
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .language-list-item) {
+  min-height: 30px;
+  border-radius: 4px;
+  padding: 5px 8px;
+  color: var(--pc-text-secondary);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.markdown-editor :deep(.milkdown .milkdown-code-block .language-list-item:hover),
+.markdown-editor :deep(.milkdown .milkdown-code-block .language-list-item:focus-visible) {
+  background: var(--pc-surface-soft);
+  color: var(--pc-text);
 }
 
 .markdown-editor--monospace :deep(.milkdown .ProseMirror) {

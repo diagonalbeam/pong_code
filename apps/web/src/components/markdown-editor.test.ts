@@ -139,6 +139,14 @@ describe('MarkdownEditor', () => {
       .toContain('markdown-command-advanced-icon')
     expect(instance.config.featureConfigs['block-edit'].textGroup.h1.icon)
       .toContain('>H1</text>')
+    expect(instance.config.featureConfigs['code-mirror']).toMatchObject({
+      copyText: '复制',
+      noResultText: '未找到语言',
+      searchPlaceholder: '搜索语言',
+    })
+    expect(instance.config.featureConfigs['link-tooltip']).toEqual({
+      inputPlaceholder: '粘贴链接地址',
+    })
 
     const imageInput = wrapper.get<HTMLInputElement>('[data-testid="markdown-image-input"]')
     expect(imageInput.attributes('accept')).toBe('image/png,image/jpeg,image/gif,image/webp')
