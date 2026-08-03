@@ -44,6 +44,15 @@ describe('Markdown rendering', () => {
     expect(html).not.toContain('<img onerror=')
   })
 
+  it('renders link syntax escaped by whole-text visual input', () => {
+    const source = '\\[pica]\\(https\\://nodeca.github.io/pica/demo/)'
+
+    expect(renderMarkdown(source)).toContain(
+      '<a href="https://nodeca.github.io/pica/demo/" target="_blank" rel="noreferrer noopener">pica</a>',
+    )
+    expect(markdownToPlainText(source)).toBe('pica')
+  })
+
   it('creates readable plain text for compact tooltips', () => {
     expect(markdownToPlainText('## **重点**<br />\n- [文档](https://example.com)'))
       .toBe('重点 文档')

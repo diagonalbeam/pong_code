@@ -182,6 +182,25 @@ describe('MarkdownEditor', () => {
     expect(wrapper.props('modelValue')).toBe('## 修复结果\n\n**已完成**')
   })
 
+  it('restores link syntax escaped by whole-text visual input', async () => {
+    const wrapper = mount(MarkdownEditor, {
+      props: {
+        modelValue: '',
+        'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+      },
+    })
+    await flushPromises()
+
+    milkdownMock.instances[0].emitMarkdown(
+      '\\[pica]\\(https\\://nodeca.github.io/pica/demo/)',
+    )
+    await flushPromises()
+
+    expect(wrapper.props('modelValue')).toBe(
+      '[pica](https://nodeca.github.io/pica/demo/)',
+    )
+  })
+
   it('synchronizes externally replaced Markdown back into Milkdown', async () => {
     const wrapper = mount(MarkdownEditor, {
       props: { modelValue: '旧内容' },

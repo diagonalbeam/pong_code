@@ -11,6 +11,7 @@ import { ElMessage } from 'element-plus'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { uploadMarkdownImages } from '@/api/uploads'
 import { apiErrorMessage } from '@/api/client'
+import { normalizeEscapedMarkdownLinks } from '@/shared/markdown'
 
 const advancedCommandIcon = (path: string) => `
   <svg class="markdown-command-advanced-icon" xmlns="http://www.w3.org/2000/svg"
@@ -215,7 +216,9 @@ function handleMarkdownUpdate(markdown: string) {
   if (applyingExternalValue)
     return
 
-  if (props.maxLength && markdown.length > props.maxLength) {
+  const normalizedMarkdown = normalizeEscapedMarkdownLinks(markdown)
+
+  if (props.maxLength && normalizedMarkdown.length > props.maxLength) {
     if (!revertingLengthOverflow) {
       revertingLengthOverflow = true
       ElMessage.warning(`最多输入 ${props.maxLength} 个字符`)
@@ -227,9 +230,15 @@ function handleMarkdownUpdate(markdown: string) {
     return
   }
 
-  acceptedMarkdown = markdown
-  markdownLength.value = markdown.length
-  emit('update:modelValue', markdown)
+  if (normalizedMarkdown !== markdown && crepe && ready.value) {
+    applyingExternalValue = true
+    crepe.editor.action(replaceAll(normalizedMarkdown))
+    applyingExternalValue = false
+  }
+
+  acceptedMarkdown = normalizedMarkdown
+  markdownLength.value = normalizedMarkdown.length
+  emit('update:modelValue', normalizedMarkdown)
 }
 
 onMounted(async () => {
