@@ -91,7 +91,7 @@ Dockerfile 使用多阶段构建：
 2. Python 阶段安装 Flask 依赖并复制静态产物；
 3. Gunicorn 运行 Flask，同时提供 API、上传文件和 Vue History 回退。
 
-运行时仍可使用既有环境变量，包括：
+运行时可配置的环境变量包括：
 
 - `DATABASE_URL`
 - `SECRET_KEY`
@@ -102,6 +102,11 @@ Dockerfile 使用多阶段构建：
 - `APP_BASE_URL`
 - `FRONTEND_DIST_DIR`（仅用于覆盖前端构建目录）
 - `PORT`、`WEB_CONCURRENCY`、`GUNICORN_THREADS`
+- `GUNICORN_KEEP_ALIVE`（空闲连接保持时间，默认 620 秒）
+
+Gunicorn 的 keep-alive 默认设为 620 秒，高于 Google 负载均衡的 600 秒后端空闲超时，
+以减少后端先关闭空闲连接、负载均衡同时复用连接导致的间歇性 503。
+使用其他负载均衡时，可通过 `GUNICORN_KEEP_ALIVE` 调整，并保持高于其后端连接空闲超时。
 
 ## 架构资料
 
