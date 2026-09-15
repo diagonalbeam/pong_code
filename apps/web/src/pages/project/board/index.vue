@@ -29,6 +29,7 @@ import StatusTag from '@/components/status-tag.vue'
 import BugDialog from '@/components/business/bug-dialog.vue'
 import BugDetailDialog from '@/components/business/bug-detail-dialog.vue'
 import BugViewDialog from '@/components/business/bug-view-dialog.vue'
+import BoardDeadline from '@/components/business/board/board-deadline.vue'
 import IssueDialog from '@/components/business/issue-dialog.vue'
 import IssueDetailDialog from '@/components/business/issue-detail-dialog.vue'
 import BoardRequirementBindDialog from '@/components/business/board/board-requirement-bind-dialog.vue'
@@ -560,6 +561,16 @@ watch(
                 </template>
               </el-dropdown>
             </div>
+          </div>
+
+          <div class="mt-2.5">
+            <BoardDeadline
+              :start-date="sprint.start_date"
+              :end-date="sprint.end_date"
+              :status="sprint.status"
+              :remaining-estimates="totals.remainingEstimateByAssignee"
+              :bug-count="totals.activeBugCount"
+            />
           </div>
 
           <div class="mt-4 flex items-center" data-testid="board-progress">

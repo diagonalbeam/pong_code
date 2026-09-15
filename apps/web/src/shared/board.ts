@@ -82,13 +82,35 @@ export function calculateSwimlaneProgress(lane: Swimlane) {
 
 export function calculateBoardTotals(swimlanes: Swimlane[]) {
   const items: BoardItem[] = swimlanes.flatMap(lane => [...lane.todo, ...lane.doing, ...lane.done])
+  const activeItems: BoardItem[] = swimlanes.flatMap(lane => [...lane.todo, ...lane.doing])
   const done = swimlanes.reduce((sum, lane) => sum + lane.done.length, 0)
+  const remainingEstimateByAssignee = new Map<string, number>()
+  let activeBugCount = 0
+
+  for (const item of activeItems) {
+    const assignee = item.assignee_name || '未分配'
+    const remaining = Math.max(Number(item.time_estimate || 0) - Number(item.time_spent || 0), 0)
+    remainingEstimateByAssignee.set(assignee, Number(((remainingEstimateByAssignee.get(assignee) || 0) + remaining).toFixed(1)))
+    if (item.item_type === 'bug')
+      activeBugCount += 1
+  }
+
   return {
     items: items.length,
     done,
     hours: Number(
       items.reduce((sum, item) => sum + Number(item.time_spent || 0), 0).toFixed(1),
     ),
+    remainingEstimateByAssignee: [...remainingEstimateByAssignee.entries()]
+      .map(([name, hours]) => ({ name, hours }))
+      .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)),
+    activeBugCount,
     progress: items.length ? Math.round(done / items.length * 100) : 0,
   }
+}
+
+export function formatHours(value: number) {
+  if (!Number.isFinite(value))
+    return '0'
+  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(1)))
 }
