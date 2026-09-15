@@ -6,6 +6,7 @@ import { addBugWorklog, updateBug } from '@/api/bugs'
 import { apiErrorMessage } from '@/api/client'
 import { addIssueWorklog, updateIssue } from '@/api/issues'
 import type { BoardItem } from '@/api/types'
+import { formatHours } from '@/shared/board'
 
 const props = defineProps<{
   item: BoardItem
@@ -63,12 +64,6 @@ watch(
       form.time_estimate = estimate.value
   },
 )
-
-function formatHours(value: number) {
-  if (!Number.isFinite(value))
-    return '0'
-  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(1)))
-}
 
 async function save() {
   if (saving.value)

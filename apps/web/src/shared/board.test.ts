@@ -15,7 +15,7 @@ import {
   isSwimlaneInactive,
 } from './board'
 
-function task(id: number, timeSpent = 0): BoardItem {
+function task(id: number, timeSpent = 0, timeEstimate = 0, assigneeName: string | null = null): BoardItem {
   return {
     id,
     item_type: 'task',
@@ -24,15 +24,22 @@ function task(id: number, timeSpent = 0): BoardItem {
     description: null,
     status: 'todo',
     priority: 3,
-    time_estimate: 0,
+    time_estimate: timeEstimate,
     time_spent: timeSpent,
     assignee_id: null,
-    assignee_name: null,
+    assignee_name: assigneeName,
     project_id: 1,
     sprint_id: 1,
     requirement_id: null,
     requirement_title: null,
   }
+}
+
+function bug(id: number, timeSpent = 0, timeEstimate = 0, assigneeName: string | null = null): BoardItem {
+  return {
+    ...task(id, timeSpent, timeEstimate, assigneeName),
+    item_type: 'bug',
+  } as BoardItem
 }
 
 describe('看板共享规则', () => {
@@ -74,7 +81,34 @@ describe('看板共享规则', () => {
       items: 4,
       done: 2,
       hours: 5,
+      remainingEstimateByAssignee: [{ name: '未分配', hours: 0 }],
+      activeBugCount: 0,
       progress: 50,
+    })
+  })
+
+  it('按负责人统计未完成剩余预估工时和缺陷数量', () => {
+    const lanes = [{
+      requirement: null,
+      todo: [
+        bug(1, 1, 4, 'A'),
+        task(4, 1, 4, 'A'),
+      ],
+      doing: [
+        bug(2, 0, 5, 'B'),
+        task(7, 0, 2, null),
+        task(8, 0, 3, 'B'),
+      ],
+      done: [bug(3, 0.5, 4, 'A')],
+    }] as Swimlane[]
+
+    expect(calculateBoardTotals(lanes)).toMatchObject({
+      remainingEstimateByAssignee: [
+        { name: 'A', hours: 6 },
+        { name: 'B', hours: 8 },
+        { name: '未分配', hours: 2 },
+      ],
+      activeBugCount: 2,
     })
   })
 
