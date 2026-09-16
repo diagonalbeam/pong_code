@@ -2,7 +2,7 @@
 import { Clock } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { formatHours } from '@/shared/board'
-import { calculateSprintDeadline, type DeadlineTone } from '@/shared/deadline'
+import { calculateSprintDeadline, calculateWorkloadRisk, type DeadlineTone } from '@/shared/deadline'
 
 const props = defineProps<{
   startDate: string | null
@@ -31,11 +31,38 @@ const toneColors: Record<DeadlineTone, string> = {
   muted: 'var(--pc-text-muted)',
 }
 
-const toneColor = computed(() => toneColors[deadline.value.tone])
+const workloadRisk = computed(() => calculateWorkloadRisk(
+  props.remainingEstimates || [],
+  deadline.value.remainingDays,
+  props.status,
+))
+const tone = computed(() => {
+  if (workloadRisk.value.overdue.length)
+    return 'danger' as const
+  if (workloadRisk.value.risk.length)
+    return 'warning' as const
+  if (deadline.value.tone === 'muted')
+    return 'muted' as const
+  return props.status === 'closed' ? 'success' as const : 'action' as const
+})
+const toneColor = computed(() => toneColors[tone.value])
+function estimatesLabel(estimates: Array<{ name: string, hours: number }>) {
+  return estimates.map(({ name, hours }) => `${name}：${formatHours(hours)}h`).join('，')
+}
+const riskLabel = computed(() => {
+  const labels: string[] = []
+  if (workloadRisk.value.risk.length)
+    labels.push(`有风险：${estimatesLabel(workloadRisk.value.risk)}`)
+  if (workloadRisk.value.overdue.length)
+    labels.push(`逾期：${estimatesLabel(workloadRisk.value.overdue)}`)
+  return labels.join('，')
+})
 const remainingHoursLabel = computed(() => {
   const estimates = props.remainingEstimates || []
+  if (riskLabel.value)
+    return `（${riskLabel.value}，缺陷数量：${props.bugCount || 0}）`
   const estimateLabel = estimates.length
-    ? estimates.map(({ name, hours }) => `${name}：${formatHours(hours)}h`).join('，')
+    ? estimatesLabel(estimates)
     : '0h'
   return `（预估剩余人员工时 ${estimateLabel}，缺陷数量：${props.bugCount || 0}）`
 })

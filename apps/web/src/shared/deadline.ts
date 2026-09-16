@@ -14,6 +14,33 @@ export interface SprintDeadline {
   showProgress: boolean
 }
 
+export interface WorkloadEstimate {
+  name: string
+  hours: number
+}
+
+export interface WorkloadRisk {
+  risk: WorkloadEstimate[]
+  overdue: WorkloadEstimate[]
+}
+
+/** 一天按 6 小时计算每人的迭代剩余产能。 */
+export const DAILY_CAPACITY_HOURS = 6
+
+export function calculateWorkloadRisk(
+  estimates: WorkloadEstimate[],
+  remainingDays: number | null,
+  status: SprintDeadlineInput['status'],
+): WorkloadRisk {
+  if (status === 'closed' || remainingDays === null)
+    return { risk: [], overdue: [] }
+
+  const capacity = Math.max(remainingDays, 0) * DAILY_CAPACITY_HOURS
+  const risk = estimates.filter(({ hours }) => hours > 0 && hours === capacity)
+  const overdue = estimates.filter(({ hours }) => hours > capacity)
+  return { risk, overdue }
+}
+
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -105,8 +132,8 @@ export function calculateSprintDeadline(
 
   if (remainingDays < 0) {
     return {
-      label: `已逾期 ${Math.abs(remainingDays)} 天`,
-      tone: 'danger',
+      label: `已结束 ${Math.abs(remainingDays)} 天`,
+      tone: 'action',
       remainingDays,
       percent,
       showProgress: start !== null,
@@ -116,27 +143,7 @@ export function calculateSprintDeadline(
   if (remainingDays === 0) {
     return {
       label: '今天截止',
-      tone: 'danger',
-      remainingDays,
-      percent,
-      showProgress: start !== null,
-    }
-  }
-
-  if (remainingDays <= 2) {
-    return {
-      label: `距离结束剩余 ${remainingDays} 天`,
-      tone: 'danger',
-      remainingDays,
-      percent,
-      showProgress: start !== null,
-    }
-  }
-
-  if (remainingDays <= 7) {
-    return {
-      label: `距离结束剩余 ${remainingDays} 天`,
-      tone: 'warning',
+      tone: 'action',
       remainingDays,
       percent,
       showProgress: start !== null,

@@ -9,7 +9,7 @@ function mountDeadline(props: Partial<InstanceType<typeof BoardDeadline>['$props
       endDate: '2026-08-14',
       status: 'active',
       remainingEstimates: [
-        { name: 'A', hours: 6 },
+        { name: 'A', hours: 24 },
         { name: 'B', hours: 8 },
       ],
       bugCount: 1,
@@ -24,10 +24,36 @@ describe('看板截止倒计时', () => {
     const wrapper = mountDeadline({ today: '2026-08-10' })
     const progress = wrapper.get('[role="progressbar"]')
 
-    expect(wrapper.get('[data-testid="board-deadline"]').text()).toContain('距离结束剩余 4 天（预估剩余人员工时 A：6h，B：8h，缺陷数量：1）')
+    expect(wrapper.get('[data-testid="board-deadline"]').text()).toContain('距离结束剩余 4 天（有风险：A：24h，缺陷数量：1）')
     expect(progress.attributes('aria-valuenow')).toBe('69')
     expect(progress.attributes('aria-valuetext')).toContain('距离结束剩余 4 天')
     expect(progress.get('div').attributes('style')).toContain('width: 69%;')
+  })
+
+  it('剩余工时超过每日 6 小时产能的人员标记为逾期', () => {
+    const wrapper = mountDeadline({
+      remainingEstimates: [
+        { name: 'A', hours: 24 },
+        { name: 'B', hours: 30 },
+      ],
+      today: '2026-08-10',
+    })
+
+    expect(wrapper.get('[data-testid="board-deadline"]').text())
+      .toContain('距离结束剩余 4 天（有风险：A：24h，逾期：B：30h，缺陷数量：1）')
+  })
+
+  it('没有工时风险时，临近截止也不使用风险颜色', () => {
+    const wrapper = mountDeadline({
+      startDate: '2026-08-01',
+      endDate: '2026-08-12',
+      remainingEstimates: [{ name: 'A', hours: 6 }],
+      today: '2026-08-10',
+    })
+    const notice = wrapper.get('span')
+
+    expect(wrapper.text()).toContain('距离结束剩余 2 天（预估剩余人员工时 A：6h，缺陷数量：1）')
+    expect(notice.attributes('style')).toContain('color: var(--pc-action)')
   })
 
   it('只有截止日时隐藏时间进度条', () => {
