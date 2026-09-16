@@ -18,25 +18,25 @@ describe('迭代截止倒计时', () => {
     })
   })
 
-  it('剩余 7 天进入关注状态', () => {
+  it('剩余 7 天保持常规状态', () => {
     const deadline = calculateSprintDeadline(baseInput, '2026-08-07')
 
     expect(deadline.label).toBe('距离结束剩余 7 天')
-    expect(deadline.tone).toBe('warning')
+    expect(deadline.tone).toBe('action')
     expect(deadline.remainingDays).toBe(7)
   })
 
-  it('剩余 2 天、截止当天和逾期使用紧急状态', () => {
-    expect(calculateSprintDeadline(baseInput, '2026-08-12').tone).toBe('danger')
+  it('截止当天和已结束只提供日期信息，不产生风险状态', () => {
+    expect(calculateSprintDeadline(baseInput, '2026-08-12').tone).toBe('action')
     expect(calculateSprintDeadline(baseInput, '2026-08-14')).toMatchObject({
       label: '今天截止',
-      tone: 'danger',
+      tone: 'action',
       remainingDays: 0,
       percent: 100,
     })
     expect(calculateSprintDeadline(baseInput, '2026-08-17')).toMatchObject({
-      label: '已逾期 3 天',
-      tone: 'danger',
+      label: '已结束 3 天',
+      tone: 'action',
       remainingDays: -3,
       percent: 100,
     })
@@ -58,7 +58,7 @@ describe('迭代截止倒计时', () => {
       status: 'active',
     }, '2026-08-10')).toEqual({
       label: '距离结束剩余 4 天',
-      tone: 'warning',
+      tone: 'action',
       remainingDays: 4,
       percent: null,
       showProgress: false,
