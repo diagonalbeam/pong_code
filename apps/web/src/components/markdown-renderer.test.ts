@@ -23,8 +23,9 @@ describe('MarkdownRenderer', () => {
       },
     })
 
-    expect(wrapper.classes()).toContain('markdown-renderer--document')
-    expect(wrapper.get('img').attributes()).toMatchObject({
+    const renderer = wrapper.get('.markdown-renderer')
+    expect(renderer.classes()).toContain('markdown-renderer--document')
+    expect(renderer.get('img').attributes()).toMatchObject({
       loading: 'lazy',
       src: '/static/uploads/demo.png',
     })

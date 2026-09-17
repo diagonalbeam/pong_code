@@ -24,6 +24,7 @@ import { getUsers } from '@/api/users'
 import { apiErrorMessage } from '@/api/client'
 import type { BoardItem, BoardResponse, Bug, Requirement, Sprint, Swimlane, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import EntityIdBadge from '@/components/entity-id-badge.vue'
 import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import StatusTag from '@/components/status-tag.vue'
 import BugDialog from '@/components/business/bug-dialog.vue'
@@ -465,6 +466,13 @@ watch(
                 <h1 class="m-0 min-w-0 font-['SF_Pro_Display',system-ui,-apple-system,sans-serif] text-[clamp(24px,2.2vw,30px)] leading-[1.2] font-semibold tracking-[-0.025em]">
                   {{ sprint.name }}
                 </h1>
+                <EntityIdBadge
+                  class="shrink-0"
+                  data-testid="board-sprint-id-badge"
+                  :id="sprint.id"
+                  entity="迭代"
+                  size="md"
+                />
                 <el-dropdown
                   trigger="click"
                   :persistent="false"
