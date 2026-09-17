@@ -41,7 +41,7 @@ curl -fsSL https://storage.googleapis.com/pongcode/pongcode/install.sh | VERSION
 CLI 默认连接本地服务：
 
 ```text
-http://localhost:5001
+http://localhost:5001（使用pongcode线上地址）
 ```
 
 连接线上服务时，建议每条命令带 `--server`，或在授权时保存服务地址：
