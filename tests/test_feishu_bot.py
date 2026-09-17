@@ -226,6 +226,23 @@ def test_build_bug_card_falls_back_when_assignee_has_no_email():
     assert '<at' not in content
 
 
+def test_build_bug_fixed_card_mentions_reporter_for_acceptance():
+    bug = _bug(reporter=SimpleNamespace(username='张三', email='zhangsan@example.com'))
+
+    message = feishu_bot.build_bug_fixed_card(bug, 'https://pong.example/')
+
+    assert message['card']['header'] == {
+        'title': {
+            'tag': 'plain_text',
+            'content': '缺陷待验收：BUG-11 登录页按钮异常',
+        },
+        'template': 'green',
+    }
+    content = message['card']['body']['elements'][0]['content']
+    assert '**创建人：** <at email="zhangsan@example.com">张三</at>' in content
+    assert '**请验收：** 缺陷已修复，请确认处理结果。' in content
+
+
 def test_build_test_card_has_fixed_structure_and_test_wording():
     message = feishu_bot.build_test_card(_project(), 'https://pong.example/')
 
@@ -512,6 +529,33 @@ def test_send_bug_notification_builds_and_sends(monkeypatch):
     assert sent['url'] == WEBHOOK
     assert sent['secret'] == 'test-secret'
     assert sent['message']['card']['header']['title']['content'].startswith('新缺陷：')
+
+
+def test_send_bug_fixed_notification_builds_and_sends(monkeypatch):
+    sent = {}
+    project = _project()
+    monkeypatch.setattr(
+        feishu_bot,
+        'post_message',
+        lambda url, secret, message: sent.update(
+            url=url,
+            message=message,
+            secret=secret,
+        ),
+    )
+
+    feishu_bot.send_bug_fixed_notification(
+        project,
+        _bug(
+            project=project,
+            reporter=SimpleNamespace(username='张三', email='zhangsan@example.com'),
+        ),
+        app_base_url='https://pong.example/',
+    )
+
+    assert sent['url'] == WEBHOOK
+    assert sent['secret'] == 'test-secret'
+    assert sent['message']['card']['header']['title']['content'].startswith('缺陷待验收：')
 
 
 def test_send_test_notification_requires_webhook():

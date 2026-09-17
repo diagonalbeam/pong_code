@@ -364,6 +364,40 @@ class FeishuBotApiTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.get_json()['title'], '推送失败仍创建')
 
+    def test_fixing_bug_notifies_reporter_once(self):
+        bug = self.client.post(
+            f'/api/projects/{self.project_id}/bugs',
+            json={
+                'title': '待验收缺陷',
+                'description': '修复后应通知创建人验收',
+            },
+        ).get_json()
+
+        with patch('routes.bugs.send_bug_fixed_notification') as mocked_send:
+            response = self.client.put(f'/api/bugs/{bug["id"]}', json={'status': 'fixed'})
+
+        self.assertEqual(response.status_code, 200)
+        mocked_send.assert_called_once()
+        project_arg, bug_arg = mocked_send.call_args.args[:2]
+        self.assertEqual(project_arg.id, self.project_id)
+        self.assertEqual(bug_arg.id, bug['id'])
+
+    def test_updating_an_already_fixed_bug_does_not_notify_reporter_again(self):
+        bug = self.client.post(
+            f'/api/projects/{self.project_id}/bugs',
+            json={
+                'title': '已修复缺陷',
+                'description': '编辑时不应重复通知创建人',
+                'status': 'fixed',
+            },
+        ).get_json()
+
+        with patch('routes.bugs.send_bug_fixed_notification') as mocked_send:
+            response = self.client.put(f'/api/bugs/{bug["id"]}', json={'title': '已修复缺陷（补充）'})
+
+        self.assertEqual(response.status_code, 200)
+        mocked_send.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

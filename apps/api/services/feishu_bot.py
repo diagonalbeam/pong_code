@@ -195,6 +195,39 @@ def build_bug_card(bug, app_base_url):
     }
 
 
+def build_bug_fixed_card(bug, app_base_url):
+    """构建缺陷修复后通知创建人验收的交互卡片。"""
+    project = bug.project
+    bug_code = bug.item_code or f'BUG-{bug.id}'
+    title = _single_line(f'缺陷待验收：{bug_code} {bug.title}')
+    fields = [
+        ('项目', _escape_markdown(project.name)),
+        ('创建人', _assignee_markdown(bug.reporter)),
+        ('请验收', '缺陷已修复，请确认处理结果。'),
+    ]
+    content = '\n'.join(f'**{label}：** {value}' for label, value in fields)
+    url, _ = _bug_deeplink(bug, app_base_url)
+    return {
+        'msg_type': 'interactive',
+        'card': {
+            'schema': '2.0',
+            'header': {
+                'title': {
+                    'tag': 'plain_text',
+                    'content': title,
+                },
+                'template': 'green',
+            },
+            'body': {
+                'elements': [
+                    {'tag': 'markdown', 'content': content},
+                    _button('去验收', url),
+                ],
+            },
+        },
+    }
+
+
 def build_test_card(project, app_base_url):
     """构建机器人配置测试卡片。"""
     url = _project_bugs_url(project, app_base_url)
@@ -325,6 +358,18 @@ def send_bug_notification(project, bug, app_base_url=None):
     if not project.feishu_webhook_url:
         return None
     message = build_bug_card(bug, _app_base_url(app_base_url))
+    return post_message(
+        project.feishu_webhook_url,
+        project.feishu_webhook_secret,
+        message,
+    )
+
+
+def send_bug_fixed_notification(project, bug, app_base_url=None):
+    """项目已配置 webhook 时发送缺陷待验收通知。"""
+    if not project.feishu_webhook_url:
+        return None
+    message = build_bug_fixed_card(bug, _app_base_url(app_base_url))
     return post_message(
         project.feishu_webhook_url,
         project.feishu_webhook_secret,
