@@ -24,7 +24,11 @@ from models import (
 )
 from routes.input_utils import parse_nullable_int, parse_int, parse_float, parse_date
 from routes.item_codes import allocate_item_code
-from services.feishu_bot import FeishuBotError, send_bug_notification
+from services.feishu_bot import (
+    FeishuBotError,
+    send_bug_fixed_notification,
+    send_bug_notification,
+)
 
 bp = Blueprint('bugs', __name__, url_prefix='/api')
 
@@ -363,13 +367,15 @@ def update_bug(bug_id):
             bug.severity = parse_int(data['severity'], 'severity')
         except ValueError as exc:
             return jsonify({'error': str(exc)}), 400
+    should_notify_reporter = False
     if 'status' in data:
         try:
             new_status = _parse_bug_status(data['status'])
         except ValueError as exc:
             return jsonify({'error': str(exc)}), 400
-        old_status = bug.status
+        old_status = _normalize_bug_status(bug.status)
         bug.status = new_status
+        should_notify_reporter = new_status == 'fixed' and old_status != 'fixed'
         terminal_statuses = {'closed', 'rejected'}
         if new_status in terminal_statuses and old_status not in terminal_statuses:
             bug.resolved_at = datetime.utcnow()
@@ -411,6 +417,21 @@ def update_bug(bug_id):
             return jsonify({'error': str(exc)}), 400
     bug.updated_at = datetime.utcnow()
     db.session.commit()
+    if should_notify_reporter:
+        try:
+            send_bug_fixed_notification(bug.project, bug)
+        except FeishuBotError:
+            current_app.logger.warning(
+                '飞书缺陷待验收通知发送失败 project_id=%s bug_id=%s',
+                bug.project.id,
+                bug.id,
+            )
+        except Exception:
+            current_app.logger.error(
+                '飞书缺陷待验收通知发生意外错误 project_id=%s bug_id=%s',
+                bug.project.id,
+                bug.id,
+            )
     return jsonify(bug.to_dict())
 
 
