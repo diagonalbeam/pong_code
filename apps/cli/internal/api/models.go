@@ -1,5 +1,7 @@
 package api
 
+import "encoding/json"
+
 type User struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
@@ -82,6 +84,35 @@ type Issue struct {
 type BoardItem struct {
 	Issue
 	BoardStatus string `json:"board_status"`
+}
+
+func (item *BoardItem) UnmarshalJSON(data []byte) error {
+	var metadata struct {
+		ItemType string `json:"item_type"`
+	}
+	if err := json.Unmarshal(data, &metadata); err != nil {
+		return err
+	}
+
+	type rawBoardItem BoardItem
+	if metadata.ItemType == "bug" {
+		var bugItem struct {
+			rawBoardItem
+			Priority json.RawMessage `json:"priority"`
+		}
+		if err := json.Unmarshal(data, &bugItem); err != nil {
+			return err
+		}
+		*item = BoardItem(bugItem.rawBoardItem)
+		return nil
+	}
+
+	var taskItem rawBoardItem
+	if err := json.Unmarshal(data, &taskItem); err != nil {
+		return err
+	}
+	*item = BoardItem(taskItem)
+	return nil
 }
 
 type Swimlane struct {

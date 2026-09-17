@@ -216,7 +216,7 @@ func TestTaskListUsesBearerTokenAndContext(t *testing.T) {
 				"requirement":{"id":30,"title":"CLI"},
 				"todo":[{"id":40,"item_code":"CLI-001","title":"Write CLI","status":"todo","priority":3,"item_type":"task"}],
 				"doing":[],
-				"done":[]
+				"done":[{"id":41,"item_code":"BUG-001","title":"Closed bug","status":"closed","priority":"normal","item_type":"bug"}]
 			}]
 		}`))
 	}))
@@ -235,6 +235,9 @@ func TestTaskListUsesBearerTokenAndContext(t *testing.T) {
 	}
 	if !strings.Contains(output, "CLI-001") || !strings.Contains(output, "Write CLI") {
 		t.Fatalf("output = %q", output)
+	}
+	if strings.Contains(output, "BUG-001") || strings.Contains(output, "Closed bug") {
+		t.Fatalf("output includes bug = %q", output)
 	}
 }
 

@@ -45,16 +45,20 @@ func (client *Client) Do(method string, path string, body any, output any) error
 	endpoint.Path = strings.TrimSuffix(base.Path, "/") + "/" + strings.Trim(relative.Path, "/")
 	endpoint.RawQuery = relative.RawQuery
 
-	content, err := json.Marshal(body)
-	if err != nil {
-		return errors.New("无法序列化请求数据：" + err.Error())
+	var requestBody io.Reader
+	if body != nil {
+		content, err := json.Marshal(body)
+		if err != nil {
+			return errors.New("无法序列化请求数据：" + err.Error())
+		}
+		requestBody = bytes.NewReader(content)
 	}
 
 	request, err := http.NewRequestWithContext(
 		context.Background(),
 		method,
 		endpoint.String(),
-		bytes.NewReader(content),
+		requestBody,
 	)
 	if err != nil {
 		return errors.New("无法构造 API 请求：" + err.Error())
