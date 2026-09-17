@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,6 +16,13 @@ func TestClientSendsBearerTokenAndDecodesResponse(t *testing.T) {
 		}
 		if request.URL.Path != "/api/auth/profile" {
 			t.Errorf("path = %q", request.URL.Path)
+		}
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			t.Fatalf("read request body: %v", err)
+		}
+		if len(body) != 0 {
+			t.Errorf("GET request body = %q, want empty", body)
 		}
 		writer.Header().Set("Content-Type", "application/json")
 		_, _ = writer.Write([]byte(`{"user":{"id":1,"username":"ada","email":"ada@example.com"}}`))
