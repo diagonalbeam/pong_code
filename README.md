@@ -9,6 +9,7 @@ PongCode 是一个轻量的敏捷项目管理工具，支持组织、团队、�
 .
 ├── apps
 │   ├── api                 # Flask API 与生产静态资源入口
+│   ├── cli                 # Go Cobra 命令行工具
 │   └── web                 # Vue 3 单页应用
 ├── packages
 │   └── api-contract        # OpenAPI 契约与生成的 TypeScript 类型
@@ -22,6 +23,7 @@ PongCode 是一个轻量的敏捷项目管理工具，支持组织、团队、�
 - 后端：Flask 3、Flask-SQLAlchemy、Flask-Login
 - 前端：Vue 3、Element Plus、Vite 8、TypeScript、Tailwind CSS 4
 - 前端状态与请求：Pinia、Vue Router（History 模式）、Axios
+- 命令行：Go、Cobra
 - 看板拖拽：直接封装 SortableJS
 - 包管理器：pnpm 11
 
@@ -36,6 +38,7 @@ TypeScript 版本兼容性说明见
 - Node.js 24+
 - pnpm 11.9+
 - Python 3.10+
+- Go 1.24+
 
 安装依赖：
 
@@ -63,6 +66,21 @@ pnpm dev:web
 
 数据库连接仍沿用既有逻辑：生产环境通过 `DATABASE_URL` 注入，
 本次重构没有修改数据库和服务端业务行为。
+
+## CLI
+
+CLI 的安装、授权、上下文配置、需求查询/创建和任务管理，
+见独立文档 [`docs/pongcode-cli.md`](docs/pongcode-cli.md)。
+
+快速开始：
+
+```bash
+curl -fsSL https://storage.googleapis.com/pongcode/pongcode/install.sh | sh
+pongcode auth login
+pongcode context use
+pongcode requirement list
+pongcode task list
+```
 
 ## 构建与校验
 

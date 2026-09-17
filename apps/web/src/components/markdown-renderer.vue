@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useAttrs } from 'vue'
 import { renderMarkdown } from '@/shared/markdown'
 
 const props = withDefaults(defineProps<{
@@ -15,6 +15,8 @@ const props = withDefaults(defineProps<{
   document: false,
   emptyText: '',
 })
+defineOptions({ inheritAttrs: false })
+const attrs = useAttrs()
 
 const html = computed(() => renderMarkdown(props.source?.trim() || props.emptyText))
 
@@ -39,25 +41,28 @@ function handleImageClick(event: MouseEvent) {
 </script>
 
 <template>
-  <div
-    ref="root"
-    class="markdown-renderer"
-    :class="{
-      'markdown-renderer--inline': inline,
-      'markdown-renderer--compact': compact,
-      'markdown-renderer--document': document,
-    }"
-    v-html="html"
-    @click="handleImageClick"
-  />
-  <el-image-viewer
-    v-if="viewerVisible"
-    :url-list="viewerUrls"
-    :initial-index="viewerIndex"
-    teleported
-    hide-on-click-modal
-    @close="viewerVisible = false"
-  />
+  <div>
+    <div
+      ref="root"
+      v-bind="attrs"
+      class="markdown-renderer"
+      :class="{
+        'markdown-renderer--inline': inline,
+        'markdown-renderer--compact': compact,
+        'markdown-renderer--document': document,
+      }"
+      v-html="html"
+      @click="handleImageClick"
+    />
+    <el-image-viewer
+      v-if="viewerVisible"
+      :url-list="viewerUrls"
+      :initial-index="viewerIndex"
+      teleported
+      hide-on-click-modal
+      @close="viewerVisible = false"
+    />
+  </div>
 </template>
 
 <style>

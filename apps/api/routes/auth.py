@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Message
 
 from extensions import db, mail
-from models import User
+from models import User, generate_cli_token
 
 bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -109,6 +109,23 @@ def profile():
         return jsonify({'error': '用户名或邮箱已被使用'}), 400
 
     return jsonify({'success': True, 'user': current_user.to_dict()})
+
+
+@bp.route('/cli-token', methods=['GET'])
+@login_required
+def cli_token():
+    if not current_user.cli_token:
+        current_user.cli_token = generate_cli_token()
+        db.session.commit()
+    return jsonify({'cli_token': current_user.cli_token})
+
+
+@bp.route('/cli-token/rotate', methods=['POST'])
+@login_required
+def rotate_cli_token():
+    current_user.cli_token = generate_cli_token()
+    db.session.commit()
+    return jsonify({'success': True, 'cli_token': current_user.cli_token})
 
 
 @bp.route('/login', methods=['POST'])

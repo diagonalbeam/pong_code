@@ -65,6 +65,26 @@ paths:
       operationId: updateProfile
       requestBody: *json-body
       responses: *json-response
+  /api/auth/cli-token:
+    get:
+      operationId: getCliToken
+      responses:
+        "200":
+          description: 当前用户 CLI token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CliToken"
+  /api/auth/cli-token/rotate:
+    post:
+      operationId: rotateCliToken
+      responses:
+        "200":
+          description: 已轮换的 CLI token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CliToken"
   /api/auth/forgot-password:
     post:
       operationId: forgotPassword
@@ -676,6 +696,15 @@ components:
           type: boolean
         user:
           $ref: "#/components/schemas/User"
+    CliToken:
+      type: object
+      required:
+        - cli_token
+      properties:
+        success:
+          type: boolean
+        cli_token:
+          type: string
     User:
       type: object
       required:

@@ -8,6 +8,7 @@ import { deleteProject } from '@/api/projects'
 import { apiErrorMessage } from '@/api/client'
 import type { OrganizationDetails, Project } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import EntityIdBadge from '@/components/entity-id-badge.vue'
 import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import ProjectDialog from '@/components/business/project-dialog.vue'
@@ -148,7 +149,15 @@ onMounted(load)
               <el-icon><FolderOpened /></el-icon>
             </div>
             <div class="min-w-0 flex-1">
-              <h2 class="m-0 truncate text-[17px] leading-5 font-semibold tracking-[-0.01em] text-[var(--pc-text)]">{{ project.name }}</h2>
+              <div class="flex min-w-0 items-center gap-2">
+                <h2 class="m-0 min-w-0 truncate text-[17px] leading-5 font-semibold tracking-[-0.01em] text-[var(--pc-text)]">{{ project.name }}</h2>
+                <EntityIdBadge
+                  class="shrink-0"
+                  data-testid="project-id-badge"
+                  :id="project.id"
+                  entity="项目"
+                />
+              </div>
               <el-tag v-if="project.team_name" class="mt-1 !h-5 !rounded-[var(--pc-radius-sm)] !px-1.5 !text-[11px]" data-testid="project-team-badge" effect="plain">
                 {{ project.team_name }}
               </el-tag>

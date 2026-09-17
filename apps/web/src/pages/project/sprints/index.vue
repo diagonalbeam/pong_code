@@ -8,6 +8,7 @@ import { getUsers } from '@/api/users'
 import { apiErrorMessage } from '@/api/client'
 import type { Requirement, Sprint, User } from '@/api/types'
 import EmptyState from '@/components/empty-state.vue'
+import EntityIdBadge from '@/components/entity-id-badge.vue'
 import LoadingSkeleton from '@/components/loading-skeleton.vue'
 import PageHeader from '@/components/page-header.vue'
 import StatusTag from '@/components/status-tag.vue'
@@ -74,6 +75,14 @@ onMounted(load)
 <template>
   <div class="mx-auto w-full max-w-[1920px] p-6 max-md:px-3 max-md:pt-[17px] max-md:pb-8">
     <PageHeader :title="details?.project.name || '全部迭代'" description="查看、筛选和管理项目中的所有迭代。">
+      <template #title-meta>
+        <EntityIdBadge
+          class="shrink-0"
+          :id="projectId"
+          entity="项目"
+          size="md"
+        />
+      </template>
       <el-button @click="ElMessage.info('列设置功能开发中')">
         <el-icon><Setting /></el-icon>列设置
       </el-button>
@@ -108,7 +117,19 @@ onMounted(load)
         <LoadingSkeleton v-if="loading" variant="table" embedded />
         <div v-else-if="filtered.length" data-testid="desktop-table" class="max-md:hidden">
           <el-table :data="filtered" @row-click="openBoard">
-            <el-table-column prop="name" label="名称" min-width="220" show-overflow-tooltip />
+            <el-table-column label="名称" min-width="220" show-overflow-tooltip>
+              <template #default="{ row }">
+                <div class="flex min-w-0 items-center gap-2">
+                  <span class="min-w-0 truncate">{{ row.name }}</span>
+                  <EntityIdBadge
+                    class="shrink-0"
+                    data-testid="sprint-id-badge"
+                    :id="row.id"
+                    entity="迭代"
+                  />
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column label="状态" width="110">
               <template #default="{ row }"><StatusTag :status="row.status" :label="row.status_label" /></template>
             </el-table-column>
@@ -155,7 +176,15 @@ onMounted(load)
         <div v-if="!loading" class="hidden gap-3 max-md:grid">
           <article v-for="sprint in filtered" :key="sprint.id" class="grid gap-3 rounded-[var(--pc-radius-card)] border border-[var(--pc-border)] bg-[var(--pc-surface)] p-3.5" role="button" tabindex="0" @click="openBoard(sprint)" @keydown.enter.self="openBoard(sprint)" @keydown.space.self.prevent="openBoard(sprint)">
             <header class="flex justify-between gap-3">
-              <strong class="text-[15px] font-semibold">{{ sprint.name }}</strong>
+              <div class="flex min-w-0 items-center gap-2">
+                <strong class="min-w-0 truncate text-[15px] font-semibold">{{ sprint.name }}</strong>
+                <EntityIdBadge
+                  class="shrink-0"
+                  data-testid="sprint-id-badge"
+                  :id="sprint.id"
+                  entity="迭代"
+                />
+              </div>
               <div class="flex items-center gap-1">
                 <StatusTag :status="sprint.status" :label="sprint.status_label" />
                 <el-button
