@@ -25,6 +25,14 @@ export function updateProfile(data: { username: string; email: string }) {
   return http.put<{ success: boolean; user: User }>('/auth/profile', data)
 }
 
+export function getCliToken() {
+  return http.get<{ cli_token: string }>('/auth/cli-token')
+}
+
+export function rotateCliToken() {
+  return http.post<{ success: boolean; cli_token: string }>('/auth/cli-token/rotate')
+}
+
 export function forgotPassword(email: string) {
   return http.post<{ success: boolean; message: string }>('/auth/forgot-password', { email })
 }

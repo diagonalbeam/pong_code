@@ -93,6 +93,8 @@ def get_issue(issue_id):
 @login_required
 def update_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
+    if not _check_project_access(issue.project):
+        return jsonify({'error': '无权访问'}), 403
     data = request.get_json()
     if 'title' in data:
         issue.title = data['title']
@@ -182,11 +184,13 @@ def delete_worklog(issue_id, worklog_id):
 @bp.route('/issues/<int:issue_id>/move', methods=['POST'])
 @login_required
 def move_issue(issue_id):
+    issue = Issue.query.get_or_404(issue_id)
+    if not _check_project_access(issue.project):
+        return jsonify({'error': '无权访问'}), 403
     data = request.get_json()
     new_status = data.get('status')
     if new_status not in ['todo', 'doing', 'done']:
         return jsonify({'error': '无效的状态值'}), 400
-    issue = Issue.query.get_or_404(issue_id)
     issue.status = new_status
     db.session.commit()
     return jsonify({'success': True})
@@ -201,6 +205,8 @@ def assign_sprint(issue_id):
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
     issue = Issue.query.get_or_404(issue_id)
+    if not _check_project_access(issue.project):
+        return jsonify({'error': '无权访问'}), 403
     if sprint_id is not None:
         sprint = Sprint.query.get(sprint_id)
         if not sprint:

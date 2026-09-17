@@ -16,6 +16,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 - **Frontend**: Vue 3 + Element Plus + Vite 8 + TypeScript + Tailwind CSS 4
 - **State / Router**: Pinia、Vue Router（History）
 - **HTTP**: Axios（Session Cookie）
+- **CLI**: Go + Cobra
 - **Kanban**: SortableJS 业务组件封装
 - **Contracts**: `packages/api-contract`（OpenAPI → TypeScript 类型）
 - **Package manager**: pnpm 11
@@ -35,6 +36,7 @@ apps/
     routes/
     services/
     requirements.txt
+  cli/                 # Go Cobra 命令行工具
   web/                 # Vue 3 SPA
     src/
       pages/           # 路由页面（小写连字符目录 + index.vue）
@@ -70,12 +72,16 @@ pnpm dev
 
 pnpm dev:api    # .venv/bin/python apps/api/app.py
 pnpm dev:web
+
+pnpm build:cli  # 构建 Go CLI 到 bin/pongcode
+pnpm test:cli   # Go CLI 单元测试
+pnpm release:cli v0.1.0 gs://bucket  # 本地构建并上传 CLI 产物
 ```
 
 校验与构建：
 
 ```bash
-pnpm check          # typecheck + lint + vitest + pytest(非 e2e) + build
+pnpm check          # typecheck + lint + vitest + pytest(非 e2e) + Go CLI tests + build
 pnpm typecheck
 pnpm lint
 pnpm test           # Vitest

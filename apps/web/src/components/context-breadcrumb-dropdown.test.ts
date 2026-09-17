@@ -142,14 +142,15 @@ describe('上下文面包屑下拉', () => {
 
     await wrapper.get('[data-testid="project-switcher-team-增长团队"]').trigger('click')
 
-    expect(wrapper.text()).toContain('增长团队')
-    expect(wrapper.text()).toContain('消息中心')
-    expect(wrapper.text()).not.toContain('支付平台')
+    const options = wrapper.get('.pc-context-menu__projects')
+    expect(options.text()).toContain('消息中心')
+    expect(options.text()).not.toContain('增长团队')
+    expect(options.text()).not.toContain('支付平台')
 
     await wrapper.get('input[placeholder="搜索项目"]').setValue('消息')
 
-    expect(wrapper.text()).toContain('消息中心')
-    expect(wrapper.text()).not.toContain('订单中心')
+    expect(options.text()).toContain('消息中心')
+    expect(options.text()).not.toContain('订单中心')
   })
 
   it('状态标签默认展示指定状态，并支持多选切换', async () => {

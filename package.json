@@ -9,12 +9,15 @@
     "dev:web": "pnpm --filter @pongcode/web dev",
     "build": "pnpm --filter @pongcode/api-contract build && pnpm --filter @pongcode/web build",
     "build:web": "pnpm --filter @pongcode/web build",
+    "build:cli": "go -C apps/cli build -o ../../bin/pongcode .",
+    "release:cli": "apps/cli/scripts/release.sh",
     "typecheck": "pnpm --filter @pongcode/web typecheck",
     "lint": "pnpm --filter @pongcode/web lint",
     "test": "pnpm --filter @pongcode/web test",
     "test:api": ".venv/bin/python -m pytest -q --ignore=tests/e2e",
+    "test:cli": "go -C apps/cli test ./...",
     "test:e2e": "pnpm build && .venv/bin/python -m pytest -q tests/e2e",
-    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:api && pnpm build"
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:api && pnpm test:cli && pnpm build"
   },
   "devDependencies": {
     "concurrently": "10.0.3"

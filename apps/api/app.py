@@ -127,6 +127,44 @@ def ensure_bug_dict_schema():
         db.session.commit()
 
 
+def ensure_cli_token_schema():
+    """兼容历史数据库：补齐用户 CLI token 并为存量用户生成凭证。"""
+    from models import User, generate_cli_token
+
+    inspector = inspect(db.engine)
+    if 'user' not in inspector.get_table_names():
+        return
+
+    existing_columns = {column['name'] for column in inspector.get_columns('user')}
+    if 'cli_token' not in existing_columns:
+        db.session.execute(text('ALTER TABLE user ADD COLUMN cli_token VARCHAR(64)'))
+        db.session.commit()
+
+    missing_token_users = User.query.filter(User.cli_token.is_(None)).all()
+    if missing_token_users:
+        existing_tokens = {
+            token for (token,) in db.session.query(User.cli_token).filter(
+                User.cli_token.isnot(None)
+            )
+        }
+        for user in missing_token_users:
+            token = generate_cli_token()
+            while token in existing_tokens:
+                token = generate_cli_token()
+            existing_tokens.add(token)
+            user.cli_token = token
+        db.session.commit()
+
+    inspector = inspect(db.engine)
+    has_unique_index = any(
+        index.get('unique') and index.get('column_names') == ['cli_token']
+        for index in inspector.get_indexes('user')
+    )
+    if not has_unique_index:
+        db.session.execute(text('CREATE UNIQUE INDEX ix_user_cli_token ON user (cli_token)'))
+        db.session.commit()
+
+
 def create_app():
     app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static')
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-this')
@@ -160,6 +198,18 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
+
+    @login_manager.request_loader
+    def load_user_from_request(request):
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return None
+        token = auth_header[7:].strip()
+        if not token:
+            return None
+
+        from models import User
+        return User.query.filter_by(cli_token=token).first()
 
     @login_manager.unauthorized_handler
     def unauthorized():
@@ -228,6 +278,7 @@ def create_app():
         ensure_feishu_bot_schema()
         ensure_item_code_schema()
         ensure_bug_dict_schema()
+        ensure_cli_token_schema()
 
     return app
 

@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+import secrets
+
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -58,6 +60,11 @@ DISCOVERY_CHANNEL_LABELS = {
 }
 
 
+def generate_cli_token():
+    """生成 256 位随机 CLI 凭证，服务端按用户选择保存明文。"""
+    return secrets.token_hex(32)
+
+
 def _utc_isoformat(value):
     """将数据库中的 naive UTC 时间序列化为带 UTC 标记的 ISO 8601。"""
     if value is None:
@@ -88,6 +95,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(255))
+    cli_token = db.Column(db.String(64), index=True, unique=True, default=lambda: generate_cli_token())
     
     # Relationships
     organizations = db.relationship('Organization', secondary=organization_members,
